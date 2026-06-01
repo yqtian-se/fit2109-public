@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9.8 — Optimise → Measure → Verify — FIT2109 Week 9</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-try  strong { color: #00856a; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>9.8 The Optimise → Measure → Verify Loop</h2>
+
+<p>Finding the bottleneck with a profiler is only half the work. The other half is applying the fix correctly, confirming it helped, and knowing when to stop. This section covers the discipline of applying optimisations safely.</p>
+
+<h3>Three rules for every optimisation</h3>
+<ol>
+  <li><strong>Measure first.</strong> Record a baseline number before touching any code. Without a baseline, you cannot know whether you improved anything. Write down: what you measured, how you measured it, and the result.</li>
+  <li><strong>One change at a time.</strong> If you change two things simultaneously and the benchmark improves, you don't know which change helped. If it worsens, you don't know which to revert. Treat each optimisation as an experiment with a single variable.</li>
+  <li><strong>Verify the improvement.</strong> Re-run the exact same benchmark on the modified code. A gain of less than 10% on a single run may be within timing noise — run three times and use the median.</li>
+</ol>
+
+<h3>Common Python bottlenecks and fixes</h3>
+<table class="key-table">
+  <thead><tr><th>Pattern</th><th>Problem</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>String concatenation in a loop</strong></td>
+      <td><code>result += s</code> creates a new string object on every iteration — O(n²) total allocations.</td>
+      <td>Collect strings in a list, then call <code>''.join(parts)</code> once at the end — O(n).</td>
+    </tr>
+    <tr>
+      <td><strong>List membership test in a loop</strong></td>
+      <td><code>if x in big_list</code> scans every element — O(n) per check, O(n²) total.</td>
+      <td>Convert to a <code>set</code> or <code>dict</code> first — O(1) lookup, O(n) total.</td>
+    </tr>
+    <tr>
+      <td><strong>Repeated computation inside a loop</strong></td>
+      <td>Calling <code>len(items)</code> or <code>re.compile(pattern)</code> on every iteration when the result never changes.</td>
+      <td>Hoist the computation above the loop — compute once, use many times.</td>
+    </tr>
+    <tr>
+      <td><strong>Loading a full file into memory</strong></td>
+      <td><code>lines = open(f).readlines()</code> loads the entire file before processing begins.</td>
+      <td>Use <code>for line in open(f):</code> to stream one line at a time.</td>
+    </tr>
+    <tr>
+      <td><strong>Nested loops over large data</strong></td>
+      <td>O(n²) or worse algorithmic complexity — a 10× larger dataset makes it 100× slower.</td>
+      <td>Restructure using sorting, hashing, or vectorised operations. Algorithmic fixes outperform micro-optimisations by orders of magnitude.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Trade-offs: performance vs readability vs correctness</h3>
+<p>Every optimisation has a cost beyond runtime. Before applying one, consider:</p>
+<ul>
+  <li><strong>Readability.</strong> A generator chain can be harder to read than a <code>for</code> loop. A bitwise trick is faster than integer division but nearly impossible to maintain. Prefer the readable version unless the profiler demands otherwise.</li>
+  <li><strong>Correctness risk.</strong> Many optimisations — caching, lazy evaluation, in-place mutation — introduce subtle correctness bugs if applied carelessly. Always run your test suite after each change.</li>
+  <li><strong>Maintainability.</strong> An optimised, opaque function is harder to debug when requirements change. Comment <em>why</em> the unusual pattern exists (e.g., "using set for O(1) lookup on hot path").</li>
+</ul>
+
+<div class="callout callout-fun">
+  <strong>Amdahl's law</strong>
+  Even if you optimise one part of your program to run infinitely fast, the overall speedup is limited by the fraction of time spent in the rest of the program. If the bottleneck you fixed accounts for 50% of runtime, the maximum possible speedup is 2×. This is why profiling to find the <em>dominant</em> bottleneck matters so much — targeting the wrong 5% function gives you at most a 5% improvement.
+</div>
+
+<div class="callout callout-warn">
+  <strong>When to stop</strong>
+  Stop optimising when the program is fast enough for its use case — not when you can find nothing left to improve. Every further optimisation trades away readability and correctness safety for diminishing returns. Define your target before you start, and stop when you hit it.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Take a function you have profiled and identified as slow. Apply one fix (e.g. replace a list with a set for membership tests). Benchmark before and after with <code>time</code> or <code>timeit</code>. Run your tests to confirm correctness is unchanged. Document the change with a brief comment explaining why the unusual pattern exists.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

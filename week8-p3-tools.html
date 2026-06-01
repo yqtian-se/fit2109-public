@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 8 — Debugging Tools — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-tool { background: #e3f2fd; color: #1565c0; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; transition: box-shadow 0.15s; }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #d0d8f0; border-radius: 20px; padding: 5px 14px; font-size: 0.84rem; color: #4361ee; text-decoration: none; }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .tool-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Explore freely</span>
+<h2>Week 8 Debugging Tools at a Glance</h2>
+
+<h3>When to reach for what</h3>
+<table class="key-table">
+  <thead><tr><th>Situation</th><th>Reach for</th><th>Quick command</th></tr></thead>
+  <tbody>
+    <tr><td>Before running — catch issues in source</td><td>Lint: <code>pylint</code>, <code>flake8</code>, <code>shellcheck</code></td><td><code>pylint myscript.py</code></td></tr>
+    <tr><td>Program crashes with an error message</td><td>Read the traceback bottom-up</td><td>Look for the last line of <em>your</em> code in the stack</td></tr>
+    <tr><td>Need more runtime detail</td><td>Logging (<code>logging</code> module)</td><td><code>logging.basicConfig(level=logging.DEBUG)</code></td></tr>
+    <tr><td>C/C++ crash on Linux</td><td>GDB</td><td><code>gdb ./program</code> → <code>run</code> → <code>backtrace</code></td></tr>
+    <tr><td>C/C++ crash on macOS or LLVM-based Linux</td><td>LLDB</td><td><code>lldb ./program</code> → <code>run</code> → <code>bt</code></td></tr>
+    <tr><td>Python/JS logic bug (wrong output)</td><td>VS Code debugger</td><td>Click gutter → F5 → F10 to step</td></tr>
+    <tr><td>Need to file a bug report</td><td>Minimal Reproducible Example</td><td>Strip to &lt;20 lines that still trigger the bug</td></tr>
+    <tr><td>Program is large; MRE creation is tedious</td><td>Perses</td><td><code>java -jar perses_deploy.jar --test-script test.sh --input-file bug.py</code></td></tr>
+    <tr><td>Bug only appears in CI / on another machine</td><td>Environment diff</td><td><code>python3 --version</code>, <code>pip freeze</code>, <code>printenv</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Tool reference cards</h3>
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="name">pylint</div>
+    <div class="desc">Python linter with a score out of 10. Install: <code>pip install pylint</code>. Run: <code>pylint script.py</code>. Fix E (error) codes first.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">flake8</div>
+    <div class="desc">Lightweight PEP 8 checker. Install: <code>pip install flake8</code>. Run: <code>flake8 script.py</code>. Fast enough to run on every save.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">mypy</div>
+    <div class="desc">Static type checker for Python. Install: <code>pip install mypy</code>. Run: <code>mypy script.py</code>. Requires type annotations to be most useful.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">shellcheck</div>
+    <div class="desc">Bash/sh linter. Often pre-installed; otherwise <code>brew install shellcheck</code> or <code>apt install shellcheck</code>. Run: <code>shellcheck script.sh</code>.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">GDB</div>
+    <div class="desc">GNU Debugger for C/C++ on Linux. Compile with <code>-g</code>. Key commands: <code>break</code>, <code>run</code>, <code>next</code>, <code>step</code>, <code>print</code>, <code>backtrace</code>.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">LLDB</div>
+    <div class="desc">Part of the LLVM project. Default debugger on macOS; also available on Linux wherever LLVM is installed. Same workflow as GDB with slightly different syntax (<code>p</code> instead of <code>print</code>, <code>bt</code> instead of <code>backtrace</code>).</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">Perses</div>
+    <div class="desc">Automated program reducer. Needs Java. Download JAR from GitHub releases. Write a test script (exit 0 = bug present), then run Perses on the large file.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">git bisect</div>
+    <div class="desc">Binary search over commit history to find the commit that introduced a bug. <code>git bisect start</code> → mark good/bad commits → Git checks out the midpoint each time.</div>
+  </div>
+</div>
+
+<h3>Reference links</h3>
+<div class="ext-links">
+  <a class="ext-link" href="https://docs.python.org/3/library/logging.html" target="_blank">Python logging docs</a>
+  <a class="ext-link" href="https://pylint.readthedocs.io/" target="_blank">pylint docs</a>
+  <a class="ext-link" href="https://www.shellcheck.net/" target="_blank">shellcheck online</a>
+  <a class="ext-link" href="https://code.visualstudio.com/docs/editor/debugging" target="_blank">VS Code debugger guide</a>
+  <a class="ext-link" href="https://github.com/uw-pluverse/perses" target="_blank">Perses on GitHub</a>
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

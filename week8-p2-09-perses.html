@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.9 — Perses — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #d0d8f0; border-radius: 20px; padding: 5px 14px; font-size: 0.84rem; color: #4361ee; text-decoration: none; }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.9 Perses: Automated Program Reduction</h2>
+
+<p>Creating an MRE manually works well for small programs. For a 500-line script with dozens of functions, the manual process is tedious and error-prone. <strong>Perses</strong> automates it: you provide the buggy program and a test that checks whether the bug is present, and Perses systematically removes code while keeping the test passing.</p>
+
+<h3>How Perses works</h3>
+<p>Perses uses the <em>grammar</em> of the programming language to guide its reductions. Rather than deleting arbitrary bytes, it removes syntactically valid units — statements, expressions, function bodies — so the reduced output is always a valid program. This is the key advantage over simpler line-deletion tools like <code>creduce</code>: Perses never produces broken syntax that wastes a test run.</p>
+
+<p>The algorithm is a variant of delta debugging:</p>
+<ol>
+  <li>Start with the original buggy program.</li>
+  <li>Try removing a chunk of code. Run the test script on the result.</li>
+  <li>If the bug is still present (test exits 0), keep the removal and continue.</li>
+  <li>If the bug is gone (test exits non-zero), restore the removed chunk and try a different one.</li>
+  <li>Repeat until no further removal preserves the bug.</li>
+</ol>
+
+<h3>Step 1 — Prerequisites: install Java</h3>
+<p>Perses is distributed as a self-contained JAR file and requires <strong>Java 11 or later</strong>. Check whether Java is installed:</p>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">java</span> <span class="arg">--version</span>
+<span class="out">openjdk 21.0.2 2024-01-16</span></code></pre>
+<p>If the command is not found, install Java first:</p>
+<pre><code><span class="comment"># macOS (via Homebrew)</span>
+<span class="prompt-sym">$</span> <span class="cmd">brew</span> <span class="arg">install openjdk</span>
+
+<span class="comment"># Ubuntu / Debian</span>
+<span class="prompt-sym">$</span> <span class="cmd">sudo apt</span> <span class="arg">install default-jdk</span></code></pre>
+
+<h3>Step 2 — Download the Perses JAR</h3>
+<p>Go to the <a href="https://github.com/uw-pluverse/perses/releases" target="_blank">Perses releases page on GitHub</a> and download the latest <code>perses_deploy.jar</code>. Save it somewhere permanent — you will reuse it across projects.</p>
+<pre><code><span class="comment"># Or download directly from the terminal</span>
+<span class="prompt-sym">$</span> <span class="cmd">curl</span> <span class="arg">-L -o perses_deploy.jar</span> \
+    https://github.com/uw-pluverse/perses/releases/latest/download/perses_deploy.jar
+
+<span class="comment"># Confirm it works</span>
+<span class="prompt-sym">$</span> <span class="cmd">java</span> <span class="arg">-jar perses_deploy.jar --help</span></code></pre>
+
+<h3>Step 3 — Prepare the buggy file</h3>
+<p>Start with the simplest reproduction you have — the file Perses will reduce further. Save the following as <code>big_bug.py</code>:</p>
+<pre><code><span class="comment"># big_bug.py</span>
+<span class="cmd">import</span> os, sys
+
+<span class="cmd">def</span> load_config():
+    <span class="cmd">return</span> {<span class="arg">"host"</span>: <span class="arg">"localhost"</span>, <span class="arg">"port"</span>: 5432}
+
+<span class="cmd">def</span> get_users():
+    <span class="cmd">return</span> [<span class="arg">"alice"</span>, <span class="arg">"bob"</span>, <span class="arg">"carol"</span>]
+
+<span class="cmd">def</span> process(users):
+    <span class="cmd">for</span> i <span class="cmd">in</span> <span class="cmd">range</span>(<span class="cmd">len</span>(users) + 1):   <span class="comment"># off-by-one bug</span>
+        <span class="cmd">print</span>(users[i])
+
+<span class="cmd">if</span> __name__ == <span class="arg">"__main__"</span>:
+    load_config()
+    process(get_users())</code></pre>
+
+<h3>Step 4 — Write the test script</h3>
+<p>The test script is the heart of the process. Perses calls it as <code>bash test.sh &lt;candidate-file&gt;</code> after every attempted reduction and reads the exit code to decide whether to keep or revert the change.</p>
+
+<div class="callout callout-warn">
+  <strong>Exit code convention is reversed from normal shell</strong>
+  Exit <strong>0</strong> means the bug is <strong>still present</strong> — Perses should keep reducing. Exit <strong>non-zero</strong> means the bug is gone — stop this path. This is the opposite of normal shell conventions. Getting it backwards causes Perses to immediately accept any empty file as valid, producing a useless result.
+</div>
+
+<pre><code><span class="comment">#!/bin/bash
+# test.sh — exit 0 if the candidate still triggers IndexError</span>
+<span class="cmd">python3</span> <span class="arg">"$1"</span> 2&gt;&amp;1 | <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"IndexError"</span>
+<span class="comment"># grep -q exits 0 when the pattern is found  (bug present → keep reducing)
+# grep -q exits 1 when the pattern is absent (bug gone   → stop this path)</span></code></pre>
+
+<p>Make it executable and verify it works before handing it to Perses — if the test script does not correctly detect the bug, Perses will silently produce a wrong result:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">+x test.sh</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">test.sh big_bug.py</span> &amp;&amp; <span class="cmd">echo</span> <span class="arg">"bug confirmed"</span>
+<span class="out">bug confirmed</span></code></pre>
+
+<h3>Step 5 — Run Perses</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">java</span> <span class="arg">-jar perses_deploy.jar</span> \
+    <span class="arg">--test-script test.sh</span> \
+    <span class="arg">--input-file big_bug.py</span>
+
+<span class="out">INFO  Perses started.
+INFO  Language: PYTHON
+INFO  Running initial test to confirm the bug ...
+INFO  Bug confirmed. Starting reduction.
+INFO  Iteration 1: 18 tokens -&gt; 11 tokens
+INFO  Iteration 2: 11 tokens -&gt;  6 tokens
+INFO  Iteration 3:  6 tokens -&gt;  4 tokens
+INFO  Fixed point reached.
+INFO  Result written to: perses_result/big_bug.py</span></code></pre>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">cat</span> <span class="arg">perses_result/big_bug.py</span>
+<span class="out">a = ["alice", "bob", "carol"]
+print(a[3])</span></code></pre>
+
+<p>All imports, the config function, and the helper were stripped — only the two lines that directly cause the <code>IndexError</code> survive.</p>
+
+<h3>Test scripts for Java and C</h3>
+<p>The same pattern applies to any compiled language. The test script compiles and runs the candidate, then checks for the expected error signal.</p>
+
+<pre><code><span class="comment">#!/bin/bash
+# Java: exit 0 if candidate still throws ArrayIndexOutOfBoundsException</span>
+<span class="cmd">javac</span> <span class="arg">"$1"</span> 2&gt;/dev/null || <span class="cmd">exit</span> 1
+<span class="cmd">java</span> <span class="arg">-cp . "$(basename "$1" .java)"</span> 2&gt;&amp;1 | <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"ArrayIndexOutOfBoundsException"</span></code></pre>
+
+<pre><code><span class="comment">#!/bin/bash
+# C: exit 0 if candidate still crashes with a segfault (signal 11)</span>
+<span class="cmd">gcc</span> <span class="arg">-g -o /tmp/repro "$1"</span> 2&gt;/dev/null || <span class="cmd">exit</span> 1
+/tmp/repro 2&gt;/dev/null
+[ $? <span class="arg">-eq 139</span> ]   <span class="comment"># 139 = 128 + SIGSEGV(11)</span></code></pre>
+
+<h3>Useful flags</h3>
+<table class="key-table">
+  <thead><tr><th>Flag</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>--input-file FILE</code></td><td>The buggy file to reduce.</td></tr>
+    <tr><td><code>--test-script SCRIPT</code></td><td>The test script (must be executable).</td></tr>
+    <tr><td><code>--output-dir DIR</code></td><td>Where to write the result (default: <code>perses_result/</code>).</td></tr>
+    <tr><td><code>--threads N</code></td><td>Run N tests in parallel — speeds up reduction on multi-core machines.</td></tr>
+    <tr><td><code>--keep-original-code-format</code></td><td>Preserve original whitespace and formatting in the output.</td></tr>
+  </tbody>
+</table>
+
+<p>Perses automatically selects the grammar based on the file extension and supports Python, C, C++, Java, Go, Rust, JavaScript, and more.</p>
+
+<div class="callout callout-note">
+  <strong>When to use Perses vs manual reduction</strong>
+  Use Perses when the buggy file is more than ~50 lines or when you need to attach a minimal test case to a formal bug report. For shorter files, manual reduction is faster. Perses shines on compiler crashes, parser bugs, or any situation where stripping code by hand would take more than 10 minutes.
+</div>
+
+<div class="ext-links">
+  <a class="ext-link" href="https://github.com/uw-pluverse/perses/releases" target="_blank">Download perses_deploy.jar</a>
+  <a class="ext-link" href="https://github.com/uw-pluverse/perses" target="_blank">Perses on GitHub</a>
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

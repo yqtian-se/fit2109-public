@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.4 — Static Analysis — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .hi-warn { color: #f9e2af; }
+  .hi-error { color: #f38ba8; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; transition: box-shadow 0.15s; }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .tool-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.4 Static Analysis: Catching Bugs Before Runtime</h2>
+
+<p>Static analysis tools examine your source code <em>without running it</em> and report problems — unused variables, type mismatches, style violations, suspicious patterns. They act like a second pair of eyes that never gets tired and never misses a typo.</p>
+<p>The key insight: a bug caught by a linter before you even run the program costs nothing to fix. The same bug caught in production costs far more.</p>
+
+<h3>What static analysis finds</h3>
+<ul>
+  <li>Unused imports and variables (dead code that clutters reasoning)</li>
+  <li>Variables used before they are defined</li>
+  <li>Type mismatches — passing a string where an integer is expected</li>
+  <li>Unreachable code after a <code>return</code></li>
+  <li>Style violations that reduce readability (PEP 8 for Python)</li>
+  <li>Common security-sensitive patterns (e.g. <code>eval()</code>, shell injection risks)</li>
+</ul>
+
+<h3>Tools by ecosystem</h3>
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="name">pylint</div>
+    <div class="desc"><strong>Python.</strong> Comprehensive linter: style, logic errors, and a score out of 10. Start here for a full picture. <code>pip install pylint</code></div>
+  </div>
+  <div class="tool-card">
+    <div class="name">flake8</div>
+    <div class="desc"><strong>Python.</strong> Lightweight PEP 8 style checker. Fast enough to run on every save. <code>pip install flake8</code></div>
+  </div>
+  <div class="tool-card">
+    <div class="name">mypy</div>
+    <div class="desc"><strong>Python.</strong> Static type checker — catches type errors without running the program. Needs type annotations to be most useful. <code>pip install mypy</code></div>
+  </div>
+  <div class="tool-card">
+    <div class="name">Checkstyle</div>
+    <div class="desc"><strong>Java.</strong> Enforces coding style (indentation, naming, Javadoc). Integrates with Maven and Gradle. Run: <code>mvn checkstyle:check</code></div>
+  </div>
+  <div class="tool-card">
+    <div class="name">SpotBugs</div>
+    <div class="desc"><strong>Java.</strong> Finds real bugs — null dereferences, resource leaks, infinite loops — by analysing bytecode. Run: <code>mvn spotbugs:check</code></div>
+  </div>
+  <div class="tool-card">
+    <div class="name">clang-tidy</div>
+    <div class="desc"><strong>C/C++.</strong> LLVM-based linter and static analyser. Catches memory errors, undefined behaviour, and style issues. Run: <code>clang-tidy file.c --</code></div>
+  </div>
+  <div class="tool-card">
+    <div class="name">shellcheck</div>
+    <div class="desc"><strong>Bash/sh.</strong> Catches quoting mistakes, undefined variables, and logic pitfalls that cause scripts to fail silently.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">ESLint</div>
+    <div class="desc"><strong>JavaScript/TypeScript.</strong> Highly configurable linter. Catches unused variables, type issues, and enforces team style rules. <code>npx eslint .</code></div>
+  </div>
+</div>
+
+<h3>Reading pylint output</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">pylint</span> <span class="arg">bad_script.py</span>
+<span class="hi-warn">bad_script.py:4:0: W0611 (unused-import) Unused import os</span>
+<span class="hi-error">bad_script.py:9:8: E0602 (undefined-variable) Undefined variable 'resut'</span>
+<span class="hi-warn">bad_script.py:12:4: C0103 (invalid-name) Variable name "x" doesn't conform to snake_case</span>
+
+<span class="out">Your code has been rated at 4.50/10</span></code></pre>
+
+<p>Each line follows the format: <code>file:line:col: CODE (id) Message</code>. The code prefix tells you severity: <strong>E</strong> = error, <strong>W</strong> = warning, <strong>C</strong> = convention, <strong>R</strong> = refactor. Fix errors first.</p>
+
+<h3>shellcheck on a Bash script</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">shellcheck</span> <span class="arg">bad_script.sh</span>
+<span class="hi-error">In bad_script.sh line 5:</span>
+<span class="hi-warn">  for f in $(ls *.txt); do</span>
+                <span class="comment">^-- SC2045: Iterating over ls output is fragile.</span>
+                <span class="comment">    Use a glob instead: for f in *.txt; do</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Lint before every commit</strong>
+  Many teams run linters automatically in CI — every push triggers a lint check and the build fails if there are errors. Even without CI, running lint before committing catches issues before they reach code review.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Install pylint (<code>pip install pylint</code>) and run it on any Python file you have written recently. Read the output from top to bottom, fix the highest-severity issues (E codes), and re-run to confirm they clear.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

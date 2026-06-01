@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 9 — Profiling Tools — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-tool { background: #e3f2fd; color: #1565c0; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; transition: box-shadow 0.15s; }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #d0d8f0; border-radius: 20px; padding: 5px 14px; font-size: 0.84rem; color: #4361ee; text-decoration: none; }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .tool-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Explore freely</span>
+<h2>Week 9 Profiling &amp; Performance Tools at a Glance</h2>
+
+<h3>When to reach for what</h3>
+<table class="key-table">
+  <thead><tr><th>Question</th><th>Tool</th><th>Quick command</th></tr></thead>
+  <tbody>
+    <tr><td>How long does the whole program take?</td><td><code>time</code></td><td><code>time python3 app.py</code></td></tr>
+    <tr><td>Which of two expressions is faster?</td><td><code>timeit</code></td><td><code>python3 -m timeit -s "setup" "expr"</code></td></tr>
+    <tr><td>Rigorous comparison with statistics?</td><td><code>hyperfine</code></td><td><code>hyperfine 'python3 slow.py' 'python3 fast.py'</code></td></tr>
+    <tr><td>Which function is consuming the most time?</td><td><code>cProfile</code></td><td><code>python3 -m cProfile -s cumtime app.py</code></td></tr>
+    <tr><td>Which line inside that function is the bottleneck?</td><td><code>line_profiler</code></td><td>Add <code>@profile</code>, run <code>kernprof -l -v app.py</code></td></tr>
+    <tr><td>Where is memory being allocated?</td><td><code>memory_profiler</code></td><td>Add <code>@profile</code>, run <code>python3 -m memory_profiler app.py</code></td></tr>
+    <tr><td>Did my fix actually improve performance?</td><td><code>time</code> / <code>timeit</code></td><td>Re-run the same benchmark before and after</td></tr>
+  </tbody>
+</table>
+
+<h3>Tool reference cards</h3>
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="name">time (shell built-in)</div>
+    <div class="desc">Measures real, user, and sys time for a whole command. Built into bash/zsh — no install needed. Use for whole-program baseline measurements.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">timeit</div>
+    <div class="desc">Python standard library micro-benchmarker. Disables GC, runs many iterations, reports the best. Use: <code>python3 -m timeit -s "setup" "expr"</code>. No install needed.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">hyperfine</div>
+    <div class="desc">Statistical shell benchmarker. Reports mean ± std dev, min, max. Install: <code>brew install hyperfine</code> or download from GitHub. Use for comparing two programs end-to-end.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">cProfile</div>
+    <div class="desc">Python built-in CPU profiler. No install needed. Run: <code>python3 -m cProfile -s cumtime app.py</code>. Sort by <code>cumtime</code> first to find the responsible function.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">line_profiler / kernprof</div>
+    <div class="desc">Line-level CPU profiler. Install: <code>pip install line_profiler</code>. Add <code>@profile</code> to the hot function, run <code>kernprof -l -v app.py</code>. Look at the <code>%Time</code> column.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">memory_profiler</div>
+    <div class="desc">Line-level memory profiler. Install: <code>pip install memory_profiler</code>. Add <code>@profile</code> to the function, run <code>python3 -m memory_profiler app.py</code>. Look at the <code>Increment</code> column.</div>
+  </div>
+</div>
+
+<h3>The investigation ladder</h3>
+<ol>
+  <li><strong>Benchmark</strong> — confirm the program is actually slow (<code>time</code>).</li>
+  <li><strong>Profile by function</strong> — find the hot function (<code>cProfile -s cumtime</code>).</li>
+  <li><strong>Profile by line</strong> — find the hot line (<code>kernprof -l -v</code>).</li>
+  <li><strong>Fix</strong> — apply one targeted change.</li>
+  <li><strong>Benchmark again</strong> — confirm the improvement is real (<code>time</code> or <code>timeit</code>).</li>
+  <li><strong>Run tests</strong> — confirm correctness is unchanged.</li>
+  <li><strong>Repeat or stop</strong> — if fast enough for the use case, stop.</li>
+</ol>
+
+<h3>Reference links</h3>
+<div class="ext-links">
+  <a class="ext-link" href="https://docs.python.org/3/library/profile.html" target="_blank">cProfile documentation</a>
+  <a class="ext-link" href="https://docs.python.org/3/library/timeit.html" target="_blank">timeit documentation</a>
+  <a class="ext-link" href="https://github.com/pyutils/line_profiler" target="_blank">line_profiler on GitHub</a>
+  <a class="ext-link" href="https://github.com/pythonprofilers/memory_profiler" target="_blank">memory_profiler on GitHub</a>
+  <a class="ext-link" href="https://github.com/sharkdp/hyperfine" target="_blank">hyperfine on GitHub</a>
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

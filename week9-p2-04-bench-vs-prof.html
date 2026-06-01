@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9.4 — Benchmarking vs Profiling — FIT2109 Week 9</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+  .compare-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 20px; }
+  .compare-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+  .compare-card.bench h4 { color: #1565c0; }
+  .compare-card.prof  h4 { color: #2e7d32; }
+  .compare-card p { font-size: 0.9rem; margin-bottom: 10px; }
+  .compare-card ul { font-size: 0.9rem; margin: 6px 0 0 18px; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>9.4 Benchmarking vs Profiling</h2>
+
+<p>These two words are often used interchangeably, but they answer different questions. Choosing the wrong tool wastes time and gives you the wrong information.</p>
+
+<div class="compare-grid">
+  <div class="compare-card bench">
+    <h4>Benchmarking — "How long?"</h4>
+    <p>Measures the total execution time of a program or expression. Tells you <em>how fast</em> something is overall, or whether version A is faster than version B.</p>
+    <ul>
+      <li>Use when comparing two implementations end-to-end.</li>
+      <li>Use to verify an optimisation improved performance.</li>
+      <li>Use to set a performance budget ("must run in under 2s").</li>
+    </ul>
+    <p><strong>Tools:</strong> <code>time</code>, <code>timeit</code>, <code>hyperfine</code></p>
+  </div>
+  <div class="compare-card prof">
+    <h4>Profiling — "Where?"</h4>
+    <p>Measures time (or memory) per function or per line. Tells you <em>which part</em> of the program is responsible for the cost.</p>
+    <ul>
+      <li>Use when the program is slow but you don't know why.</li>
+      <li>Use to find the bottleneck before deciding what to fix.</li>
+      <li>Use after a fix to confirm the hot spot is gone.</li>
+    </ul>
+    <p><strong>Tools:</strong> <code>cProfile</code>, <code>line_profiler</code>, <code>memory_profiler</code></p>
+  </div>
+</div>
+
+<h3>The analogy</h3>
+<p>Benchmarking is a <strong>stopwatch</strong>: you press start, the race ends, you read a time. You know the runner was slow, but not why.</p>
+<p>Profiling is an <strong>X-ray</strong>: it reveals the internal structure and shows you which part is doing all the work — whether it is the loop, the database call, or the string formatting. Only then do you know what to fix.</p>
+
+<div class="callout callout-warn">
+  <strong>The most expensive mistake</strong>
+  Optimising code based on a benchmark result alone, without profiling first. You know the program is slow, but not where. Developers who skip profiling almost always spend time optimising the wrong function — and are confused when the benchmark barely improves.
+</div>
+
+<h3>Decision guide</h3>
+<table class="key-table">
+  <thead><tr><th>Question you have</th><th>Tool to use</th></tr></thead>
+  <tbody>
+    <tr><td>Is my program fast enough for its use case?</td><td>Benchmark (<code>time</code>)</td></tr>
+    <tr><td>Which of these two implementations is faster?</td><td>Benchmark (<code>timeit</code> or <code>hyperfine</code>)</td></tr>
+    <tr><td>My program is slow — where is the time going?</td><td>Profiler (<code>cProfile</code>)</td></tr>
+    <tr><td>I found the slow function — which line inside it?</td><td>Line profiler (<code>line_profiler</code>)</td></tr>
+    <tr><td>My program uses too much memory — where?</td><td>Memory profiler (<code>memory_profiler</code>)</td></tr>
+    <tr><td>Did my fix actually improve things?</td><td>Benchmark (<code>time</code> or <code>timeit</code>) before and after</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-note">
+  <strong>The two-step investigation</strong>
+  In practice you almost always need both: benchmark to confirm the program is slow enough to warrant attention, then profile to find out where to apply the fix, then benchmark again to confirm the fix worked. They are complementary, not competing.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

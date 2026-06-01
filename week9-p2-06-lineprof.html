@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9.6 — line_profiler — FIT2109 Week 9</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .hi-hot { color: #f38ba8; font-weight: 700; }
+  .hi-pct { color: #f9e2af; font-weight: 700; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #d0d8f0; border-radius: 20px; padding: 5px 14px; font-size: 0.84rem; color: #4361ee; text-decoration: none; }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>9.6 line_profiler: Which Line Is the Bottleneck?</h2>
+
+<p><code>cProfile</code> tells you the function is slow. <code>line_profiler</code> tells you the <em>exact line</em> inside that function that is doing the work. Together, these two tools give you a precise fix target without having to guess.</p>
+
+<h3>Installation and setup</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">pip</span> <span class="arg">install line_profiler</span></code></pre>
+
+<p>Add the <code>@profile</code> decorator to the function you want to inspect. You do <strong>not</strong> import anything — <code>kernprof</code> injects the decorator at run time:</p>
+
+<pre><code><span class="comment"># hot.py</span>
+<span class="cmd">@profile</span>                          <span class="comment"># no import needed -- kernprof injects this</span>
+<span class="cmd">def</span> build_result(items):
+    result = <span class="arg">""</span>
+    <span class="cmd">for</span> item <span class="cmd">in</span> items:
+        result += <span class="cmd">str</span>(item)       <span class="comment"># repeated string concatenation</span>
+        processed = result.strip()
+    <span class="cmd">return</span> processed</code></pre>
+
+<h3>Running kernprof</h3>
+<pre><code><span class="comment"># -l  writes line-level stats  -v  prints them immediately</span>
+<span class="prompt-sym">$</span> <span class="cmd">kernprof</span> <span class="arg">-l -v</span> <span class="arg">hot.py</span></code></pre>
+
+<h3>Reading the output</h3>
+<pre><code><span class="out">Total time: 0.011124 s
+File: hot.py
+Function: build_result at line 2
+
+Line   Hits    Time(µs)  Per Hit   </span><span class="hi-pct">%Time</span><span class="out">   Contents
+   3   1001      312.0     0.3      2.8   for item in items:
+   4   1000    </span><span class="hi-hot">9876.0</span><span class="out">     9.9     </span><span class="hi-pct">88.7</span><span class="out">   result += str(item)
+   5   1000     936.0     0.9      8.4   processed = result.strip()
+   6      1       0.1     0.1      0.0   return processed</span></code></pre>
+
+<p>Line 4 consumes <strong>88.7%</strong> of the function's time. That is the line to fix. Everything else is noise — don't touch it.</p>
+
+<div class="callout callout-note">
+  <strong>%Time is the key column</strong>
+  Absolute time (µs) varies with machine speed and input size. <code>%Time</code> is stable: it tells you the fraction of the function's total cost attributable to each line. Focus on lines with high <code>%Time</code> — those are the ones worth fixing.
+</div>
+
+<h3>The two-step investigation pattern</h3>
+<ol>
+  <li><strong>Step 1 — cProfile:</strong> <code>python3 -m cProfile -s cumtime app.py</code> → find the slow function.</li>
+  <li><strong>Step 2 — line_profiler:</strong> add <code>@profile</code> to that function, run <code>kernprof -l -v app.py</code> → find the slow line.</li>
+</ol>
+<p>These two steps together take under two minutes and give you a precise target. Without them, you are guessing.</p>
+
+<div class="callout callout-warn">
+  <strong>Remove @profile before committing</strong>
+  <code>@profile</code> is injected by kernprof at runtime. If you run the script normally (without kernprof), Python will raise <code>NameError: name 'profile' is not defined</code>. Remove the decorator before committing or shipping.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Take the hot function identified by <code>cProfile</code> in the previous section. Add <code>@profile</code> and run <code>kernprof -l -v</code>. Which line has the highest <code>%Time</code>? Does it match what you expected?
+</div>
+
+<div class="ext-links">
+  <a class="ext-link" href="https://github.com/pyutils/line_profiler" target="_blank">line_profiler on GitHub</a>
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

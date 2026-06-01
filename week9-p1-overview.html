@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 9 Pre-Reading: Profiling &amp; Performance — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; margin-bottom: 0; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; margin-bottom: 6px; }
+  .hero .quote { margin-top: 16px; font-style: italic; color: #8090b0; font-size: 0.95rem; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Week 9: Profiling &amp; Performance</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <p class="quote">"Premature optimization is the root of all evil." — Donald Knuth, 1974</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol class="goals">
+      <li>Explain the difference between benchmarking and profiling, and choose the right tool for each question.</li>
+      <li>Measure execution time reliably with <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">time</code> and <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">timeit</code>, accounting for variability and warm-up effects.</li>
+      <li>Use <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">cProfile</code> to identify which function consumes the most CPU time.</li>
+      <li>Use <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">line_profiler</code> to pinpoint the specific line inside a hot function.</li>
+      <li>Measure peak memory usage with <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">memory_profiler</code> and apply generator-based fixes.</li>
+      <li>Apply the optimise → measure → verify loop, and evaluate trade-offs between performance, readability, and correctness.</li>
+    </ol>
+  </div>
+</div>
+
+<h3>A scenario</h3>
+<p>Your data-processing script is correct — the output matches the expected results. But it takes 3 hours to run on the full dataset, while your teammate's version finishes in 4 minutes. You assume the bottleneck is the file I/O, so you rewrite the loading logic. Still 2.7 hours. You try caching some results. Still 2.5 hours. Forty minutes of changes, barely any improvement.</p>
+<p>You run a profiler for the first time. It tells you that 94% of the runtime is spent in a single function — one you never considered. Inside that function, a line that checks <code>if item in results_list</code> is called a million times. The list has 50,000 entries; each check scans the whole thing. Replacing it with a <code>set</code> is a one-line change. Runtime drops to 11 minutes.</p>
+<p>This is what profiling reveals: not what you <em>think</em> is slow, but what actually <em>is</em> slow. This week gives you the tools to measure time and memory precisely, find the real bottleneck, apply a targeted fix, and verify the improvement is real.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  Think of a program you have written that felt slow. Where did you assume the bottleneck was? After reading this week's material, run a profiler on it and see whether your assumption was correct.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

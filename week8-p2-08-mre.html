@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.8 — Minimal Reproducible Examples — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .hi-del { color: #f38ba8; text-decoration: line-through; }
+  .hi-keep { color: #a6e3a1; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-try  strong { color: #00856a; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.8 Minimal Reproducible Examples</h2>
+
+<p>A <strong>Minimal Reproducible Example (MRE)</strong> — sometimes called a Minimal Working Example or MCVE — is the smallest possible program that still triggers the bug. Every line that is not required to produce the failure has been removed.</p>
+
+<h3>Why bother making one?</h3>
+<ul>
+  <li><strong>Faster to reason about.</strong> A 10-line program is far easier to understand than a 500-line one. You can hold the whole thing in your head.</li>
+  <li><strong>Reveals the true cause.</strong> Irrelevant code hides the bug. When you strip everything else away, the culprit is often obvious.</li>
+  <li><strong>Required for good bug reports.</strong> Stack Overflow, GitHub Issues, and mailing lists all expect an MRE. Without one, maintainers cannot reproduce your problem and will often close the issue.</li>
+  <li><strong>Making the MRE often <em>is</em> the fix.</strong> As you simplify, you frequently discover the assumption that was wrong — before you even finish reducing.</li>
+</ul>
+
+<h3>Before and after</h3>
+<p>Suppose your 200-line data pipeline crashes with <code>IndexError: list index out of range</code>. After creating an MRE:</p>
+
+<pre><code><span class="comment"># The MRE -- just 4 lines</span>
+<span class="hi-keep">data = [1, 2, 3]</span>
+<span class="hi-keep">index = len(data)        </span><span class="comment"># off-by-one: valid indices are 0, 1, 2</span>
+<span class="hi-keep">print(data[index])       </span><span class="comment"># IndexError: list index out of range</span></code></pre>
+
+<p>The full pipeline had authentication, file I/O, logging setup, and three helper classes — none of which mattered.</p>
+
+<h3>How to create an MRE manually</h3>
+<ol>
+  <li>Copy the failing code into a fresh, empty file.</li>
+  <li>Remove all imports that are not needed to trigger the bug. Run after each removal to confirm the bug persists.</li>
+  <li>Delete helper functions and classes unrelated to the failure.</li>
+  <li>Replace file I/O, network calls, and database queries with hardcoded literal data (a list, a dict, a string).</li>
+  <li>Simplify inputs to the smallest values that still trigger the bug (e.g. a list of 3 items instead of 10,000).</li>
+  <li>Repeat until removing any single additional line makes the bug stop reproducing.</li>
+</ol>
+
+<div class="callout callout-note">
+  <strong>The golden rule</strong>
+  After every removal, run the program and confirm the bug still appears. If you remove too much at once and the bug disappears, you don't know which removal was responsible.
+</div>
+
+<div class="callout callout-fun">
+  <strong>Rubber duck debugging</strong>
+  The act of explaining your bug to someone else — or to an imaginary rubber duck — forces you to articulate precisely what is happening. This often reveals the cause before you finish explaining. Creating an MRE has the same effect: the process of stripping away irrelevant code forces you to think clearly about what is actually necessary for the bug.
+</div>
+
+<h3>MREs in Java and C</h3>
+<p>The process is the same regardless of language — strip everything that is not required to trigger the bug.</p>
+<ul>
+  <li><strong>Java:</strong> create a new class with a single <code>main</code> method. Replace database calls, network I/O, and framework setup with hardcoded literals. Aim for a single file that compiles and reproduces the exception with <code>javac Repro.java &amp;&amp; java Repro</code>.</li>
+  <li><strong>C:</strong> copy the failing code into a new <code>.c</code> file. Remove unrelated functions, replace file I/O with hardcoded arrays, and confirm the crash still occurs with <code>gcc -g -o repro repro.c &amp;&amp; ./repro</code>. A good C MRE for a segfault is often under 10 lines.</li>
+</ul>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Take any bug you have seen recently — in your own code or a class exercise. Create a new file in whichever language applies (Python, Java, or C) and build an MRE from scratch. Aim for under 15 lines. Share it with a classmate and see if they can identify the cause in under one minute.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

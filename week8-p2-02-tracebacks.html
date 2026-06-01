@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.2 — Reading Error Messages — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .hi-error   { color: #f38ba8; font-weight: 700; }
+  .hi-file    { color: #89dceb; }
+  .hi-context { color: #a6e3a1; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.2 Reading Error Messages and Tracebacks</h2>
+
+<p>An error message is the program telling you where to start. Reading it carefully is the single highest-leverage debugging action you can take — yet many developers glance at it and immediately start changing code instead.</p>
+
+<h3>Python tracebacks: read from the bottom up</h3>
+<p>Python prints a traceback that shows the entire call chain from the outermost call down to the exact line that failed. The structure can look overwhelming, but there is a simple rule: <strong>always start at the bottom</strong>.</p>
+
+<pre><code><span class="hi-context">Traceback (most recent call last):</span>
+  File <span class="hi-file">"app.py"</span>, line 18, in &lt;module&gt;
+    result = process(data)
+  File <span class="hi-file">"app.py"</span>, line 9, in process
+    return data[index]
+<span class="hi-error">IndexError: list index out of range</span></code></pre>
+
+<p>Reading order:</p>
+<ol>
+  <li><strong>Bottom line</strong> — the error type (<code>IndexError</code>) and its message (<code>list index out of range</code>). This tells you <em>what</em> went wrong.</li>
+  <li><strong>Line immediately above</strong> — the exact file and line number where the exception was raised. This tells you <em>where</em> to look first.</li>
+  <li><strong>Stack above that</strong> — the chain of calls that led there. Scan upward to find the last line of <em>your own</em> code (not library code) — that is often the true root cause.</li>
+</ol>
+
+<div class="callout callout-warn">
+  <strong>Common mistake</strong>
+  Scanning the traceback from the top leads you to the outermost call — usually framework or library code that you did not write and cannot fix. Start at the bottom and work upward only as far as needed.
+</div>
+
+<h3>Common Python error types</h3>
+<table class="key-table">
+  <thead><tr><th>Error type</th><th>What it means</th><th>First thing to check</th></tr></thead>
+  <tbody>
+    <tr><td><code>SyntaxError</code></td><td>Python cannot parse the file — invalid syntax.</td><td>The line shown (often the line <em>before</em> the actual typo).</td></tr>
+    <tr><td><code>NameError</code></td><td>A variable or function name is not defined.</td><td>Spelling, scope, and whether it was initialised before use.</td></tr>
+    <tr><td><code>TypeError</code></td><td>An operation was applied to the wrong type.</td><td>What types are being passed — use <code>type(x)</code> to check.</td></tr>
+    <tr><td><code>IndexError</code></td><td>A list was accessed at an index that doesn't exist.</td><td>The length of the list vs the index value.</td></tr>
+    <tr><td><code>KeyError</code></td><td>A dictionary was accessed with a key it does not have.</td><td>Whether the key is present — print the dict or use <code>.get()</code>.</td></tr>
+    <tr><td><code>AttributeError</code></td><td>An object does not have the attribute or method called.</td><td>The type of the object — it may be <code>None</code> or a different type than expected.</td></tr>
+    <tr><td><code>FileNotFoundError</code></td><td>A file path does not exist.</td><td>The exact path string, relative vs absolute, and current working directory.</td></tr>
+  </tbody>
+</table>
+
+<h3>Java exceptions</h3>
+<p>Java prints a stack trace that reads the same way as Python — bottom of the meaningful part is where the failure happened, and the top-most frame in <em>your</em> code is usually the root cause. The key difference: Java distinguishes <strong>checked</strong> exceptions (the compiler forces you to handle them) from <strong>unchecked</strong> ones (runtime surprises, like Python's exceptions).</p>
+
+<pre><code><span class="hi-error">Exception in thread "main" java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3</span>
+    at com.example.<span class="hi-file">App.getItem</span>(App.java:<span class="hi-file">12</span>)
+    at com.example.<span class="hi-file">App.process</span>(App.java:<span class="hi-file">7</span>)
+    at com.example.<span class="hi-file">App.main</span>(App.java:<span class="hi-file">3</span>)</code></pre>
+
+<p>Reading order: the first line names the exception class and message. The stack trace below lists frames innermost-first — <code>getItem</code> at line 12 is where the crash happened; <code>main</code> at line 3 is where execution began. Common Java exceptions:</p>
+
+<table class="key-table">
+  <thead><tr><th>Exception</th><th>What it means</th></tr></thead>
+  <tbody>
+    <tr><td><code>NullPointerException</code></td><td>A method or field was accessed on a <code>null</code> reference — the most common Java runtime error.</td></tr>
+    <tr><td><code>ArrayIndexOutOfBoundsException</code></td><td>An array was accessed at an index that doesn't exist.</td></tr>
+    <tr><td><code>ClassCastException</code></td><td>An object was cast to an incompatible type.</td></tr>
+    <tr><td><code>StackOverflowError</code></td><td>Infinite or unbounded recursion exhausted the call stack.</td></tr>
+    <tr><td><code>NumberFormatException</code></td><td>A string could not be parsed as a number (e.g. <code>Integer.parseInt("abc")</code>).</td></tr>
+  </tbody>
+</table>
+
+<h3>C runtime errors</h3>
+<p>C has no exceptions. Errors manifest as unexpected behaviour, wrong output, or a crash signal from the OS. The most common signals you will encounter:</p>
+
+<pre><code><span class="hi-error">Segmentation fault (core dumped)</span>    <span class="comment"># accessed memory you don't own</span>
+<span class="hi-error">Abort trap: 6</span>                        <span class="comment"># assert() failed or heap corruption detected</span>
+<span class="hi-error">Floating point exception</span>             <span class="comment"># integer division by zero</span></code></pre>
+
+<p>"Segmentation fault" (or "segfault") is the most common. It means the program tried to read or write a memory address it was not allowed to access — typically from a NULL pointer dereference, a buffer overrun, or using memory after it was freed. On its own, the message tells you nothing about <em>where</em> in your code the fault happened — that is why you need a debugger (see section 8.6). Compile with <code>gcc -g</code> and run under GDB to get the exact line.</p>
+
+<div class="callout callout-note">
+  <strong>C errors are silent until they crash</strong>
+  Unlike Python and Java, C will happily write past the end of an array without crashing — until the corrupted memory causes a crash many lines later, in completely unrelated code. This is why the crash location in C is often far from the actual bug. A tool like <strong>AddressSanitizer</strong> (<code>gcc -fsanitize=address</code>) catches memory errors at the point they occur, making them far easier to diagnose.
+</div>
+
+<h3>Shell command errors</h3>
+<p>Shell commands communicate failure through <strong>exit codes</strong> rather than exceptions. An exit code of <code>0</code> means success; anything non-zero means failure. Use <code>echo $?</code> immediately after a command to see its exit code. Error messages from shell commands also typically include the command name and a short reason — read the whole line before searching online.</p>
+
+<pre><code><span class="hi-context">$ </span>cat nonexistent.txt
+cat: nonexistent.txt: <span class="hi-error">No such file or directory</span>
+<span class="hi-context">$ </span>echo $?
+<span class="hi-error">1</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Write a small Python script with an intentional <code>KeyError</code> (access a dictionary with a key that doesn't exist). Run it and practice reading the traceback: identify the error type, the failing line, and the call that triggered it. Then fix it.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

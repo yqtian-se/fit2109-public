@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9.3 — timeit — FIT2109 Week 9</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table td code { font-size: 0.85em; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>9.3 timeit: Micro-benchmarks with Reduced Noise</h2>
+
+<p>The <code>time</code> command measures a whole program run. When you want to compare two Python expressions or small functions, you need something more precise — one that runs the code thousands of times, averages the results, and controls for garbage collection. That tool is <code>timeit</code>.</p>
+
+<h3>Why timeit instead of time.time()?</h3>
+<p>A naive manual timer like <code>start = time.time(); ...; print(time.time() - start)</code> has several problems:</p>
+<ul>
+  <li>A single run is dominated by noise — GC pauses, OS scheduling jitter, cache effects.</li>
+  <li>You have to choose the number of repetitions yourself, often guessing wrong.</li>
+  <li>Garbage collection may fire mid-measurement, inflating the result.</li>
+</ul>
+<p><code>timeit</code> solves all three: it disables GC during the timed section, automatically determines how many repetitions are needed for a stable result, and reports the best time across multiple trials.</p>
+
+<h3>Command-line usage</h3>
+<pre><code><span class="comment"># Basic: time a single expression</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-m timeit</span> <span class="arg">"sum(range(1000))"</span>
+<span class="out">50000 loops, best of 5: 18.3 usec per loop</span>
+
+<span class="comment"># With setup code (not included in the timed section)</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-m timeit</span> \
+    <span class="arg">-s "data = list(range(10000))"</span> \
+    <span class="arg">"sum(data)"</span>
+<span class="out">200000 loops, best of 5: 48.2 usec per loop</span>
+
+<span class="comment"># Compare two approaches: string concat vs join</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-m timeit</span> \
+    <span class="arg">-s "items = list(range(500))"</span> \
+    <span class="arg">"result = ''; [result := result + str(i) for i in items]"</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-m timeit</span> \
+    <span class="arg">-s "items = list(range(500))"</span> \
+    <span class="arg">"''.join(str(i) for i in items)"</span></code></pre>
+
+<h3>Key flags</h3>
+<table class="key-table">
+  <thead><tr><th>Flag</th><th>Meaning</th><th>Default</th></tr></thead>
+  <tbody>
+    <tr><td><code>-n N</code></td><td>Run the statement <em>N</em> times per trial.</td><td>Auto-determined</td></tr>
+    <tr><td><code>-r N</code></td><td>Repeat the timing <em>N</em> times; report the best.</td><td>5</td></tr>
+    <tr><td><code>-s STMT</code></td><td>Setup statement — run once before timing, not included in the measurement.</td><td>—</td></tr>
+    <tr><td><code>-u UNIT</code></td><td>Time unit for output: <code>nsec</code>, <code>usec</code>, <code>msec</code>, <code>sec</code>.</td><td>Auto</td></tr>
+  </tbody>
+</table>
+
+<h3>In-script usage</h3>
+<pre><code><span class="cmd">import</span> timeit
+
+<span class="comment"># Time a snippet directly in Python code</span>
+t = timeit.timeit(
+    stmt=<span class="arg">"'-'.join(str(i) for i in data)"</span>,
+    setup=<span class="arg">"data = list(range(1000))"</span>,
+    number=<span class="arg">10000</span>
+)
+<span class="cmd">print</span>(<span class="arg">f"Total for 10000 runs: {t:.4f}s  →  {t/10000*1e6:.2f} µs/call"</span>)</code></pre>
+
+<div class="callout callout-note">
+  <strong>timeit reports the best result, not the average</strong>
+  This is intentional. The best result reflects the code running without interference from the OS or GC. Averages are skewed upward by rare bad runs. When comparing two implementations, compare their best results.
+</div>
+
+<div class="callout callout-warn">
+  <strong>timeit is for expressions, not programs</strong>
+  Use <code>timeit</code> to compare two ways of doing the same small operation. Use <code>time</code> or <code>hyperfine</code> for whole-script benchmarks. Use a profiler when you need to know <em>where inside the script</em> the time goes.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Use <code>timeit</code> to compare two Python expressions that accomplish the same thing — for example, <code>[x**2 for x in range(1000)]</code> vs <code>list(map(lambda x: x**2, range(1000)))</code>. Which is faster? By how much?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

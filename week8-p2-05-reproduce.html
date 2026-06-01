@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.5 — Reproduce and Isolate — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.5 Reproduce Before You Fix</h2>
+
+<p>The most important rule in debugging: <strong>never attempt a fix until you can trigger the bug on demand.</strong> A bug you cannot reproduce reliably is a bug you cannot fix reliably. If you change code and the bug disappears, you have no idea whether you fixed it or whether it simply didn't trigger this time.</p>
+
+<h3>What "reproducing" means</h3>
+<p>To reproduce a bug, you need to capture three things:</p>
+<ol>
+  <li><strong>Exact inputs</strong> — the specific data, files, or user actions that trigger it.</li>
+  <li><strong>Environment</strong> — OS, Python version, library versions, environment variables, working directory.</li>
+  <li><strong>Steps</strong> — the precise sequence of commands or actions, in order.</li>
+</ol>
+<p>Write this down as if you were filing a bug report. The act of writing it often reveals the cause.</p>
+
+<div class="callout callout-warn">
+  <strong>Intermittent bugs</strong>
+  If the bug happens only sometimes, look immediately for timing, ordering, or concurrency issues. Race conditions, file system delays, and random seeds are common culprits. Add logging around the suspected area and run many times to capture the failure.
+</div>
+
+<h3>Isolating with binary search</h3>
+<p>Once you can reproduce the bug, isolate <em>where</em> it lives by dividing the code in half repeatedly — the same principle as binary search on a sorted list.</p>
+
+<p>Imagine your program has a pipeline of functions: <code>A → B → C → D → crash</code>. You don't know which step introduces the bad state. Binary search:</p>
+<ol>
+  <li>Check the output of <code>B</code> — is the data correct here? If yes, the bug is in <code>C</code> or <code>D</code>.</li>
+  <li>Check the output of <code>C</code> — wrong! The bug is inside <code>C</code>.</li>
+  <li>You have narrowed 4 functions down to 1 in two steps.</li>
+</ol>
+
+<pre><code><span class="comment"># Quick isolation with a temporary print</span>
+<span class="cmd">def</span> process(data):
+    step1 = transform(data)
+    <span class="cmd">print</span>(<span class="arg">"after transform:"</span>, step1)   <span class="comment"># is this what I expect?</span>
+    step2 = filter_records(step1)
+    <span class="cmd">print</span>(<span class="arg">"after filter:"</span>, step2)         <span class="comment"># still correct?</span>
+    <span class="cmd">return</span> aggregate(step2)</code></pre>
+
+<div class="callout callout-note">
+  <strong>Git bisect for large codebases</strong>
+  If a bug appeared in a recent commit but you don't know which one, <code>git bisect</code> automates binary search over your commit history. You mark a known-good commit and a known-bad commit, and Git checks out the midpoint each time. In 10 steps you can pinpoint the offending commit out of 1,000.
+</div>
+
+<h3>Reproduce checklist</h3>
+<table class="key-table">
+  <thead><tr><th>Question</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr><td>Does it reproduce on a clean run (no prior state)?</td><td>Rules out state carried over from a previous run.</td></tr>
+    <tr><td>Does it reproduce with the same inputs every time?</td><td>Rules out randomness or external data changes.</td></tr>
+    <tr><td>Does it reproduce on another machine or in a container?</td><td>Rules out machine-specific environment issues.</td></tr>
+    <tr><td>Does it reproduce on the current <code>main</code> branch?</td><td>Confirms it's not already fixed.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Next time you encounter a bug, write down the exact command or steps before touching any code. Then verify: running those exact steps on a fresh terminal produces the bug every time. Only then should you start changing anything.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

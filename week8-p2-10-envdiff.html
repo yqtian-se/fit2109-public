@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.10 — Environment Differences — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .comment { color: #6c7086; }
+  .hi-warn { color: #f9e2af; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.10 "Works on My Machine" — Environment Differences</h2>
+
+<p>One of the most frustrating debugging situations: a program runs perfectly on your laptop, crashes in CI, or behaves differently on a teammate's machine. The bug is real — but the cause is not in the code itself. It is in the <em>environment</em> the code runs in.</p>
+
+<p>Understanding environment differences is essential because modern software runs in many places: developer laptops (macOS, Windows, Linux), CI servers, staging containers, and production servers. Each has its own combination of OS, runtime version, installed packages, file paths, and configuration.</p>
+
+<h3>Common root causes</h3>
+<table class="key-table">
+  <thead><tr><th>Root cause</th><th>Example</th><th>How to detect</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Python / runtime version</strong></td><td>Code uses <code>f-strings</code> (Python 3.6+) but the server runs Python 3.5.</td><td><code>python3 --version</code> on both machines.</td></tr>
+    <tr><td><strong>Library version mismatch</strong></td><td>You have <code>requests==2.31</code> locally; CI installs the latest, which has a breaking change.</td><td>Compare <code>pip freeze</code> outputs side by side.</td></tr>
+    <tr><td><strong>Missing environment variable</strong></td><td>Code reads <code>os.environ["API_KEY"]</code> — set on your machine via <code>.bashrc</code>, absent in CI.</td><td><code>printenv | grep API</code>; check CI secrets configuration.</td></tr>
+    <tr><td><strong>Path differences</strong></td><td>Code opens <code>"data/input.csv"</code> but the working directory differs in CI.</td><td>Print <code>os.getcwd()</code> and <code>os.path.abspath("data/input.csv")</code> at startup.</td></tr>
+    <tr><td><strong>OS behaviour differences</strong></td><td>File path uses <code>\</code> on Windows, fails on Linux. <code>os.path.join</code> handles this correctly; string concatenation does not.</td><td>Run on the target OS — or in a container that matches production.</td></tr>
+    <tr><td><strong>File permissions</strong></td><td>Script expects to write to <code>/tmp/output</code>, but the container runs as a restricted user.</td><td><code>ls -la /tmp</code>; check the user with <code>whoami</code>.</td></tr>
+    <tr><td><strong>Locale and encoding</strong></td><td>File contains UTF-8 characters; server uses ASCII locale and crashes on read.</td><td><code>locale</code> command; open files with <code>encoding="utf-8"</code> explicitly.</td></tr>
+  </tbody>
+</table>
+
+<h3>Diagnosing environment bugs</h3>
+<p>When a bug only appears in one environment, your first job is to <em>diff the environments</em>, not the code:</p>
+<ol>
+  <li><strong>Collect facts from both environments</strong> — runtime version, installed packages, relevant env vars, working directory.</li>
+  <li><strong>Compare</strong> — look for anything that differs.</li>
+  <li><strong>Reproduce the failing environment locally</strong> — use a container (Docker), a virtual environment (<code>venv</code>), or a CI job that you can inspect.</li>
+</ol>
+
+<pre><code><span class="comment"># Snapshot your environment -- share this when reporting the bug</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">--version</span>
+<span class="out">Python 3.11.4</span>
+<span class="prompt-sym">$</span> <span class="cmd">pip</span> <span class="arg">freeze</span> &gt; requirements_snapshot.txt
+<span class="prompt-sym">$</span> <span class="cmd">printenv</span> | <span class="cmd">sort</span>          <span class="comment"># inspect all env vars</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-c</span> <span class="arg">"import sys; print(sys.path)"</span></code></pre>
+
+<h3>Strategies for prevention</h3>
+<ul>
+  <li><strong>Pin your dependencies.</strong> Every ecosystem has a lockfile mechanism — use it. An unpinned dependency will silently upgrade and break things.</li>
+  <li><strong>Use environment isolation.</strong> Keep each project's dependencies separate from the system and from other projects.</li>
+  <li><strong>Use containers for CI.</strong> A Docker image that matches production eliminates OS and system-library differences. If it passes in the container, it will pass in production.</li>
+  <li><strong>Never hardcode absolute paths.</strong> Use relative paths anchored to the source file's location — every language has a way to do this.</li>
+  <li><strong>Validate required env vars at startup.</strong> Check for all required environment variables before the program does anything else, and fail with a clear message if any are missing.</li>
+</ul>
+
+<h3>Dependency management by language</h3>
+<table class="key-table">
+  <thead><tr><th>Language</th><th>Dependency file</th><th>Isolation tool</th><th>Snapshot command</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Python</strong></td>
+      <td><code>requirements.txt</code></td>
+      <td><code>python3 -m venv .venv</code></td>
+      <td><code>pip freeze &gt; requirements.txt</code></td>
+    </tr>
+    <tr>
+      <td><strong>Java (Maven)</strong></td>
+      <td><code>pom.xml</code> + <code>pom.xml</code> lock via Maven Wrapper</td>
+      <td>Maven Wrapper (<code>./mvnw</code>) pins the Maven version itself</td>
+      <td>Declare exact versions in <code>&lt;dependency&gt;</code> tags — avoid <code>LATEST</code> or ranges</td>
+    </tr>
+    <tr>
+      <td><strong>JavaScript</strong></td>
+      <td><code>package.json</code> + <code>package-lock.json</code></td>
+      <td><code>node_modules/</code> per project (auto-isolated)</td>
+      <td><code>npm ci</code> installs exactly what is in the lockfile</td>
+    </tr>
+    <tr>
+      <td><strong>C/C++</strong></td>
+      <td>No universal standard — <code>CMakeLists.txt</code> or <code>Makefile</code></td>
+      <td>System package versions; containers are the most reliable isolation</td>
+      <td>Document exact library versions in a README or use <code>conan.lock</code> / <code>vcpkg.json</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-fun">
+  <strong>Why containers solve this</strong>
+  A container bundles the OS, runtime, libraries, and your code into a single image. When you run that image locally and in CI, both environments are byte-for-byte identical. "Works on my machine" becomes "works in this image" — and the image goes everywhere. This is especially powerful for C/C++ projects where system library versions are otherwise hard to control.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  In a project you are working on, snapshot its dependencies using the appropriate tool (<code>pip freeze</code> for Python, check <code>pom.xml</code> versions for Java, inspect <code>package-lock.json</code> for JavaScript). Compare with a classmate — how many differences do you find? Those differences are potential "works on my machine" bugs waiting to happen.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.7 — VS Code Debugger — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .keycap { display: inline-block; background: #f0f0f5; border: 1px solid #ccc; border-bottom: 3px solid #aaa; border-radius: 5px; padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.7 VS Code Debugger</h2>
+
+<p>The VS Code debugger provides a graphical interface to the same concepts as GDB — breakpoints, step execution, variable inspection, and call stack navigation — but for Python, JavaScript, Go, and many other languages without needing to learn command-line syntax.</p>
+
+<h3>Key UI panels</h3>
+<ul>
+  <li><strong>Breakpoint (red dot in the gutter).</strong> Click to the left of any line number to pause execution there. Click again to remove it. Right-click for conditional breakpoints — pause only when an expression is true.</li>
+  <li><strong>Variables panel.</strong> Shows every local and global variable in scope at the current pause point, with their live values. Expand objects and lists to inspect nested state.</li>
+  <li><strong>Watch panel.</strong> Evaluate any expression you type (e.g. <code>len(results)</code>, <code>x * 2</code>) at every step. Useful for tracking derived values.</li>
+  <li><strong>Call Stack panel.</strong> Shows the full chain of function calls that led to the current pause. Click any frame to jump to it and inspect its local variables.</li>
+  <li><strong>Debug Console.</strong> A REPL that runs expressions in the context of the paused program — evaluate, modify variables, or call functions interactively.</li>
+</ul>
+
+<h3>Debug toolbar keyboard shortcuts</h3>
+<table class="key-table">
+  <thead><tr><th>Key</th><th>Action</th><th>When to use</th></tr></thead>
+  <tbody>
+    <tr><td><span class="keycap">F5</span></td><td>Continue</td><td>Run until the next breakpoint or end of program.</td></tr>
+    <tr><td><span class="keycap">F10</span></td><td>Step Over</td><td>Execute the current line; if it's a function call, run the whole function without entering it.</td></tr>
+    <tr><td><span class="keycap">F11</span></td><td>Step Into</td><td>Execute the current line; if it's a function call, enter that function and pause at its first line.</td></tr>
+    <tr><td><span class="keycap">Shift</span>+<span class="keycap">F11</span></td><td>Step Out</td><td>Finish the current function and pause at the line that called it.</td></tr>
+    <tr><td><span class="keycap">Shift</span>+<span class="keycap">F5</span></td><td>Stop</td><td>Kill the debug session.</td></tr>
+  </tbody>
+</table>
+
+<h3>launch.json — configuring a debug session</h3>
+<p>VS Code stores debug configurations in <code>.vscode/launch.json</code>. For most Python scripts, the minimal config is:</p>
+<pre><code>{
+  <span class="arg">"version"</span>: <span class="cmd">"0.2.0"</span>,
+  <span class="arg">"configurations"</span>: [
+    {
+      <span class="arg">"name"</span>: <span class="cmd">"Debug current file"</span>,
+      <span class="arg">"type"</span>: <span class="cmd">"debugpy"</span>,
+      <span class="arg">"request"</span>: <span class="cmd">"launch"</span>,
+      <span class="arg">"program"</span>: <span class="cmd">"${file}"</span>,     <span class="comment">// run whatever file is open</span>
+      <span class="arg">"console"</span>: <span class="cmd">"integratedTerminal"</span>
+    }
+  ]
+}</code></pre>
+
+<p>Press <span class="keycap">F5</span> to launch this configuration. VS Code will ask you to create it if none exists.</p>
+
+<h3>The Watch panel in depth</h3>
+<p>The <strong>Variables panel</strong> shows every local variable in scope — useful, but noisy. The <strong>Watch panel</strong> shows only the expressions <em>you</em> choose, evaluated live at every pause point. This is where most of the real debugging insight comes from.</p>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">How to add a watch expression</h4>
+<ol>
+  <li>Open the Watch panel (left sidebar, under the debug icon, or via <strong>View → Run</strong>).</li>
+  <li>Click the <strong>+</strong> button at the top of the Watch panel.</li>
+  <li>Type any valid Python expression and press <span class="keycap">Enter</span>.</li>
+  <li>The expression is evaluated immediately and updated after every step.</li>
+</ol>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">What you can watch</h4>
+<p>A watch expression can be anything that is valid in the current scope — not just variable names:</p>
+
+<table class="key-table">
+  <thead><tr><th>Expression</th><th>What it reveals</th></tr></thead>
+  <tbody>
+    <tr><td><code>total</code></td><td>The current value of a variable — same as Variables panel, but pinned.</td></tr>
+    <tr><td><code>len(results)</code></td><td>How many items have been collected so far — without having to expand the list.</td></tr>
+    <tr><td><code>total / count</code></td><td>A derived value — the running average — computed on every step without changing the source.</td></tr>
+    <tr><td><code>items[i]</code></td><td>The element at the current loop index, updated as <code>i</code> advances.</td></tr>
+    <tr><td><code>expected == actual</code></td><td>A boolean that turns <code>False</code> the moment the values diverge — instantly visible.</td></tr>
+    <tr><td><code>type(data)</code></td><td>The runtime type of a variable — useful when the type is unexpectedly <code>NoneType</code> or <code>str</code>.</td></tr>
+  </tbody>
+</table>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">Watch vs Variables: which to use</h4>
+<ul>
+  <li>Use <strong>Variables</strong> to get a broad picture of everything in scope when you first pause.</li>
+  <li>Use <strong>Watch</strong> to track specific quantities across many steps — especially derived values or comparisons that aren't stored in a variable.</li>
+  <li>Watch expressions persist across sessions, so your most useful expressions are ready the next time you debug the same file.</li>
+</ul>
+
+<div class="callout callout-note">
+  <strong>Watch expressions can call functions</strong>
+  You can call any function that is in scope — for example, <code>sorted(results)</code> or <code>','.join(names)</code>. Be careful with functions that have side effects (writing files, mutating state) — evaluating them in the Watch panel will actually run them.
+</div>
+
+<div class="callout callout-note">
+  <strong>Why not just use print?</strong>
+  <code>print</code> requires you to predict in advance which values matter and re-run the program after each addition. Watch expressions let you add, remove, and change what you track <em>while the program is paused</em>, without touching the source code.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Write a loop that accumulates a total (e.g. summing a list). Set a breakpoint inside the loop. In the Watch panel, add three expressions: <code>total</code>, <code>len(items)</code>, and <code>total / (i + 1)</code>. Step through with <span class="keycap">F10</span> and observe all three update simultaneously. Does the running average match what you expect at each step?
+</div>
+
+<h3>Pausing when a variable changes — data breakpoints</h3>
+<p>Stepping line by line through a long loop to find the exact iteration where a variable goes wrong is tedious. A <strong>data breakpoint</strong> (also called a watchpoint) tells the debugger to pause automatically the moment a specific variable's value changes — no stepping required.</p>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">In VS Code</h4>
+<ol>
+  <li>Start a debug session and pause at any breakpoint.</li>
+  <li>In the <strong>Variables panel</strong>, find the variable you want to watch.</li>
+  <li>Right-click it and select <strong>"Break on Value Change"</strong>.</li>
+  <li>Press <span class="keycap">F5</span> to continue — execution will pause automatically the next time that variable is assigned a new value.</li>
+</ol>
+
+<div class="callout callout-note">
+  <strong>Support depends on the debugger extension</strong>
+  Data breakpoints work reliably for C/C++ (via the C/C++ extension) and some other compiled languages. For Python (debugpy), support is available but may vary by VS Code version — if "Break on Value Change" is greyed out, use a conditional breakpoint instead (see below).
+</div>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">Conditional breakpoints — pause only when a condition is true</h4>
+<p>A conditional breakpoint is the universal alternative: the debugger evaluates an expression every time execution reaches that line and only pauses when it is <code>True</code>. This works in all languages VS Code supports.</p>
+<ol>
+  <li>Right-click an existing breakpoint (the red dot) in the gutter.</li>
+  <li>Select <strong>"Edit Breakpoint…"</strong>.</li>
+  <li>Choose <strong>"Expression"</strong> and type a condition, for example <code>total &lt; 0</code> or <code>name == "alice"</code>.</li>
+  <li>Press <span class="keycap">Enter</span>. The dot gains a <strong>=</strong> symbol to indicate it is conditional.</li>
+  <li>Press <span class="keycap">F5</span> — execution pauses only when the condition is met.</li>
+</ol>
+
+<pre><code><span class="comment"># Examples of useful conditional breakpoint expressions</span>
+total &lt; 0          <span class="comment"># pause the moment a running total goes negative</span>
+i == 999           <span class="comment"># pause at the 1000th iteration of a loop</span>
+result is None     <span class="comment"># pause when a function unexpectedly returns None</span>
+len(queue) &gt; 100   <span class="comment"># pause when a queue grows beyond a threshold</span></code></pre>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">In GDB / LLDB</h4>
+<p>Both command-line debuggers have native watchpoint support via the <code>watch</code> command. GDB pauses execution whenever the watched variable is written:</p>
+<pre><code><span class="out">(gdb)</span> <span class="cmd">watch</span> <span class="arg">total</span>       <span class="comment"># pause on any write to 'total'</span>
+<span class="out">(gdb)</span> <span class="cmd">rwatch</span> <span class="arg">total</span>      <span class="comment"># pause on any read of 'total'</span>
+<span class="out">(gdb)</span> <span class="cmd">awatch</span> <span class="arg">total</span>      <span class="comment"># pause on read or write</span>
+<span class="out">(gdb)</span> <span class="cmd">continue</span>           <span class="comment"># run until the watchpoint fires</span>
+<span class="out">Hardware watchpoint 2: total
+Old value = 0
+New value = -42</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Write a loop where a variable's value should only ever increase. Set a conditional breakpoint on the line that updates it, with the condition <code>new_value &lt; old_value</code>. Run the program — the debugger will stop exactly at the first iteration where the invariant breaks, without you having to step through every loop cycle.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

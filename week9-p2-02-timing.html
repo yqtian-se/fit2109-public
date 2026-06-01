@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9.2 — Measuring Time — FIT2109 Week 9</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .hi-real { color: #f9e2af; font-weight: 700; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; transition: box-shadow 0.15s; }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; margin-bottom: 8px; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; line-height: 1.6; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>9.2 Measuring Time</h2>
+
+<p>Before you can improve performance, you need a reliable baseline. The simplest tool is the shell's built-in <code>time</code> command, which measures how long a program takes to run and breaks the result into three components.</p>
+
+<h3>The three time values</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">time</span> <span class="arg">python3 slow.py</span>
+<span class="hi-real">real    0m2.134s</span>
+<span class="out">user    0m2.098s</span>
+<span class="out">sys     0m0.036s</span></code></pre>
+
+<table class="key-table">
+  <thead><tr><th>Value</th><th>What it measures</th><th>When it matters</th></tr></thead>
+  <tbody>
+    <tr><td><strong>real</strong></td><td>Wall-clock time — the actual elapsed time you experience waiting.</td><td>Always. This is the number users care about.</td></tr>
+    <tr><td><strong>user</strong></td><td>CPU time spent inside your program's code (in user space).</td><td>When diagnosing CPU-bound work. If user ≈ real, the CPU is the bottleneck.</td></tr>
+    <tr><td><strong>sys</strong></td><td>CPU time spent in OS kernel calls made on behalf of your program (e.g. reading files, allocating memory).</td><td>When real >> user + sys, the program is probably waiting on I/O or sleeping.</td></tr>
+  </tbody>
+</table>
+
+<h3>Timing is noisy</h3>
+<p>A single run is unreliable. OS scheduling, CPU frequency scaling, background processes, and memory cache state all add variance. The first run is almost always slower than subsequent ones because:</p>
+<ul>
+  <li>The program's code and data must be loaded from disk into RAM.</li>
+  <li>CPU instruction and data caches are cold — the hardware hasn't seen these memory addresses yet.</li>
+  <li>The OS may need to page in dependencies.</li>
+</ul>
+<p>This first-run penalty is called <strong>warm-up</strong>. To get a stable measurement: run 3–5 times, discard the first result, and use the median of the rest.</p>
+
+<div class="callout callout-warn">
+  <strong>Don't compare a cold run to a warm run</strong>
+  If you time your program before and after an optimisation but the "before" run is cold and the "after" run is warm, the comparison is meaningless. Always compare like with like — both warm, or both cold.
+</div>
+
+<h3>Reading the numbers: common patterns</h3>
+<table class="key-table">
+  <thead><tr><th>Pattern</th><th>Likely cause</th></tr></thead>
+  <tbody>
+    <tr><td><strong>real ≈ user, sys small</strong></td><td>CPU-bound. Your code is doing a lot of computation. Profile with <code>cProfile</code>.</td></tr>
+    <tr><td><strong>real >> user + sys</strong></td><td>I/O-bound or sleeping. The program is mostly waiting — for disk, network, or a <code>time.sleep()</code>. CPU profiling won't help here.</td></tr>
+    <tr><td><strong>sys is large</strong></td><td>Many system calls — possibly excessive file I/O, memory allocation, or network traffic.</td></tr>
+    <tr><td><strong>user > real</strong></td><td>Parallelism — multiple CPU cores are being used simultaneously (e.g. via threads or <code>multiprocessing</code>).</td></tr>
+    <tr><td><strong>real >> user + sys, GPU busy</strong></td><td>GPU-bound. The CPU launches work on the GPU and waits for results. Neither <code>user</code> nor <code>sys</code> captures GPU compute time — you need GPU-specific tools.</td></tr>
+  </tbody>
+</table>
+
+<h3>hyperfine: statistical benchmarking</h3>
+<p>For more rigorous comparisons, <code>hyperfine</code> runs a command many times, discards outliers, and reports mean, min, max, and standard deviation automatically:</p>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">hyperfine</span> <span class="arg">'python3 slow.py'</span> <span class="arg">'python3 fast.py'</span>
+<span class="out">Benchmark 1: python3 slow.py
+  Time (mean ± σ):     2.134 s ±  0.042 s
+Benchmark 2: python3 fast.py
+  Time (mean ± σ):     0.218 s ±  0.009 s
+  Ratio: 9.79 ± 0.43</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Pick any Python script that takes at least a second to run. Time it with <code>time python3 script.py</code> five times in a row. Record all five <code>real</code> values. What is the range? What would you report as the "true" runtime?
+</div>
+
+<h3>Benchmarking GPU-bound code</h3>
+<p>GPU compute time is invisible to <code>time</code> and <code>timeit</code>. The CPU launches operations on the GPU and continues immediately — by the time you stop the clock, the GPU may still be running. This means a naive timer will drastically under-report the actual runtime of GPU workloads.</p>
+
+<div class="callout callout-warn">
+  <strong>GPU operations are asynchronous</strong>
+  In PyTorch (and most GPU frameworks), calling <code>torch.mm(a, b)</code> returns control to the CPU before the GPU has finished the multiplication. If you measure time around this call without synchronising, you are timing only the cost of <em>queuing</em> the operation — not executing it. The measured time may be 100× smaller than the true GPU time.
+</div>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">Correct GPU timing in PyTorch</h4>
+<p>Call <code>torch.cuda.synchronize()</code> before stopping the clock — this blocks the CPU until all pending GPU operations are complete:</p>
+
+<pre><code><span class="cmd">import</span> torch
+<span class="cmd">import</span> time
+
+a = torch.randn(4096, 4096, device=<span class="arg">"cuda"</span>)
+b = torch.randn(4096, 4096, device=<span class="arg">"cuda"</span>)
+
+<span class="comment"># Wrong: GPU is still running when we stop the clock</span>
+start = time.perf_counter()
+c = torch.mm(a, b)
+elapsed = time.perf_counter() - start   <span class="comment"># massively under-reported</span>
+
+<span class="comment"># Correct: wait for GPU to finish before reading the clock</span>
+torch.cuda.synchronize()
+start = time.perf_counter()
+c = torch.mm(a, b)
+torch.cuda.synchronize()                <span class="comment"># block until GPU is done</span>
+elapsed = time.perf_counter() - start   <span class="comment"># accurate GPU time</span></code></pre>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">Using CUDA Events for higher precision</h4>
+<p>PyTorch's <code>torch.cuda.Event</code> records timestamps directly on the GPU timeline, eliminating CPU-GPU synchronisation overhead from the measurement itself:</p>
+
+<pre><code>start_event = torch.cuda.Event(enable_timing=<span class="arg">True</span>)
+end_event   = torch.cuda.Event(enable_timing=<span class="arg">True</span>)
+
+start_event.record()
+c = torch.mm(a, b)
+end_event.record()
+
+torch.cuda.synchronize()
+elapsed_ms = start_event.elapsed_time(end_event)   <span class="comment"># milliseconds</span>
+<span class="cmd">print</span>(<span class="arg">f"GPU time: {elapsed_ms:.3f} ms"</span>)</code></pre>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">Checking GPU utilisation</h4>
+<p>Use <code>nvidia-smi</code> to see whether the GPU is actually being used and how much memory it is consuming:</p>
+
+<pre><code><span class="comment"># Snapshot of current GPU state</span>
+<span class="prompt-sym">$</span> <span class="cmd">nvidia-smi</span>
+
+<span class="comment"># Refresh every second while your program runs</span>
+<span class="prompt-sym">$</span> <span class="cmd">nvidia-smi</span> <span class="arg">-l 1</span>
+
+<span class="comment"># Key columns to watch</span>
+<span class="out">GPU  Util%   Mem-Used / Mem-Total    Power
+  0    94%   6821MiB / 8192MiB       180W</span></code></pre>
+
+<p>A GPU utilisation below 50% while your program "runs on GPU" usually means the bottleneck is actually on the CPU — either data loading, preprocessing, or host-device memory transfers. Profilers such as <strong>NVIDIA Nsight Systems</strong> (<code>nsys profile python3 train.py</code>) give a full timeline showing exactly where CPU and GPU are idle relative to each other.</p>
+
+<h4 style="font-size:0.97rem;font-weight:600;color:#1a1a2e;margin:20px 0 8px;">Interactive monitoring: nvtop and htop</h4>
+<p>For a live, continuously updating view while your program runs, two terminal tools are indispensable:</p>
+
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="name">nvtop</div>
+    <div class="desc">
+      An interactive GPU process monitor — like <code>htop</code> but for GPUs. Shows per-GPU utilisation, memory usage, and per-process GPU activity in real time, with colour-coded bar graphs.<br><br>
+      <strong>Install:</strong><br>
+      <code>sudo apt install nvtop</code> (Ubuntu)<br>
+      <code>brew install nvtop</code> (macOS with AMD/Intel GPU)<br><br>
+      <strong>Run:</strong> <code>nvtop</code> — then launch your program in another terminal and watch utilisation climb.
+    </div>
+  </div>
+  <div class="tool-card">
+    <div class="name">htop</div>
+    <div class="desc">
+      An interactive CPU and memory monitor. Shows per-core utilisation, memory/swap usage, and a live process list. Useful alongside <code>nvtop</code> to confirm whether the CPU is the bottleneck (all cores near 100%) or is sitting idle waiting for the GPU.<br><br>
+      <strong>Install:</strong><br>
+      <code>sudo apt install htop</code> (Ubuntu)<br>
+      <code>brew install htop</code> (macOS)<br><br>
+      <strong>Run:</strong> <code>htop</code> — press <code>F6</code> to sort by CPU%, <code>q</code> to quit.
+    </div>
+  </div>
+</div>
+
+<div class="callout callout-note">
+  <strong>Reading both tools together</strong>
+  Run <code>nvtop</code> and <code>htop</code> side by side in two terminal panes while your training script runs. If GPU utilisation is low but all CPU cores are saturated, your data pipeline is the bottleneck — consider more DataLoader workers or prefetching. If GPU utilisation is high and CPU is idle, you are using the hardware efficiently.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

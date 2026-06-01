@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>9.5 — cProfile — FIT2109 Week 9</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .hi-hot { color: #f38ba8; font-weight: 700; }
+  .hi-col { color: #f9e2af; font-weight: 700; }
+  .comment { color: #6c7086; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try  strong { color: #00856a; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>9.5 cProfile: Which Function Is Slow?</h2>
+
+<p><code>cProfile</code> is Python's built-in CPU profiler. It instruments every function call in your program and records how much time was spent in each one. After the program finishes, it prints a table ranked by your chosen column.</p>
+<p><code>cProfile</code> answers the first profiling question: <em>which function is responsible for the most time?</em> Once you have that answer, you use <code>line_profiler</code> to drill into the specific line.</p>
+
+<h3>Running cProfile</h3>
+<pre><code><span class="comment"># From the command line -- no code changes needed</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-m cProfile</span> <span class="arg">-s cumtime</span> <span class="arg">app.py</span>
+
+<span class="comment"># Show only the top 15 lines (pipe through head)</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-m cProfile</span> <span class="arg">-s cumtime</span> <span class="arg">app.py</span> | <span class="cmd">head</span> <span class="arg">-20</span></code></pre>
+
+<h3>Reading the output</h3>
+<pre><code><span class="out">   ncalls  tottime  percall  cumtime  percall filename:lineno(function)</span>
+<span class="out">        1    0.000    0.000    </span><span class="hi-hot">3.215</span><span class="out">    3.215  app.py:1(&lt;module&gt;)</span>
+<span class="out">        1    0.001    0.001    </span><span class="hi-hot">3.215</span><span class="out">    3.215  app.py:12(main)</span>
+<span class="out">        1    0.002    0.002    </span><span class="hi-hot">3.212</span><span class="out">    3.212  app.py:7(process)</span>
+<span class="out">        1    </span><span class="hi-col">3.210</span><span class="out">    3.210    3.210    3.210  app.py:3(slow_op)</span>
+<span class="out">        1    0.004    0.004    0.004    0.004  app.py:9(fast_op)</span></code></pre>
+
+<h3>Column meanings</h3>
+<table class="key-table">
+  <thead><tr><th>Column</th><th>Meaning</th><th>When to use it</th></tr></thead>
+  <tbody>
+    <tr><td><code>ncalls</code></td><td>Number of times this function was called.</td><td>Large ncalls on a slow function means a hot inner loop — consider caching or restructuring.</td></tr>
+    <tr><td><code>tottime</code></td><td>Time spent <em>inside this function only</em>, excluding time in functions it called.</td><td>The true cost of this function's own code.</td></tr>
+    <tr><td><code>cumtime</code></td><td>Total time including all sub-calls. <em>This is the column to sort by first.</em></td><td>Reveals which function is <em>responsible</em> for the most time, even if its own code is fast.</td></tr>
+    <tr><td><code>percall</code></td><td>Average time per call (two columns: tottime/ncalls and cumtime/ncalls).</td><td>Compares cost per invocation across functions called different numbers of times.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-note">
+  <strong>Sort by cumtime first, tottime second</strong>
+  <code>cumtime</code> shows you the function that is <em>responsible</em> for the most time — even if it delegates that work to sub-calls. Once you find the high-cumtime function, look at its sub-calls or switch to <code>tottime</code> to find the function whose own code is burning CPU cycles.
+</div>
+
+<h3>Sort options</h3>
+<ul>
+  <li><code>-s cumtime</code> — sort by cumulative time (start here)</li>
+  <li><code>-s tottime</code> — sort by time in the function body (find where CPU actually burns)</li>
+  <li><code>-s ncalls</code> — sort by number of calls (find unexpectedly hot functions)</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>cProfile adds overhead</strong>
+  Instrumenting every function call slows the program down — typically 10–50×. This means the absolute times are inflated, but the <em>relative</em> ranking of functions is reliable. Use cProfile to find the bottleneck, then benchmark the fix without cProfile.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Run <code>python3 -m cProfile -s cumtime</code> on any Python script that takes more than a second. Find the function with the highest <code>cumtime</code> that is in <em>your own code</em> (not a standard library function). That is your first optimisation target.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 9 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>
