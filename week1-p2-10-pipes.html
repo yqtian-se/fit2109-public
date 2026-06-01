@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.10 — Pipes & Redirection — FIT2109 Week 1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.10 Pipes and Redirection</h2>
+
+<p>Every program has three standard streams: <strong>stdin</strong> (input), <strong>stdout</strong> (normal output), <strong>stderr</strong> (error output). By default, stdin reads from your keyboard and stdout/stderr print to your terminal. Redirection and pipes change where these streams go.</p>
+
+<div class="diagram">
+  <svg width="640" height="220" viewBox="0 0 640 220" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="13">
+    <rect width="640" height="220" rx="10" fill="#f8f9ff"/>
+
+    <!-- Title: Redirection -->
+    <text x="30" y="26" fill="#555" font-weight="700" font-size="12">REDIRECTION</text>
+
+    <!-- file → stdin -->
+    <rect x="20" y="40" width="80" height="30" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1"/>
+    <text x="60" y="60" text-anchor="middle" fill="#1565c0">file.txt</text>
+    <path d="M103 55 L138 55" stroke="#1565c0" stroke-width="2" marker-end="url(#a1)"/>
+    <text x="120" y="48" text-anchor="middle" fill="#1565c0" font-size="10">&lt;</text>
+
+    <rect x="142" y="40" width="80" height="30" rx="6" fill="#1e1e2e"/>
+    <text x="182" y="60" text-anchor="middle" fill="#a6e3a1" font-family="'SF Mono',Consolas,monospace" font-size="12">sort</text>
+
+    <path d="M225 55 L258 55" stroke="#a6e3a1" stroke-width="2" marker-end="url(#a2)"/>
+    <text x="241" y="48" text-anchor="middle" fill="#a6e3a1" font-size="10">&gt;</text>
+
+    <rect x="262" y="40" width="100" height="30" rx="6" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1"/>
+    <text x="312" y="60" text-anchor="middle" fill="#2e7d32">sorted.txt</text>
+
+    <text x="380" y="60" fill="#888" font-size="11">&gt; overwrites   &gt;&gt; appends</text>
+
+    <!-- Title: Pipeline -->
+    <text x="30" y="106" fill="#555" font-weight="700" font-size="12">PIPELINE</text>
+
+    <rect x="20" y="120" width="110" height="30" rx="6" fill="#1e1e2e"/>
+    <text x="75" y="140" text-anchor="middle" fill="#f38ba8" font-family="'SF Mono',Consolas,monospace" font-size="11">grep "ERROR"</text>
+
+    <path d="M133 135 L168 135" stroke="#f9e2af" stroke-width="2.5" marker-end="url(#a3)"/>
+    <text x="151" y="128" text-anchor="middle" fill="#f9e2af" font-size="10">|</text>
+    <text x="151" y="154" text-anchor="middle" fill="#888" font-size="10">stdout→stdin</text>
+
+    <rect x="172" y="120" width="80" height="30" rx="6" fill="#1e1e2e"/>
+    <text x="212" y="140" text-anchor="middle" fill="#fab387" font-family="'SF Mono',Consolas,monospace" font-size="12">sort</text>
+
+    <path d="M255 135 L288 135" stroke="#f9e2af" stroke-width="2.5" marker-end="url(#a3)"/>
+    <text x="272" y="128" text-anchor="middle" fill="#f9e2af" font-size="10">|</text>
+
+    <rect x="292" y="120" width="100" height="30" rx="6" fill="#1e1e2e"/>
+    <text x="342" y="140" text-anchor="middle" fill="#a6e3a1" font-family="'SF Mono',Consolas,monospace" font-size="12">uniq -c</text>
+
+    <path d="M395 135 L428 135" stroke="#f9e2af" stroke-width="2.5" marker-end="url(#a3)"/>
+    <text x="411" y="128" text-anchor="middle" fill="#f9e2af" font-size="10">|</text>
+
+    <rect x="432" y="120" width="100" height="30" rx="6" fill="#1e1e2e"/>
+    <text x="482" y="140" text-anchor="middle" fill="#89b4fa" font-family="'SF Mono',Consolas,monospace" font-size="12">sort -nr</text>
+
+    <!-- Explanation -->
+    <text x="20" y="190" fill="#555" font-size="12">Each command passes its stdout to the next command's stdin. No intermediate files needed.</text>
+    <text x="20" y="210" fill="#888" font-size="11">Data flows left to right through the pipe — like an assembly line.</text>
+
+    <defs>
+      <marker id="a1" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#1565c0"/>
+      </marker>
+      <marker id="a2" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#a6e3a1"/>
+      </marker>
+      <marker id="a3" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L6,3 L0,6 Z" fill="#f9e2af"/>
+      </marker>
+    </defs>
+  </svg>
+  <figcaption>Redirection routes streams to/from files. Pipes chain commands together.</figcaption>
+</div>
+
+<pre><code><span class="comment"># Redirection</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"first line"</span> <span class="arg">&gt; notes.txt</span>    <span class="comment"># write to file (overwrites)</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"second line"</span> <span class="arg">&gt;&gt; notes.txt</span>  <span class="comment"># append to file</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">&lt; notes.txt</span>                 <span class="comment"># sort reads from file via stdin</span>
+
+<span class="comment"># Pipeline: count error types in a log</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">"ERROR" server.log</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span> <span class="arg">|</span> <span class="cmd">sort -nr</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this in Ed</strong>
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">-e "banana\napple\ncherry\napple"</span> <span class="arg">&gt; fruit.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">cat</span> <span class="arg">fruit.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">fruit.txt</span> <span class="arg">|</span> <span class="cmd">uniq -c</span></code></pre>
+  What does the final output show? Which fruit appears more than once?
+</div>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 1 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>
