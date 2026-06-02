@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 6 Pre-Reading: Reproducible Environments — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Week 6: Reproducible Environments</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <p class="sub" style="margin-top:12px;font-style:italic;color:#8090b0;">"It works on my machine." — the most expensive sentence in software engineering.</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol class="goals">
+      <li>Explain why the same software can behave differently on different machines.</li>
+      <li>Contrast virtual machines and containers and state when each is appropriate.</li>
+      <li>Use core Docker commands to run, inspect, and remove containers.</li>
+      <li>Read a Dockerfile and explain what each instruction does.</li>
+      <li>Install packages with <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">apt-get</code>, <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">pip</code>, and <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">npm</code>.</li>
+      <li>Create an isolated Python environment with <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">venv</code> and pin dependencies in <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">requirements.txt</code>.</li>
+      <li>Explain what a lockfile is and why it matters.</li>
+    </ol>
+  </div>
+</div>
+
+<figure class="fig">
+  <img src="images/week6-works-on-my-machine.png" alt="Developer on the left with working code; teammate on the right with broken code on a different machine">
+  <figcaption>The same code, two machines, two outcomes — the environment problem this week solves.</figcaption>
+</figure>
+
+<h3>A scenario</h3>
+<p>You push a bug fix at 9 pm. CI turns red. The error is <code>ModuleNotFoundError: No module named 'cryptography'</code>. On your laptop it runs fine. The CI server is Ubuntu 22.04; you are on macOS 14. The <code>cryptography</code> package you installed globally six months ago never made it into <code>requirements.txt</code>. Your teammate cannot reproduce the bug either — they have a different version installed. Nobody knows which version the production server has.</p>
+<p>This is not bad luck; it is a solvable engineering problem. Reproducible environments eliminate the variables: you declare exactly what your software needs, lock those versions, and run inside an isolated environment that is identical everywhere. The CI server, your teammate's laptop, and production all start from the same specification. "Works on my machine" stops being a meaningful phrase.</p>
+<p>This week gives you the tools: virtual machines for OS-level isolation, Docker containers for process-level isolation, and package managers (<code>apt-get</code>, <code>pip</code>/<code>venv</code>, <code>npm</code>) for library-level isolation. Together they cover every layer of the environment problem.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  Think of a time a program worked on one machine but not another. What was different? As you read, map that experience onto the isolation layers introduced here.
+  If you have not hit this problem yet, consider: what happens when you run a Python script that uses the <code>int | str</code> type-hint syntax (Python 3.10+) on a machine that has Python 3.8?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 6 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.4 — Containers — FIT2109 Week 6</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-fun  strong { color: #5846d4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>6.4 Containers</h2>
+
+<p>A container is an isolated process with its own view of the filesystem. Unlike a virtual machine, it does not run its own kernel — it shares the host's kernel and uses two Linux kernel features to create the illusion of isolation.</p>
+
+<figure class="fig">
+  <img src="images/week6-container-isolation.png" alt="Four containers sitting on a container engine, which sits on a host OS with a shared kernel, which sits on hardware or cloud infrastructure">
+  <figcaption>Multiple containers share one host kernel via the container engine. Each has its own isolated filesystem and process space.</figcaption>
+</figure>
+
+<h3>The kernel features underneath</h3>
+<ul>
+  <li><strong>Namespaces</strong> control what a process can <em>see</em>. Each container gets its own namespace for the process tree, network interfaces, filesystem mount points, and hostname. From inside the container, it appears to be the only process on an isolated machine.</li>
+  <li><strong>cgroups</strong> (control groups) control what a process can <em>use</em>. They set limits on CPU, memory, disk I/O, and network bandwidth per container.</li>
+</ul>
+<p>Docker, Podman, and other container runtimes package these kernel features into a convenient workflow — but the underlying isolation mechanism is built into Linux itself.</p>
+
+<h3>Containers vs virtual machines</h3>
+<table class="key-table">
+  <thead><tr><th></th><th>Virtual machine</th><th>Container</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Kernel</strong></td><td>Own kernel (guest OS)</td><td>Shared host kernel</td></tr>
+    <tr><td><strong>Boot time</strong></td><td>Seconds to minutes</td><td>Milliseconds</td></tr>
+    <tr><td><strong>Image size</strong></td><td>Gigabytes</td><td>Megabytes (layered)</td></tr>
+    <tr><td><strong>Density</strong></td><td>Tens per host</td><td>Hundreds per host</td></tr>
+    <tr><td><strong>Isolation strength</strong></td><td>Strong (own kernel boundary)</td><td>Weaker (shared kernel)</td></tr>
+    <tr><td><strong>Cross-OS support</strong></td><td>Can run any guest OS on any host</td><td>Containers share the host kernel; a Windows container needs a Windows kernel</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>macOS and Windows</strong>
+  Containers use Linux kernel features. On macOS and Windows, Docker Desktop runs a lightweight Linux VM behind the scenes to provide that kernel. Your containers run inside that VM — you just don't see it. This is why Docker Desktop is needed on non-Linux hosts.
+</div>
+
+<h3>What containers give you in practice</h3>
+<ul>
+  <li><strong>Reproducibility.</strong> The container image specifies every file, library, and configuration. The same image produces identical results on any Linux-based host.</li>
+  <li><strong>Isolation.</strong> A container's filesystem is separate from the host. Installing packages inside the container does not affect the host. Exiting the container leaves nothing behind (unless you explicitly persist data).</li>
+  <li><strong>Speed.</strong> Containers start in milliseconds. You can spin one up, run a job, and discard it in the time it takes a VM to boot.</li>
+  <li><strong>Portability.</strong> An image built on your laptop can be pushed to a registry and pulled onto a server or a colleague's machine without modification.</li>
+</ul>
+
+<div class="callout callout-fun">
+  <strong>Side note — containers are not new</strong>
+  The underlying ideas are older than Docker. BSD jails (2000) and Solaris Zones (2004) offered similar process isolation. Linux containers (LXC) appeared in 2008. Docker, launched in 2013, made the workflow approachable by adding image layering, a registry, and the Dockerfile build format. The technology became widespread; the plumbing was already there.
+</div>
+
+<div class="callout callout-note">
+  <strong>Concept check</strong>
+  You run <code>docker run --rm ubuntu:22.04 apt-get install -y curl</code>. After the command finishes, is <code>curl</code> installed on your host machine? Why or why not?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 6 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

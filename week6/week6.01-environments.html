@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.1 — Why Environments Differ — FIT2109 Week 6</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>6.1 Why Environments Differ</h2>
+
+<p>Two machines can run the same source code and produce different results. This is not a mystery — it is a consequence of all the invisible variables that make up a machine's environment. Understanding what those variables are is the first step to controlling them.</p>
+
+<h3>What makes up a software environment</h3>
+<p>When you run a program, it does not execute in isolation. It depends on a stack of components that may differ between machines:</p>
+
+<table class="key-table">
+  <thead><tr><th>Component</th><th>Example differences</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Operating system</strong></td><td>Ubuntu 22.04 vs macOS 14 vs Windows 11</td><td>File paths, process APIs, and available system calls differ.</td></tr>
+    <tr><td><strong>System libraries</strong></td><td><code>libc</code> 2.35 vs 2.31, <code>openssl</code> 1.1 vs 3.0</td><td>C extensions and cryptographic code may link to incompatible versions.</td></tr>
+    <tr><td><strong>Language runtime</strong></td><td>Python 3.9 vs 3.12, Node 18 vs 20</td><td>Syntax, standard library APIs, and default behaviour change between minor versions.</td></tr>
+    <tr><td><strong>Package versions</strong></td><td><code>requests==2.28</code> vs <code>requests==2.31</code></td><td>Bug fixes, API changes, and new defaults may alter behaviour.</td></tr>
+    <tr><td><strong>Environment variables</strong></td><td><code>DEBUG=1</code> set locally but not in CI</td><td>Code that reads environment variables behaves differently without them.</td></tr>
+    <tr><td><strong>Hardware and architecture</strong></td><td>x86-64 vs Apple Silicon (arm64)</td><td>Native extensions must be compiled for the correct architecture.</td></tr>
+  </tbody>
+</table>
+
+<h3>Common consequences</h3>
+<ul>
+  <li><strong>Tests pass locally, fail in CI.</strong> CI runs on a clean Ubuntu image; your laptop has accumulated years of global installs.</li>
+  <li><strong>A library upgrade on one machine breaks another.</strong> Someone ran <code>pip install --upgrade</code> without pinning, and the rest of the team gets a different version next time they install.</li>
+  <li><strong>A deployed app crashes in ways that cannot be reproduced locally.</strong> Production runs Python 3.9; your laptop has 3.12. A walrus operator or a <code>match</code> statement that works locally fails silently — or loudly — elsewhere.</li>
+  <li><strong>Debugging requires guessing the environment.</strong> Without knowing exactly what versions ran when the bug occurred, root-cause analysis is guesswork.</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>The hidden assumption</strong>
+  Every time you run code without declaring its dependencies, you are implicitly assuming the environment is correct. That assumption breaks — not if, but when the code moves to a different machine, a future date, or a colleague's setup.
+</div>
+
+<h3>The solution: make the environment explicit</h3>
+<p>The fix is not to hope everyone has the same setup. It is to <em>declare</em> the environment as code. Reproducible environments rest on three principles:</p>
+<ul>
+  <li><strong>Isolation</strong> — each project runs in its own contained environment, separate from the host and from other projects.</li>
+  <li><strong>Portability</strong> — the same environment specification produces identical results on any machine: your laptop, a teammate's laptop, CI, and production.</li>
+  <li><strong>Dependency management</strong> — every dependency (OS tools, language runtime, libraries) is declared explicitly with a version, not assumed to be present.</li>
+</ul>
+<p>The remaining pages cover the tools that enforce these principles at each layer:</p>
+<ul>
+  <li><strong>Virtual machines</strong> — isolate the full OS.</li>
+  <li><strong>Containers</strong> — isolate the filesystem and process environment; portable across any Linux-based host.</li>
+  <li><strong>Package managers</strong> — manage declared dependencies.</li>
+  <li><strong>Lockfiles</strong> — pin exact versions so installs are deterministic.</li>
+</ul>
+
+<div class="callout callout-note">
+  <strong>Concept check</strong>
+  You write a script that uses <code>f-strings</code> (fine since Python 3.6) and the <code>int | str</code> union shorthand in type hints (only valid from Python 3.10 — distinct from <code>typing.Union[int, str]</code> which works from 3.5). Your colleague has Python 3.8 and gets a <code>TypeError</code>. Which layer of the environment is mismatched, and which tool from the list above would fix it?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 6 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

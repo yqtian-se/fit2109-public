@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.9 — Package Managers Across Ecosystems — FIT2109 Week 6</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-fun  strong { color: #5846d4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td.hi { background: #f0fdf8 !important; font-weight: 600; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>6.9 Package Managers Across Ecosystems</h2>
+
+<p>You have now seen <code>pip</code> and <code>venv</code> in depth. The good news: every language ecosystem uses the same underlying pattern. The names differ, but the concepts — install tool, manifest, lockfile, local packages directory — are identical. Once you understand one, you can pick up any other in minutes.</p>
+
+<h3>The universal pattern</h3>
+<p>Every package manager answers the same four questions:</p>
+<ol>
+  <li><strong>How do I declare what my project needs?</strong> → the <em>manifest</em></li>
+  <li><strong>How do I pin the exact versions that were installed?</strong> → the <em>lockfile</em></li>
+  <li><strong>Where do installed packages live?</strong> → the <em>local packages directory</em></li>
+  <li><strong>How do I recreate the environment from scratch?</strong> → one install command reads the lockfile</li>
+</ol>
+
+<h3>Quick reference across ecosystems</h3>
+<table class="key-table">
+  <thead>
+    <tr>
+      <th>Ecosystem</th>
+      <th>Install tool</th>
+      <th>Manifest</th>
+      <th>Lockfile</th>
+      <th>Local packages dir</th>
+      <th>Commit lockfile?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="hi">Python</td>
+      <td><code>pip</code> + <code>venv</code></td>
+      <td><code>pyproject.toml</code> or hand-written <code>requirements.txt</code></td>
+      <td><code>requirements.txt</code> output of <code>pip freeze</code></td>
+      <td><code>.venv/</code></td>
+      <td>Yes — ignore <code>.venv/</code></td>
+    </tr>
+    <tr>
+      <td>Node.js</td>
+      <td><code>npm</code></td>
+      <td><code>package.json</code></td>
+      <td><code>package-lock.json</code></td>
+      <td><code>node_modules/</code></td>
+      <td>Yes — ignore <code>node_modules/</code></td>
+    </tr>
+    <tr>
+      <td>Java</td>
+      <td><code>mvn</code> (Maven)</td>
+      <td><code>pom.xml</code></td>
+      <td>No separate lockfile — Maven resolves from a shared local cache</td>
+      <td><code>~/.m2/repository/</code> (global)</td>
+      <td>Commit <code>pom.xml</code>; ignore <code>~/.m2/</code></td>
+    </tr>
+    <tr>
+      <td>Rust</td>
+      <td><code>cargo</code></td>
+      <td><code>Cargo.toml</code></td>
+      <td><code>Cargo.lock</code></td>
+      <td><code>~/.cargo/registry/</code> (global cache)</td>
+      <td>Yes for applications; optional for libraries</td>
+    </tr>
+    <tr>
+      <td>Ruby</td>
+      <td><code>bundle</code></td>
+      <td><code>Gemfile</code></td>
+      <td><code>Gemfile.lock</code></td>
+      <td><code>vendor/bundle/</code> or system gems</td>
+      <td>Yes — ignore <code>vendor/bundle/</code></td>
+    </tr>
+    <tr>
+      <td>Go</td>
+      <td><code>go mod</code></td>
+      <td><code>go.mod</code></td>
+      <td><code>go.sum</code></td>
+      <td><code>~/go/pkg/mod/</code> (global cache)</td>
+      <td>Yes — both files</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>What the commands look like in each ecosystem</h3>
+<p>The surface commands differ, but the conceptual moves are always the same. Here is the same workflow — add a dependency, install, reproduce — across four ecosystems:</p>
+
+<table class="key-table">
+  <thead><tr><th>Task</th><th>Python (pip)</th><th>Node.js (npm)</th><th>Rust (cargo)</th><th>Ruby (bundler)</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Add a dependency</td>
+      <td><code>python3 -m pip install requests</code></td>
+      <td><code>npm install express</code></td>
+      <td><code>cargo add serde</code></td>
+      <td><code>bundle add rails</code></td>
+    </tr>
+    <tr>
+      <td>Lock versions</td>
+      <td><code>pip freeze &gt; requirements.txt</code></td>
+      <td>Auto-generated into <code>package-lock.json</code></td>
+      <td>Auto-generated into <code>Cargo.lock</code></td>
+      <td>Auto-generated into <code>Gemfile.lock</code></td>
+    </tr>
+    <tr>
+      <td>Recreate from lockfile</td>
+      <td><code>pip install -r requirements.txt</code></td>
+      <td><code>npm install</code></td>
+      <td><code>cargo build</code></td>
+      <td><code>bundle install</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>The main structural difference: isolation</h3>
+<p>Where installed packages <em>live</em> varies more than the commands do:</p>
+<ul>
+  <li><strong>Python (pip)</strong> — global by default, which is why <code>venv</code> exists as a deliberate extra step. Most other ecosystems learned from this and made local installs the default.</li>
+  <li><strong>Node.js (npm)</strong> — local to the project (<code>node_modules/</code>) by default. No separate isolation step needed for packages; but the Node runtime version itself is still global.</li>
+  <li><strong>Rust (cargo) and Go</strong> — use a global download cache but build compiled output into the project. Isolation is achieved through the build system, not a virtual environment.</li>
+  <li><strong>Java (Maven)</strong> — downloads to a global <code>~/.m2/</code> cache, no lockfile. Version conflicts between projects are resolved by convention (explicit version declarations in <code>pom.xml</code>) rather than isolation.</li>
+</ul>
+
+<div class="callout callout-fun">
+  <strong>Why Python needed venv</strong>
+  Python predates the modern per-project isolation pattern. Its default <code>pip install</code> is global because early Python was primarily a scripting and system tool — multi-project isolation was not a design goal. Newer Python tooling (<code>uv</code>, <code>poetry</code>, <code>pipenv</code>) makes isolation automatic, matching the Node/Rust experience. If you use these tools in future projects you will not need to manually create a <code>.venv</code>.
+</div>
+
+<div class="callout callout-note">
+  <strong>Concept check</strong>
+  You join a project that uses Rust. You clone the repo and find <code>Cargo.toml</code> and <code>Cargo.lock</code>. Without knowing any Rust, which file ensures reproducible installs, and what single command would recreate the environment? Use the pattern from the table above to reason it out.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 6 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

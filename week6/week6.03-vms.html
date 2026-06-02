@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6.3 — Virtual Machines — FIT2109 Week 6</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-fun  strong { color: #5846d4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>6.3 Virtual Machines</h2>
+
+<p>A virtual machine (VM) is software that emulates a complete computer — including hardware, firmware, and an operating system — running on top of another operating system. From inside the VM, everything looks like a real physical machine.</p>
+
+<figure class="fig">
+  <img src="images/week6-vm-architecture.png" alt="macOS host running a hypervisor with three virtual machines: Windows, Linux, and Solaris, each with vCPU, vRAM, and vDisk">
+  <figcaption>A Type 2 hypervisor on macOS running three guest OSes simultaneously. Each VM has its own virtual CPU, memory, and disk.</figcaption>
+</figure>
+
+<h3>How a VM works</h3>
+<p>A piece of software called a <strong>hypervisor</strong> sits between the physical hardware and one or more guest operating systems. The hypervisor intercepts hardware requests from guest OSes and either emulates them in software or maps them to the real hardware efficiently.</p>
+<ul>
+  <li><strong>Type 1 (bare-metal) hypervisors</strong> run directly on hardware with no host OS: VMware ESXi, Microsoft Hyper-V (server), Xen. Used in data centres.</li>
+  <li><strong>Type 2 (hosted) hypervisors</strong> run as an application inside a host OS: VirtualBox, VMware Workstation/Fusion, Parallels. Common on developer laptops.</li>
+</ul>
+
+<p>Each guest VM has its own kernel, its own memory allocation, and its own disk image. Guests are completely isolated: a crash inside the VM does not crash the host.</p>
+
+<h3>When to use a VM</h3>
+<ul>
+  <li><strong>Testing on a different OS.</strong> Run Windows inside Linux, or Ubuntu inside macOS, to test OS-specific behaviour.</li>
+  <li><strong>Strong isolation required.</strong> A VM has its own kernel — a compromised guest cannot directly affect the host. Used for running untrusted code, browser testing, and security research.</li>
+  <li><strong>Legacy software.</strong> Software tied to a specific OS version (e.g., an old 32-bit Windows application) can be preserved in a VM snapshot indefinitely.</li>
+  <li><strong>Simulating a server environment.</strong> Spin up an Ubuntu 22.04 VM locally to match what your cloud provider gives you.</li>
+</ul>
+
+<h3>The cost of VMs</h3>
+<table class="key-table">
+  <thead><tr><th>Resource</th><th>Typical overhead</th></tr></thead>
+  <tbody>
+    <tr><td>Boot time</td><td>Seconds to minutes — a full OS must initialise.</td></tr>
+    <tr><td>Disk space</td><td>Gigabytes per image — the full OS filesystem is stored.</td></tr>
+    <tr><td>Memory</td><td>Several hundred MB to several GB reserved per running VM.</td></tr>
+    <tr><td>CPU</td><td>Some overhead from emulation; modern hardware virtualisation (Intel VT-x / AMD-V) reduces this significantly.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>VMs are heavy by design</strong>
+  Because each VM carries a full OS, you cannot run hundreds of VMs on a single laptop the way you can with containers. VMs are the right tool when strong isolation or OS-level fidelity matters — not for lightweight, fast-spinning development environments.
+</div>
+
+<div class="callout callout-fun">
+  <strong>Side note — cloud VMs</strong>
+  Every time you spin up a VM on AWS (EC2), Google Cloud (Compute Engine), or Azure (Virtual Machines), you are allocating a VM on a Type 1 hypervisor in a data centre. The cloud provider manages the hypervisor; you get the guest OS. This is exactly the same mechanism as VirtualBox on your laptop, just at scale.
+</div>
+
+<div class="callout callout-note">
+  <strong>Concept check</strong>
+  You need to run 100 isolated jobs simultaneously on a single server. Would VMs or containers be more practical for this? What trade-off does your choice accept? (The next page covers containers — keep your answer in mind as you read.)
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 6 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>
