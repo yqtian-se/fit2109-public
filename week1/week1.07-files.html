@@ -173,6 +173,32 @@
   <code>rm</code> does not move files to a Trash folder — it deletes them immediately. There is no undo. Always double-check the path before running <code>rm</code>.
 </div>
 
+<h3>Matching multiple files with globs</h3>
+<p>You will often want to act on a group of files at once. The shell provides <strong>glob patterns</strong> (also called wildcards) — special characters that the shell expands into a list of matching filenames <em>before</em> the command runs.</p>
+
+<table class="key-table">
+  <thead><tr><th>Pattern</th><th>Matches</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td><code>*</code></td><td>Any string of characters (zero or more)</td><td><code>*.txt</code> — all <code>.txt</code> files</td></tr>
+    <tr><td><code>?</code></td><td>Exactly one character</td><td><code>log?.txt</code> — <code>log1.txt</code>, <code>log2.txt</code>, …</td></tr>
+    <tr><td><code>[abc]</code></td><td>One character from the set</td><td><code>report[12].txt</code> — <code>report1.txt</code> or <code>report2.txt</code></td></tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment"># List only .txt files</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">*.txt</span>
+
+<span class="comment"># Copy all .log files into a backup directory</span>
+<span class="prompt-sym">$</span> <span class="cmd">cp</span> <span class="arg">*.log</span> <span class="arg">backup/</span>
+
+<span class="comment"># Remove all .tmp files (careful — no undo!)</span>
+<span class="prompt-sym">$</span> <span class="cmd">rm</span> <span class="arg">*.tmp</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>The shell expands globs, not the command</strong>
+  When you type <code>ls *.txt</code>, the shell replaces <code>*.txt</code> with the list of matching filenames <em>before</em> <code>ls</code> even starts. <code>ls</code> never sees the <code>*</code> — it receives a list of individual filenames. This distinction matters and is covered in depth in the Week 2 pre-reading.
+</div>
+
 <p>Reading <code>ls -la</code> output is one of the most useful shell skills. Each line looks like this:</p>
 <pre><code><span class="out">drwxr-xr-x  3 student staff  96 May 20 10:15 week1</span>
 <span class="out">-rw-r--r--  1 student staff 142 May 20 10:12 notes.txt</span></code></pre>
