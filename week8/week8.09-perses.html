@@ -100,57 +100,62 @@
     process(get_users())</code></pre>
 
 <h3>Step 4 — Write the test script</h3>
-<p>The test script is the heart of the process. Perses calls it as <code>bash test.sh &lt;candidate-file&gt;</code> after every attempted reduction and reads the exit code to decide whether to keep or revert the change.</p>
+<p>The test script is the heart of the process. After each reduction attempt, Perses <strong>copies your input file and test script into a temporary directory</strong>, sets the working directory there, and calls <code>bash test.sh</code> with <strong>no arguments</strong>. Your script must reference the input file by its literal filename — not via <code>$1</code>.</p>
+
+<div class="callout callout-warn">
+  <strong>Do NOT use $1 — reference the file by name</strong>
+  A common mistake is writing <code>python3 "$1"</code>. Perses passes no argument, so <code>$1</code> is empty and Python fails silently. Use the filename directly: <code>python3 big_bug.py</code>.
+</div>
 
 <div class="callout callout-warn">
   <strong>Exit code convention is reversed from normal shell</strong>
-  Exit <strong>0</strong> means the bug is <strong>still present</strong> — Perses should keep reducing. Exit <strong>non-zero</strong> means the bug is gone — stop this path. This is the opposite of normal shell conventions. Getting it backwards causes Perses to immediately accept any empty file as valid, producing a useless result.
+  Exit <strong>0</strong> means the bug is <strong>still present</strong> — Perses should keep reducing. Exit <strong>non-zero</strong> means the bug is gone — stop this path. This is the opposite of normal shell conventions.
 </div>
 
 <pre><code><span class="comment">#!/bin/bash
-# test.sh — exit 0 if the candidate still triggers IndexError</span>
-<span class="cmd">python3</span> <span class="arg">"$1"</span> 2&gt;&amp;1 | <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"IndexError"</span>
+# test.sh — exit 0 if big_bug.py still triggers IndexError
+# Do NOT use $1 — Perses sets CWD to the candidate dir and passes no argument.</span>
+<span class="cmd">python3</span> <span class="arg">big_bug.py</span> 2&gt;&amp;1 | <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"IndexError"</span>
 <span class="comment"># grep -q exits 0 when the pattern is found  (bug present → keep reducing)
 # grep -q exits 1 when the pattern is absent (bug gone   → stop this path)</span></code></pre>
 
-<p>Make it executable and verify it works before handing it to Perses — if the test script does not correctly detect the bug, Perses will silently produce a wrong result:</p>
+<p>Make it executable and verify it works before handing it to Perses:</p>
 
 <pre><code><span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">+x test.sh</span>
-<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">test.sh big_bug.py</span> &amp;&amp; <span class="cmd">echo</span> <span class="arg">"bug confirmed"</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">test.sh</span> &amp;&amp; <span class="cmd">echo</span> <span class="arg">"bug confirmed"</span>
 <span class="out">bug confirmed</span></code></pre>
 
 <h3>Step 5 — Run Perses</h3>
-<pre><code><span class="prompt-sym">$</span> <span class="cmd">java</span> <span class="arg">-jar perses_deploy.jar</span> \
-    <span class="arg">--test-script test.sh</span> \
-    <span class="arg">--input-file big_bug.py</span>
+<p>Use <strong>absolute paths</strong> for both flags — Perses changes directories internally and relative paths can silently fail:</p>
 
-<span class="out">INFO  Perses started.
-INFO  Language: PYTHON
-INFO  Running initial test to confirm the bug ...
-INFO  Bug confirmed. Starting reduction.
-INFO  Iteration 1: 18 tokens -&gt; 11 tokens
-INFO  Iteration 2: 11 tokens -&gt;  6 tokens
-INFO  Iteration 3:  6 tokens -&gt;  4 tokens
-INFO  Fixed point reached.
-INFO  Result written to: perses_result/big_bug.py</span></code></pre>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">java</span> <span class="arg">-jar perses_deploy.jar</span> \
+    <span class="arg">--test-script "$(pwd)/test.sh"</span> \
+    <span class="arg">--input-file "$(pwd)/big_bug.py"</span>
+
+<span class="out">INFO  Language: PYTHON
+INFO  Removed 50 token(s). Reduction ratio is 43/93=46.24%</span></code></pre>
 
 <pre><code><span class="prompt-sym">$</span> <span class="cmd">cat</span> <span class="arg">perses_result/big_bug.py</span>
-<span class="out">a = ["alice", "bob", "carol"]
-print(a[3])</span></code></pre>
+<span class="out">def a():
+    return ""
+def b(a):
+    for b in range(1):
+        a[b]
+b(a())</span></code></pre>
 
-<p>All imports, the config function, and the helper were stripped — only the two lines that directly cause the <code>IndexError</code> survive.</p>
+<p>Perses stripped all imports and reduced variable names — the logic that triggers <code>IndexError</code> is preserved in minimal form.</p>
 
 <h3>Test scripts for Java and C</h3>
-<p>The same pattern applies to any compiled language. The test script compiles and runs the candidate, then checks for the expected error signal.</p>
+<p>The same rule applies: reference the input file by its literal name, not <code>$1</code>.</p>
 
 <pre><code><span class="comment">#!/bin/bash
-# Java: exit 0 if candidate still throws ArrayIndexOutOfBoundsException</span>
-<span class="cmd">javac</span> <span class="arg">"$1"</span> 2&gt;/dev/null || <span class="cmd">exit</span> 1
-<span class="cmd">java</span> <span class="arg">-cp . "$(basename "$1" .java)"</span> 2&gt;&amp;1 | <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"ArrayIndexOutOfBoundsException"</span></code></pre>
+# Java: exit 0 if Repro.java still throws ArrayIndexOutOfBoundsException</span>
+<span class="cmd">javac</span> <span class="arg">Repro.java</span> 2&gt;/dev/null || <span class="cmd">exit</span> 1
+<span class="cmd">java</span> <span class="arg">Repro</span> 2&gt;&amp;1 | <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"ArrayIndexOutOfBoundsException"</span></code></pre>
 
 <pre><code><span class="comment">#!/bin/bash
-# C: exit 0 if candidate still crashes with a segfault (signal 11)</span>
-<span class="cmd">gcc</span> <span class="arg">-g -o /tmp/repro "$1"</span> 2&gt;/dev/null || <span class="cmd">exit</span> 1
+# C: exit 0 if crash.c still produces a segfault</span>
+<span class="cmd">gcc</span> <span class="arg">-g -o /tmp/repro crash.c</span> 2&gt;/dev/null || <span class="cmd">exit</span> 1
 /tmp/repro 2&gt;/dev/null
 [ $? <span class="arg">-eq 139</span> ]   <span class="comment"># 139 = 128 + SIGSEGV(11)</span></code></pre>
 
@@ -171,6 +176,80 @@ print(a[3])</span></code></pre>
 <div class="callout callout-note">
   <strong>When to use Perses vs manual reduction</strong>
   Use Perses when the buggy file is more than ~50 lines or when you need to attach a minimal test case to a formal bug report. For shorter files, manual reduction is faster. Perses shines on compiler crashes, parser bugs, or any situation where stripping code by hand would take more than 10 minutes.
+</div>
+
+<h3>Troubleshooting: "initial sanity check failed"</h3>
+<p>This is the most common error when running Perses for the first time. The error message looks like:</p>
+
+<pre><code><span class="out">SEVERE The initial sanity check failed.
+* The script exit code is ExitCode(intValue=1)
+* #interesting: 0, #uninteresting: 6</span></code></pre>
+
+<p>It means Perses ran your test script and it returned exit code 1 every time — telling Perses the bug is <em>not</em> present. Perses refuses to start because there is nothing to reduce. Work through this checklist:</p>
+
+<div class="callout callout-warn">
+  <strong>1. Using $1 in the test script — the most common mistake</strong>
+  Perses does not pass the candidate file as an argument. It copies the file into a temp directory, sets CWD there, and calls <code>bash test.sh</code> with <strong>no arguments</strong>. If your script uses <code>python3 "$1"</code>, <code>$1</code> is empty and Python fails silently — Perses sees exit code 1 and refuses to start. Fix: use the filename directly.
+<pre style="margin-top:10px;"><code><span class="comment"># Wrong — $1 is always empty</span>
+<span class="cmd">python3</span> <span class="arg">"$1"</span> 2&gt;&amp;1 | grep -q "IndexError"
+
+<span class="comment"># Correct — reference the file by its literal name</span>
+<span class="cmd">python3</span> <span class="arg">big_bug.py</span> 2&gt;&amp;1 | grep -q "IndexError"</code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <strong>2. Use absolute paths when calling Perses</strong>
+  Perses changes directories internally. Relative paths for <code>--test-script</code> and <code>--input-file</code> can silently fail. Always use <code>$(pwd)/</code>:
+<pre style="margin-top:10px;"><code><span class="cmd">java</span> -jar perses_deploy.jar \
+    --test-script <span class="arg">"$(pwd)/test.sh"</span> \
+    --input-file <span class="arg">"$(pwd)/big_bug.py"</span></code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <strong>3. Verify the test script manually before running Perses</strong>
+  Always run the test script yourself first from the same directory as the buggy file. If this command does not print "bug confirmed", Perses will fail:
+<pre style="margin-top:10px;"><code><span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">test.sh</span> &amp;&amp; <span class="cmd">echo</span> <span class="arg">"bug confirmed"</span> || <span class="cmd">echo</span> <span class="arg">"FAIL: bug not detected"</span></code></pre>
+  Fix the test script first; only then run Perses.
+</div>
+
+<div class="callout callout-warn">
+  <strong>4. CRLF line endings (Windows / WSL users)</strong>
+  If you created or edited <code>test.sh</code> on Windows — including in WSL with a Windows editor — the file likely has <code>\r\n</code> line endings instead of Unix <code>\n</code>. Bash silently fails to execute such scripts, causing Perses's sanity check to always return exit code 1. Fix:
+<pre style="margin-top:10px;"><code><span class="comment"># Option 1: use dos2unix</span>
+<span class="prompt-sym">$</span> <span class="cmd">dos2unix</span> <span class="arg">test.sh</span>
+
+<span class="comment"># Option 2: use sed if dos2unix is not installed</span>
+<span class="prompt-sym">$</span> <span class="cmd">sed</span> <span class="arg">-i 's/\r//' test.sh</span>
+
+<span class="comment"># Confirm: file should say "ASCII text", not "CRLF"</span>
+<span class="prompt-sym">$</span> <span class="cmd">file</span> <span class="arg">test.sh</span></code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <strong>5. Python command not found</strong>
+  The test script uses <code>python3</code>. On some systems the command is <code>python</code> instead. Check:
+<pre style="margin-top:10px;"><code><span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">--version</span>   <span class="comment"># if this fails, use python instead</span>
+<span class="prompt-sym">$</span> <span class="cmd">which</span> <span class="arg">python3</span></code></pre>
+  Edit <code>test.sh</code> and replace <code>python3</code> with the correct command for your system.
+</div>
+
+<div class="callout callout-warn">
+  <strong>6. Test script not executable</strong>
+  Perses requires the test script to be executable. If you forgot this step:
+<pre style="margin-top:10px;"><code><span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">+x test.sh</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-la test.sh</span>   <span class="comment"># should show -rwxr-xr-x</span></code></pre>
+</div>
+
+<div class="callout callout-warn">
+  <strong>7. Wrong error string in grep</strong>
+  The <code>grep -q "IndexError"</code> pattern must exactly match what Python prints. Run the buggy file directly and check the output:
+<pre style="margin-top:10px;"><code><span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">big_bug.py</span> <span class="arg">2&gt;&amp;1</span>
+<span class="out">Traceback (most recent call last):
+  ...
+IndexError: list index out of range</span>
+<span class="comment"># Confirm grep matches it:</span>
+<span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">big_bug.py</span> <span class="arg">2&gt;&amp;1</span> | <span class="cmd">grep</span> <span class="arg">"IndexError"</span></code></pre>
+  If grep produces no output, the pattern does not match — update the string in <code>test.sh</code> to match the actual error text.
 </div>
 
 <div class="ext-links">
