@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.5 — Shell Globs vs Regular Expressions — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.5 Shell Globs vs Regular Expressions</h2>
+
+<p>Both globs and regular expressions use special characters to match patterns. They look superficially similar, which causes persistent confusion. They are, however, completely different languages — interpreted by different software at different points during command execution.</p>
+
+<h3>The fundamental difference</h3>
+
+<table class="key-table">
+  <thead><tr><th></th><th>Shell glob</th><th>Regular expression</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Who interprets it</strong></td>
+      <td>The <em>shell</em>, before the command runs.</td>
+      <td>The <em>tool</em> (<code>grep</code>, <code>find</code>, <code>sed</code>, etc.), after the shell has passed arguments.</td>
+    </tr>
+    <tr>
+      <td><strong>What it matches</strong></td>
+      <td>Filenames in the filesystem.</td>
+      <td>Text content inside files, or strings in memory.</td>
+    </tr>
+    <tr>
+      <td><strong>Typical context</strong></td>
+      <td><code>ls *.log</code>, <code>rm /tmp/*.tmp</code></td>
+      <td><code>grep 'pattern' file</code>, <code>find -regex</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Glob syntax</h3>
+<p>Globs are expanded by the shell into a list of matching filenames before the command ever runs:</p>
+
+<table class="key-table">
+  <thead><tr><th>Glob</th><th>Matches</th></tr></thead>
+  <tbody>
+    <tr><td><code>*</code></td><td>Any string of characters (not including <code>/</code>).</td></tr>
+    <tr><td><code>?</code></td><td>Exactly one character.</td></tr>
+    <tr><td><code>[abc]</code></td><td>One character that is <code>a</code>, <code>b</code>, or <code>c</code>.</td></tr>
+    <tr><td><code>[0-9]</code></td><td>One digit.</td></tr>
+    <tr><td><code>**</code></td><td>Any path including subdirectories (requires <code>globstar</code> option in Bash).</td></tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment"># Shell expands *.log to matching filenames before ls sees them</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">*.log</span>
+<span class="out">access.log  app.log  error.log</span>
+
+<span class="comment"># ? matches exactly one character</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">app-?.log</span>
+<span class="out">app-1.log  app-2.log</span></code></pre>
+
+<h3>Regex syntax (basics)</h3>
+<p>Regular expressions are passed to a tool as a string argument. The tool — not the shell — decides what they mean:</p>
+
+<table class="key-table">
+  <thead><tr><th>Regex</th><th>Matches</th></tr></thead>
+  <tbody>
+    <tr><td><code>.</code></td><td>Any single character (in regex, not just filenames).</td></tr>
+    <tr><td><code>.*</code></td><td>Any string of characters (zero or more of <code>.</code>).</td></tr>
+    <tr><td><code>[0-9]+</code></td><td>One or more digits (requires <code>-E</code> — the extended regex flag, introduced in section 2.6).</td></tr>
+    <tr><td><code>^ERROR</code></td><td>Line starting with <code>ERROR</code>.</td></tr>
+    <tr><td><code>\.log$</code></td><td>Line ending with <code>.log</code> (backslash escapes the literal dot).</td></tr>
+    <tr><td><code>WARN(ING)?</code></td><td>Matches <code>WARN</code> or <code>WARNING</code> (requires <code>-E</code>).</td></tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment"># grep -E uses extended regex — quote the pattern to prevent shell interpretation</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E 'WARN(ING)?'</span> <span class="arg">app.log</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E '^[0-9]{4}-'</span> <span class="arg">app.log</span>   <span class="comment"># lines starting with a date like 2026-</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Common mistake: confusing * in globs and regex</strong>
+  <ul style="margin-top:8px;">
+    <li>In a <strong>shell glob</strong>, <code>*.log</code> means "any filename ending in .log".</li>
+    <li>In a <strong>regex</strong>, <code>*</code> means "zero or more of the <em>preceding element</em>" — but in <code>*.log</code> there is nothing preceding the <code>*</code>, making it a syntax error in most tools. It does <em>not</em> mean "any characters then .log".</li>
+    <li>The regex for "any characters then .log" is <code>.*\.log</code>.</li>
+  </ul>
+  Always quote regex patterns to prevent the shell from trying to glob-expand them: <code>grep -E 'pattern'</code>, not <code>grep -E pattern</code>.
+</div>
+
+<h3>Side-by-side examples</h3>
+
+<pre><code><span class="comment"># GLOB: shell expands *.log to filenames, then ls lists them</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">*.log</span>
+
+<span class="comment"># REGEX: grep searches file content for lines matching the pattern</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">'\.log$'</span> <span class="arg">filenames.txt</span>   <span class="comment"># find lines that end in .log</span>
+
+<span class="comment"># Both at once: glob selects which files to search; regex selects which lines</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E</span> <span class="arg">'ERROR [0-9]+'</span> <span class="arg">*.log</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Create a few test files and predict which commands match what:
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">app.log server.log notes.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">*.log</span>               <span class="comment"># glob: shell expands before ls</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">"*.log"</span>             <span class="comment"># quoted: shell does NOT expand — ls sees literal *.log</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">app.log</span> <span class="arg">|</span> <span class="cmd">grep</span> <span class="arg">'\.log$'</span>   <span class="comment"># regex: matches the text "app.log"</span></code></pre>
+  Why does <code>ls "*.log"</code> fail (or produce a different result) compared to <code>ls *.log</code>?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

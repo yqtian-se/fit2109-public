@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 — Shell Tools at a Glance — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-tool { background: #e3f2fd; color: #1565c0; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; transition: box-shadow 0.15s; }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #d0d8f0; border-radius: 20px; padding: 5px 14px; font-size: 0.84rem; color: #4361ee; text-decoration: none; }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .tool-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Explore freely</span>
+<h2>Week 2 Shell Tools at a Glance</h2>
+
+<h3>When to reach for what</h3>
+<table class="key-table">
+  <thead><tr><th>Situation</th><th>Reach for</th><th>Quick start</th></tr></thead>
+  <tbody>
+    <tr><td>Script has a quoting or logic bug you can't spot</td><td><code>shellcheck</code></td><td><code>shellcheck script.sh</code> or paste at <a href="https://www.shellcheck.net/" target="_blank">shellcheck.net</a></td></tr>
+    <tr><td>Found a command online — want to understand it before running</td><td><a href="https://explainshell.com/" target="_blank">explainshell.com</a></td><td>Paste the command on the site</td></tr>
+    <tr><td>Need to build or test a regex pattern interactively</td><td><a href="https://regex101.com/" target="_blank">regex101.com</a></td><td>Open site, select "ECMAScript" or "Python" flavour, paste pattern</td></tr>
+    <tr><td>Want the man page but faster and example-first</td><td><code>tldr</code></td><td><code>tldr grep</code>, <code>tldr find</code>, <code>tldr ssh</code></td></tr>
+    <tr><td>Need the authoritative reference for a command or flag</td><td><code>man</code></td><td><code>man grep</code> → press <code>q</code> to quit</td></tr>
+    <tr><td>Script silently does the wrong thing — suspected quoting issue</td><td><code>bash -x</code></td><td><code>bash -x script.sh</code> — prints each command before it runs</td></tr>
+    <tr><td>Need to check what SSH keys are loaded</td><td><code>ssh-add</code></td><td><code>ssh-add -l</code> lists loaded keys</td></tr>
+    <tr><td>Public key accepted but login still fails</td><td>Check permissions</td><td><code>chmod 700 ~/.ssh ; chmod 600 ~/.ssh/authorized_keys</code></td></tr>
+    <tr><td>Check whether a script's output matches expected output</td><td><code>diff</code></td><td><code>diff expected.txt &lt;(./script.sh input)</code> — exit 0 = identical</td></tr>
+    <tr><td>See exactly what changed between two versions of a file</td><td><code>diff -u</code></td><td><code>diff -u old.txt new.txt</code> — same format as <code>git diff</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Tool reference cards</h3>
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="name"><a href="https://www.shellcheck.net/" target="_blank">shellcheck</a></div>
+    <div class="desc">Static analyser for Bash/sh scripts. Catches quoting bugs, unset variables, and bad practices before they bite you in production. Run locally (<code>brew install shellcheck</code> or <code>apt install shellcheck</code>) or paste scripts at <a href="https://www.shellcheck.net/" target="_blank">shellcheck.net</a>.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://explainshell.com/" target="_blank">explainshell.com</a></div>
+    <div class="desc">Paste any shell command and see each flag and argument explained using the actual man page text. Essential for understanding commands you find on Stack Overflow before running them.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://regex101.com/" target="_blank">regex101.com</a></div>
+    <div class="desc">Interactive regex builder with real-time highlighting, match explanation, and multiple flavour support. Use it to develop and test patterns before embedding them in <code>grep</code> or <code>find</code> commands.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://tldr.sh/" target="_blank">tldr</a></div>
+    <div class="desc">Example-first command references. Where <code>man grep</code> gives you every option, <code>tldr grep</code> gives you the five you will actually use. Install: <code>npm install -g tldr</code> or <code>brew install tldr</code>.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">bash -x (trace mode)</div>
+    <div class="desc">Run <code>bash -x script.sh</code> to print each command after expansion, just before execution. Lines are prefixed with <code>+</code>. Invaluable for seeing exactly what the shell is doing — especially quoting and variable expansion problems.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">ssh-keygen &amp; ssh-agent</div>
+    <div class="desc">Generate keys with <code>ssh-keygen -t ed25519</code>. Load them into the agent with <code>ssh-add ~/.ssh/id_ed25519</code> so you only need to enter the passphrase once per session. <code>ssh-add -l</code> lists loaded keys.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">diff</div>
+    <div class="desc">Compares two files line by line. Exit status 0 = identical, 1 = differ — making it a natural pass/fail check in test scripts. Use <code>diff -u</code> for unified format (same as <code>git diff</code>). Combine with process substitution: <code>diff expected.txt &lt;(./script.sh)</code>.</div>
+  </div>
+</div>
+
+<h3>Quick-reference: grep flags</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E 'WARN(ING)?'</span> <span class="arg">file</span>       <span class="comment"># extended regex</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-Eo 'ERROR [0-9]+'</span> <span class="arg">file</span>   <span class="comment"># extract only matched text</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-rn 'TODO'</span> <span class="arg">src/</span>           <span class="comment"># recursive, with line numbers</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-q 'ERROR'</span> <span class="arg">file</span>           <span class="comment"># silent: exit status only</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-v 'DEBUG'</span> <span class="arg">file</span>           <span class="comment"># invert: lines NOT matching</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-c 'ERROR'</span> <span class="arg">file</span>           <span class="comment"># count of matching lines</span></code></pre>
+
+<h3>Quick-reference: find predicates</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">find</span> <span class="arg">.</span> <span class="arg">-type f -name '*.py'</span>
+<span class="prompt-sym">$</span> <span class="cmd">find</span> <span class="arg">.</span> <span class="arg">-type f -name '*.sh' ! -perm -u=x</span>
+<span class="prompt-sym">$</span> <span class="cmd">find</span> <span class="arg">.</span> <span class="arg">-type f -newer ref.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">find</span> <span class="arg">.</span> <span class="arg">-name '*.log' -exec wc -l {} +</span>
+<span class="prompt-sym">$</span> <span class="cmd">find</span> <span class="arg">.</span> <span class="arg">-regextype posix-extended -regex '.*/[a-z]+-[0-9]{4}\.log'</span></code></pre>
+
+<h3>Quick-reference: SSH workflow</h3>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">ssh-keygen</span> <span class="arg">-t ed25519 -C "you@email.com"</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh-copy-id</span> <span class="arg">-i ~/.ssh/id_ed25519.pub user@host</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh</span> <span class="arg">user@host</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh</span> <span class="arg">user@host 'cmd'</span>
+<span class="prompt-sym">$</span> <span class="cmd">scp</span> <span class="arg">file.txt user@host:/remote/path/</span>
+<span class="prompt-sym">$</span> <span class="cmd">scp</span> <span class="arg">user@host:/remote/file.txt .</span></code></pre>
+
+<h3>Reference links</h3>
+<div class="ext-links">
+  <a class="ext-link" href="https://www.shellcheck.net/" target="_blank">ShellCheck online</a>
+  <a class="ext-link" href="https://explainshell.com/" target="_blank">explainshell.com</a>
+  <a class="ext-link" href="https://regex101.com/" target="_blank">regex101.com</a>
+  <a class="ext-link" href="https://tldr.sh/" target="_blank">tldr pages</a>
+  <a class="ext-link" href="https://www.gnu.org/software/bash/manual/bash.html" target="_blank">GNU Bash manual</a>
+  <a class="ext-link" href="https://overthewire.org/wargames/bandit/" target="_blank">OverTheWire: Bandit</a>
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

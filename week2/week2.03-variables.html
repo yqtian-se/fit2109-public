@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.3 — Variables and the Environment — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.3 Variables and the Environment</h2>
+
+<p>The shell distinguishes between two kinds of variables: <strong>shell variables</strong>, which exist only in the current shell session, and <strong>environment variables</strong>, which are passed on to every child process the shell launches. Understanding the difference explains why tools like Python, make, or other scripts can or cannot see values you set at the command line.</p>
+
+<h3>Shell variables vs environment variables</h3>
+
+<pre><code><span class="comment"># Shell variable: only visible in this shell</span>
+<span class="prompt-sym">$</span> <span class="cmd">course</span>=<span class="arg">FIT2109</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$course"</span>
+<span class="out">FIT2109</span>
+
+<span class="comment"># Child process does NOT inherit it yet</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $course"'</span>
+<span class="out">Child sees: </span>
+
+<span class="comment"># export promotes it to the environment</span>
+<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">course</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $course"'</span>
+<span class="out">Child sees: FIT2109</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Why does the child start out empty?</strong>
+  When a shell launches a child process, it copies its <em>environment</em> — the set of exported variables — into the child. Shell-local variables are never copied. The child has its own separate memory and cannot see anything the parent did not explicitly export.
+</div>
+
+<h3>Useful ways to work with variables</h3>
+
+<table class="key-table">
+  <thead><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>name=value</code></td>
+      <td>Assign a shell variable. No spaces around <code>=</code>.</td>
+      <td><code>dir=/tmp/work</code></td>
+    </tr>
+    <tr>
+      <td><code>export name</code></td>
+      <td>Mark variable for export to child processes.</td>
+      <td><code>export PATH</code></td>
+    </tr>
+    <tr>
+      <td><code>export name=value</code></td>
+      <td>Assign and export in one step.</td>
+      <td><code>export EDITOR=vim</code></td>
+    </tr>
+    <tr>
+      <td><code>NAME=value cmd</code></td>
+      <td>Set a variable for <em>one command only</em> — not the current shell, not persistent.</td>
+      <td><code>DEBUG=1 ./script.sh</code></td>
+    </tr>
+    <tr>
+      <td><code>env</code></td>
+      <td>List all current environment variables.</td>
+      <td><code>env | grep PATH</code></td>
+    </tr>
+    <tr>
+      <td><code>${var:-default}</code></td>
+      <td>Use <code>default</code> if <code>var</code> is unset or empty.</td>
+      <td><code>name=${1:-world}</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Per-command variable prefix</h3>
+<p>You can set an environment variable for a single command by placing <code>NAME=value</code> before the command name. The variable is visible to that command and its children — but not to your shell, and not to the next command you run.</p>
+
+<pre><code><span class="comment"># Set COURSE only for this one invocation of env</span>
+<span class="prompt-sym">$</span> <span class="cmd">COURSE</span>=<span class="arg">FIT2109</span> <span class="cmd">env</span> <span class="arg">| grep '^COURSE='</span>
+<span class="out">COURSE=FIT2109</span>
+
+<span class="comment"># Back in the parent shell: COURSE is not set</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$COURSE"</span>
+<span class="out">             </span><span class="comment"># empty</span></code></pre>
+
+<p>This pattern is common when running tools that read their configuration from environment variables — for example, setting <code>PYTHONPATH</code> or <code>FLASK_ENV</code> for a single test run without permanently changing your shell environment.</p>
+
+<h3>Important built-in environment variables</h3>
+
+<table class="key-table">
+  <thead><tr><th>Variable</th><th>What it holds</th></tr></thead>
+  <tbody>
+    <tr><td><code>$HOME</code></td><td>Your home directory path (<code>/home/student</code>).</td></tr>
+    <tr><td><code>$PATH</code></td><td>Colon-separated list of directories the shell searches for commands.</td></tr>
+    <tr><td><code>$USER</code></td><td>Your username.</td></tr>
+    <tr><td><code>$PWD</code></td><td>The current working directory (same as <code>pwd</code> output).</td></tr>
+    <tr><td><code>$SHELL</code></td><td>The path to your login shell (<code>/bin/bash</code>, <code>/bin/zsh</code>, etc.).</td></tr>
+    <tr><td><code>$?</code></td><td>Exit status of the last command (covered in section 2.4).</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>No spaces around = when assigning</strong>
+  <code>course = FIT2109</code> is a syntax error — the shell tries to run a command named <code>course</code> with arguments <code>=</code> and <code>FIT2109</code>. Always write <code>course=FIT2109</code> with no spaces.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">GREETING</span>=<span class="arg">hello</span> <span class="cmd">bash</span> <span class="arg">-c 'echo $GREETING'</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$GREETING"</span>          <span class="comment"># still empty in this shell</span>
+<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">GREETING=hello</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo $GREETING'</span>  <span class="comment"># now visible</span></code></pre>
+  What is the difference between the first and last <code>bash -c</code> calls?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

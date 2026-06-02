@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.1 — Shell Evaluation Model — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.1 How the Shell Evaluates a Command</h2>
+
+<p>When you press Enter, the shell does not immediately hand your input to the operating system. It first transforms it through a series of steps. Understanding this pipeline of transformations is the foundation of writing correct shell commands — because what you type is often not what the shell actually runs.</p>
+
+<h3>The seven expansion stages</h3>
+<p>The Bash manual defines a specific order of expansions. Every command you type passes through these in sequence:</p>
+
+<table class="key-table">
+  <thead><tr><th>#</th><th>Expansion</th><th>What happens</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Tilde expansion</strong></td>
+      <td><code>~</code> at the start of a word expands to <code>$HOME</code>; <code>~user</code> expands to that user's home directory.</td>
+      <td><code>cd ~/projects</code> → <code>cd /home/student/projects</code></td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Parameter &amp; variable expansion</strong></td>
+      <td><code>$name</code> or <code>${name}</code> is replaced with the variable's value.</td>
+      <td><code>echo $HOME</code> → <code>echo /home/student</code></td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Command substitution</strong></td>
+      <td><code>$(cmd)</code> runs <code>cmd</code> and replaces itself with its output.</td>
+      <td><code>echo "Today is $(date +%A)"</code></td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Arithmetic expansion</strong></td>
+      <td><code>$((expression))</code> evaluates the expression as integer arithmetic.</td>
+      <td><code>echo $((2 + 3))</code> → <code>5</code></td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Word splitting</strong></td>
+      <td>Any unquoted result from the above expansions is split on whitespace (or <code>$IFS</code> characters). This is how a variable holding spaces can silently break a command.</td>
+      <td><code>dir="my files"</code>; <code>ls $dir</code> → splits into <code>ls my</code> and <code>files</code>.</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td><strong>Filename (glob) expansion</strong></td>
+      <td>Unquoted patterns containing <code>*</code>, <code>?</code>, or <code>[...]</code> are replaced with matching filenames.</td>
+      <td><code>ls *.txt</code> → <code>ls notes.txt summary.txt</code></td>
+    </tr>
+    <tr>
+      <td>7</td>
+      <td><strong>Quote removal</strong></td>
+      <td>Quotes used to control the above steps are stripped before the command runs. The program never sees the quote characters themselves.</td>
+      <td><code>ls "my file.txt"</code> → program receives <code>my file.txt</code> (no quotes).</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warn">
+  <strong>Common pitfall</strong>
+  Word splitting (stage 5) happens <em>after</em> variable expansion (stage 2). This means a variable that contains spaces will be split into multiple arguments — unless you quote it. <code>ls $dir</code> and <code>ls "$dir"</code> can produce completely different results when <code>dir</code> contains a space.
+</div>
+
+<h3>Seeing each stage in action</h3>
+<p>The following example traces through these evaluation stages for a single command:</p>
+
+<pre><code><span class="comment"># Setup</span>
+<span class="prompt-sym">$</span> <span class="cmd">dir</span>=<span class="arg">"Week 2 Materials"</span>
+<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p "$dir"</span>
+<span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">"$dir/notes.txt" "$dir/errors log.txt"</span>
+
+<span class="comment"># What does the shell actually pass to ls?</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">$dir</span>          <span class="comment"># split: ls sees "Week" and "2 Materials" — two arguments</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">"$dir"</span>        <span class="comment"># quoted: ls sees one argument "Week 2 Materials"</span></code></pre>
+
+<h3>Arithmetic expansion</h3>
+<p>Arithmetic expansion evaluates an integer expression and substitutes the result. It is useful for counters, offsets, and simple calculations directly in the shell — no external tool needed.</p>
+
+<pre><code><span class="comment"># Basic arithmetic</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$((2 + 3))</span>
+<span class="out">5</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$((10 / 3))</span>   <span class="comment"># integer division: rounds toward zero</span>
+<span class="out">3</span>
+
+<span class="comment"># Using a variable</span>
+<span class="prompt-sym">$</span> <span class="cmd">count</span>=<span class="arg">4</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"Next: $((count + 1))"</span>
+<span class="out">Next: 5</span>
+
+<span class="comment"># Increment a counter in a script</span>
+<span class="cmd">errors</span>=<span class="arg">$((errors + 1))</span></code></pre>
+
+<h3>Command substitution</h3>
+<p>Command substitution runs a command and inserts its output into the command line. The result is subject to word splitting unless quoted.</p>
+
+<pre><code><span class="comment"># $(cmd) runs cmd and replaces itself with its output</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"Today is $(date +%A)"</span>
+<span class="out">Today is Monday</span>
+
+<span class="comment"># Unquoted substitution splits on newlines too</span>
+<span class="prompt-sym">$</span> <span class="cmd">files</span>=<span class="arg">$(ls)</span>           <span class="comment"># each filename becomes a separate word if unquoted later</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$files</span>           <span class="comment"># newlines collapsed to spaces — one long line</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$files"</span>         <span class="comment"># newlines preserved</span></code></pre>
+
+<div class="callout callout-fun">
+  <strong>Side note — research on real-world Bash bugs</strong>
+  A study of real open-source Bash scripts found that the most common bug categories are quoting, word splitting, path management, command options, return values, and error handling — precisely the topics covered in this week's pre-reading. These are not obscure edge cases: they appear in widely-used, mature projects.
+  <br><br>
+  Documented in <a href="https://dl.acm.org/doi/full/10.1145/3517193" target="_blank"><em>Bash in the Wild: Language Usage, Code Smells, and Bugs</em></a> by Yiwen Dong, Zheyang Li, Yongqiang Tian, Chengnian Sun, Michael W. Godfrey, and Meiyappan Nagappan (ACM Transactions on Software Engineering and Methodology, 2022).
+  <br><br>
+  If you are interested in doing research in this area, feel free to contact
+  <a href="mailto:Yongqiang.tian@monash.edu">Yongqiang.tian@monash.edu</a>.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Set <code>msg="hello world"</code> then compare:
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$msg</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$msg"</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'%s\n'</span> <span class="arg">$msg</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'%s\n'</span> <span class="arg">"$msg"</span></code></pre>
+  <code>printf '%s\n'</code> prints each argument on its own line — making word splitting visible in a way that <code>echo</code> cannot, because <code>echo</code> always joins arguments with spaces. With quoting, <code>"hello world"</code> is one argument and produces one line; without quoting, it splits into two arguments and two lines.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

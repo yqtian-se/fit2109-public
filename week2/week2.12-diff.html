@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.12 — Comparing Files with diff — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment  { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd  { color: #89dceb; }
+  .arg  { color: #fab387; }
+  .out  { color: #cdd6f4; }
+  .del  { color: #f38ba8; }
+  .add  { color: #a6e3a1; }
+  .hunk { color: #89b4fa; }
+  .meta { color: #f9e2af; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-history">Supplementary — supports LO 4 &amp; 5</span>
+<h2>2.12 Comparing Files with diff</h2>
+
+<p><code>diff</code> compares two text files line by line and reports exactly what would need to change to make the first file identical to the second. It is the engine behind <code>git diff</code>, patch files, and — most practically for you — automated test scripts that check whether a program's output matches expected output.</p>
+
+<h3>Basic usage and output</h3>
+
+<pre><code><span class="comment"># Create two slightly different files</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'apple\nbanana\ncherry\n'</span> <span class="arg">&gt; file1.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'apple\nblueberry\ncherry\n'</span> <span class="arg">&gt; file2.txt</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">file1.txt file2.txt</span>
+<span class="out">2c2</span>
+<span class="del">&lt; banana</span>
+<span class="out">---</span>
+<span class="add">&gt; blueberry</span></code></pre>
+
+<p>Reading the default output:</p>
+<ul>
+  <li><code>2c2</code> — line 2 in the left file <strong>c</strong>hanged to become line 2 in the right file. Other codes: <strong>a</strong>dded, <strong>d</strong>eleted.</li>
+  <li>Lines prefixed <code>&lt;</code> — from the <strong>left</strong> (first) file.</li>
+  <li>Lines prefixed <code>&gt;</code> — from the <strong>right</strong> (second) file.</li>
+  <li><code>---</code> — separates the two sides.</li>
+</ul>
+
+<div class="callout callout-note">
+  <strong>Exit status — the key to using diff in scripts</strong>
+  <ul style="margin-top:8px;">
+    <li><strong>0</strong> — files are identical.</li>
+    <li><strong>1</strong> — files differ.</li>
+    <li><strong>2</strong> — an error occurred (e.g. file not found).</li>
+  </ul>
+  This makes <code>diff</code> directly usable in <code>&amp;&amp;</code>/<code>||</code> chains and <code>if</code> statements.
+</div>
+
+<h3>Unified format: diff -u</h3>
+<p>The default output is compact but hard to read in context. Unified format (<code>-u</code>) shows surrounding context lines and uses <code>+</code>/<code>-</code> instead of <code>&lt;</code>/<code>&gt;</code> — the same format used by <code>git diff</code>.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-u file1.txt file2.txt</span>
+<span class="meta">--- file1.txt	2026-06-02 10:00:00</span>
+<span class="meta">+++ file2.txt	2026-06-02 10:01:00</span>
+<span class="hunk">@@ -1,3 +1,3 @@</span>
+<span class="out"> apple</span>
+<span class="del">-banana</span>
+<span class="add">+blueberry</span>
+<span class="out"> cherry</span></code></pre>
+
+<p>Reading unified format:</p>
+<ul>
+  <li><code>---</code> / <code>+++</code> — headers identifying the two files.</li>
+  <li><code>@@  -1,3 +1,3  @@</code> — hunk header: shows which line ranges in each file this chunk covers.</li>
+  <li>Lines starting with <code>-</code> — present in the left file, absent from the right.</li>
+  <li>Lines starting with <code>+</code> — absent from the left file, present in the right.</li>
+  <li>Lines with no prefix — context lines (unchanged), shown for orientation.</li>
+</ul>
+
+<div class="callout callout-note">
+  <strong>Why unified format?</strong>
+  <code>diff -u</code> is the standard for patch files and code review. When you run <code>git diff</code>, you are reading unified format. Learning to read it now means git output will be immediately familiar.
+</div>
+
+<h3>Using diff as a test tool</h3>
+<p>The most practical use of <code>diff</code> for students is comparing a program's actual output against expected output. Because <code>diff</code> exits 0 when files are identical and 1 when they differ, it plugs directly into the <code>&amp;&amp;</code>/<code>||</code> pattern from Section 2.4.</p>
+
+<pre><code><span class="comment"># Basic pattern: run your script, save output, compare to expected</span>
+<span class="prompt-sym">$</span> <span class="cmd">./my_script.sh</span> <span class="arg">input.txt</span> <span class="arg">&gt; actual.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">expected.txt actual.txt</span>
+<span class="comment"># no output = files match = your script is correct</span>
+
+<span class="comment"># One-liner pass/fail check</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-q expected.txt actual.txt</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"PASS"</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"FAIL"</span>
+
+<span class="comment"># Show exactly what differs when it fails</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-u expected.txt actual.txt</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"--- output did not match ---"</span></code></pre>
+
+<h3>Process substitution — no temp file needed</h3>
+
+<div class="callout callout-note">
+  <strong>What is process substitution?</strong>
+  <code>&lt;(cmd)</code> is a <strong>Bash-only</strong> feature (not available in plain <code>sh</code>). It runs <code>cmd</code> in a subshell and makes its output available as a temporary file-like path — Bash uses a named pipe (<code>/dev/fd/N</code>) behind the scenes. Any command that accepts a file path can use <code>&lt;(cmd)</code> in its place. This lets you compare or process command output without ever writing a temp file to disk.
+</div>
+
+<p>Applied to <code>diff</code>, this means you can compare a program's output against expected output in a single command:</p>
+
+<pre><code><span class="comment"># Compare program output directly against expected — no temp file</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">expected.txt</span> <span class="arg">&lt;(./my_script.sh input.txt)</span>
+
+<span class="comment"># Compare outputs of two different commands</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">&lt;(./old_version.sh data.txt)</span> <span class="arg">&lt;(./new_version.sh data.txt)</span>
+
+<span class="comment"># In a test script</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-q expected.txt</span> <span class="arg">&lt;(./my_script.sh input.txt)</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"PASS"</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"FAIL"</span></code></pre>
+
+<h3>A reusable test script skeleton</h3>
+<p>Here is a shell script pattern for testing multiple inputs at once. It uses shell functions, <code>local</code> variables, and arithmetic — constructs covered beyond Week 2. Read it as a reference template you can adapt, not as something to memorise now.</p>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+set -u
+set -o pipefail
+
+pass=0
+fail=0
+
+run_test() {
+    local desc="$1" input="$2" expected="$3"
+    if diff -q "$expected" &lt;(./my_script.sh "$input") &gt;/dev/null 2&gt;&amp;1; then
+        echo "PASS: $desc"
+        ((pass++))
+    else
+        echo "FAIL: $desc"
+        diff -u "$expected" &lt;(./my_script.sh "$input")
+        ((fail++))
+    fi
+}
+
+run_test "empty input"   tests/empty.txt   tests/empty_expected.txt
+run_test "single line"   tests/one.txt     tests/one_expected.txt
+run_test "multiple lines" tests/multi.txt  tests/multi_expected.txt
+
+echo ""
+echo "Results: $pass passed, $fail failed"
+[ "$fail" -eq 0 ]   <span class="comment"># exit 0 if all passed, 1 if any failed</span></code></pre>
+
+<h3>Other useful diff options</h3>
+
+<table class="key-table">
+  <thead><tr><th>Option</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>-u</code></td><td>Unified format — context + <code>+</code>/<code>-</code> prefixes. Use this by default.</td></tr>
+    <tr><td><code>-q</code></td><td>Quiet — prints only whether files differ, not what differs. Good for scripts.</td></tr>
+    <tr><td><code>-i</code></td><td>Ignore case differences.</td></tr>
+    <tr><td><code>-w</code></td><td>Ignore all whitespace differences (spaces, tabs).</td></tr>
+    <tr><td><code>-b</code></td><td>Ignore changes in the amount of whitespace (leading/trailing).</td></tr>
+    <tr><td><code>-y</code></td><td>Side-by-side display — shows both files next to each other.</td></tr>
+    <tr><td><code>-r</code></td><td>Recursively compare two directories.</td></tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment"># Ignore whitespace — useful when trailing spaces differ</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-b expected.txt actual.txt</span>
+
+<span class="comment"># Side-by-side view</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-y file1.txt file2.txt</span>
+
+<span class="comment"># Compare two whole directories recursively</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-r expected_dir/ actual_dir/</span>
+
+<span class="comment"># Quiet directory comparison: just list which files differ</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-rq expected_dir/ actual_dir/</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Watch out for trailing newlines</strong>
+  A common source of unexpected failures: your script prints <code>hello</code> but the expected file contains <code>hello\n</code> (with a newline at the end). <code>diff</code> will report a difference. Make sure your script's output and expected files are consistent about trailing newlines. Use <code>diff -b</code> to temporarily ignore whitespace while debugging.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Write a script that takes a number and prints its square. Then test it with diff:
+  <pre><code><span class="comment"># 1. Create expected output</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"25"</span> <span class="arg">&gt; expected.txt</span>
+
+<span class="comment"># 2. Write square.sh, then test it</span>
+<span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">expected.txt</span> <span class="arg">&lt;(./square.sh 5)</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"PASS"</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"FAIL"</span>
+
+<span class="comment"># 3. Deliberately break it and re-run — read the diff output</span></code></pre>
+  Notice that when it fails, you can immediately see <em>exactly</em> what was wrong — not just "test failed."
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

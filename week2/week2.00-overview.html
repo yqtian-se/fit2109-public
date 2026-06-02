@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 2 Pre-Reading: Shell Evaluation, Scripting, and Remote Access — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .quote { color: #8090b0; margin-top: 12px; font-style: italic; font-size: 0.93rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Week 2: Shell Evaluation, Scripting, and Remote Access</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <p class="quote">"The shell rewards careful habits and punishes careless assumptions." — Bash in the Wild, TOSEM 2022</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol class="goals">
+      <li>Explain quoting rules and predict how the shell evaluates a command.</li>
+      <li>Use variables, <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">export</code>, and <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">$?</code> to control command-line behaviour.</li>
+      <li>Construct <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">grep</code>, <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">find</code>, and text-processing pipelines using regular expressions.</li>
+      <li>Write a basic shell script with arguments, conditionals, and loops.</li>
+      <li>Apply <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">set -u</code> and <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">set -o pipefail</code> to improve script reliability.</li>
+      <li>Use <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">ssh</code> and <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">scp</code> to access remote machines and transfer files.</li>
+    </ol>
+  </div>
+</div>
+
+<h3>A scenario</h3>
+<p>It is 11 pm. You wrote a script to back up files from a project folder called <code>Week 2 Materials</code>. The script ran without errors — or so you thought. You check the backup directory: it is empty. You run the script again with some extra <code>echo</code> calls and realise the problem: your variable <code>dir</code> holds the value <code>Week 2 Materials</code>, but because you wrote <code>ls $dir</code> instead of <code>ls "$dir"</code>, the shell split it into two separate arguments — <code>ls Week</code> and <code>2</code> — neither of which matched anything. The backup command never saw the right path.</p>
+<p>One missing pair of quotes. Three hours of confusion. This is what Week 2 is about: understanding exactly how the shell reads and rewrites your commands before running them, so that surprises like this become predictable rather than mysterious. By the end of this pre-reading you will be able to look at any shell command and trace through what the shell will actually execute.</p>
+
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  What do you think <code>echo $name</code> does when <code>name</code> has never been set? And what about <code>echo "$name"</code>? Jot down your prediction — you will see the answer in Section 2.3.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

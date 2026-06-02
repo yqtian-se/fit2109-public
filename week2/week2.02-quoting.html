@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.2 — Quoting Rules — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.2 Quoting Rules</h2>
+
+<p>Quoting is how you tell the shell which parts of a command line to leave alone. The shell has three quoting modes, each with different rules about what gets expanded and what gets treated as literal text.</p>
+
+<h3>The three quoting modes</h3>
+
+<table class="key-table">
+  <thead><tr><th>Mode</th><th>Syntax</th><th>What the shell does</th><th>When to use</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>No quotes</strong></td>
+      <td><code>$name</code>, <code>*.txt</code></td>
+      <td>Variables expand. Globs expand. Results are word-split on whitespace.</td>
+      <td>Only when you <em>want</em> word splitting or glob expansion — rarely.</td>
+    </tr>
+    <tr>
+      <td><strong>Double quotes</strong></td>
+      <td><code>"$name"</code></td>
+      <td>Variables and command substitutions expand. Spaces are preserved. Globs do <em>not</em> expand.</td>
+      <td>Almost always — the safe default for variables.</td>
+    </tr>
+    <tr>
+      <td><strong>Single quotes</strong></td>
+      <td><code>'literal'</code></td>
+      <td>Everything is literal. No expansion of any kind. No backslash escapes.</td>
+      <td>When you need a truly literal string — e.g., regex patterns, JSON, or strings with <code>$</code> signs.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Side-by-side comparison</h3>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">file</span>=<span class="arg">"Week 2 Materials/errors log.txt"</span>
+
+<span class="comment"># No quotes: word-splits "Week", "2", "Materials/errors", "log.txt" — four args</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">$file</span>
+<span class="out">ls: Week: No such file or directory</span>
+
+<span class="comment"># Double quotes: one argument, spaces preserved, variable expands</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">"$file"</span>
+<span class="out">Week 2 Materials/errors log.txt</span>
+
+<span class="comment"># Single quotes: literally the string $file — variable does NOT expand</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">'$file'</span>
+<span class="out">$file</span>
+
+<span class="comment"># Glob in double quotes: does NOT expand</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"*.txt"</span>
+<span class="out">*.txt</span>
+
+<span class="comment"># Glob without quotes: expands to matching filenames</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">*.txt</span>
+<span class="out">notes.txt summary.txt</span></code></pre>
+
+<h3>The default rule: always quote variables</h3>
+<p>Unless you have a specific reason to want word splitting or glob expansion, always wrap variable references in double quotes:</p>
+
+<pre><code><span class="comment"># Safe patterns — use these by default</span>
+<span class="prompt-sym">$</span> <span class="cmd">cp</span> <span class="arg">"$source"</span> <span class="arg">"$dest"</span>
+<span class="prompt-sym">$</span> <span class="cmd">if</span> <span class="arg">[ -f "$file" ]</span><span class="cmd">; then</span> ...   <span class="comment"># if/then is introduced in section 2.9</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">"$pattern" "$logfile"</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>When you intentionally skip quotes</strong>
+  There are two common cases where you deliberately leave quotes off:
+  <ul style="margin-top:8px;">
+    <li><strong>Glob expansion:</strong> <code>ls *.log</code> — you want the shell to expand matching filenames.</li>
+    <li><strong>Splitting a list:</strong> <code>for f in $list</code> — though this is fragile if elements contain spaces. Prefer passing items as separate arguments rather than packing them into one variable.</li>
+  </ul>
+</div>
+
+<h3>Mixing quote styles</h3>
+<p>You can concatenate quoted and unquoted sections within a single argument by placing them adjacent to each other:</p>
+
+<pre><code><span class="comment"># Both of these produce the same argument: /home/student/notes.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$HOME"</span><span class="arg">/notes.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"${HOME}/notes.txt"</span>
+
+<span class="comment"># Embedding a literal single quote inside double quotes</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"It's a shell"</span>
+<span class="out">It's a shell</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Common trap — quotes in test expressions</strong>
+  <em style="font-size:0.88rem;color:#888;">(The <code>if [ ]</code> syntax is introduced fully in section 2.9 — focus here on why quoting matters inside the brackets.)</em><br><br>
+  Inside <code>[ ]</code> conditions, an unquoted variable that expands to empty breaks the test syntax. Always quote:
+  <pre style="margin:10px 0 0;"><code><span class="comment"># Dangerous: if $name is empty, [ ==  "Alice" ] is a syntax error</span>
+if [ $name == "Alice" ]; then ...
+
+<span class="comment"># Safe</span>
+if [ "$name" == "Alice" ]; then ...</code></pre>
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Predict the output of each line before running it:
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">name</span>=<span class="arg">"Dr. Tian"</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">Hello $name</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"Hello $name"</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">'Hello $name'</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'%s\n'</span> <span class="arg">Hello $name</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'%s\n'</span> <span class="arg">"Hello $name"</span></code></pre>
+  The <code>printf</code> calls again make word splitting visible. Count the lines of output for each.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

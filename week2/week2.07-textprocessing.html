@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.7 — sort, uniq, and cut — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.7 Text Processing: sort, uniq, and cut</h2>
+
+<p><code>grep</code> (section 2.6) selects which <em>lines</em> to keep. Three more tools — <code>sort</code>, <code>uniq</code>, and <code>cut</code> — then shape those lines into useful output. Together they form the backbone of Unix text-processing pipelines: <code>cut</code> extracts columns, <code>sort</code> orders rows, and <code>uniq</code> collapses duplicates or counts them.</p>
+
+<table class="key-table">
+  <thead><tr><th>Tool</th><th>What it does</th><th>Key flags</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>sort</code></td>
+      <td>Sorts lines alphabetically by default. Add <code>-n</code> for numeric order, <code>-r</code> to reverse.</td>
+      <td><code>-n</code> numeric · <code>-r</code> reverse · <code>-u</code> deduplicate · <code>-t</code> delimiter · <code>-k</code> key field</td>
+    </tr>
+    <tr>
+      <td><code>uniq</code></td>
+      <td>Removes or counts <em>adjacent</em> duplicate lines. Always pipe <code>sort</code> first.</td>
+      <td><code>-c</code> count · <code>-d</code> only show duplicates · <code>-i</code> ignore case</td>
+    </tr>
+    <tr>
+      <td><code>cut</code></td>
+      <td>Extracts specific columns from delimiter-separated or fixed-width text.</td>
+      <td><code>-d</code> delimiter · <code>-f</code> field(s) · <code>-c</code> character positions</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>cut — extracting fields</h3>
+
+<pre><code><span class="comment"># CSV data: studentid,unit,grade</span>
+<span class="comment"># 31234567,FIT2109,HD</span>
+<span class="comment"># 31234568,FIT1051,D</span>
+<span class="comment"># 31234569,FIT2109,C</span>
+
+<span class="comment"># Single field</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2</span> <span class="arg">enrolments.csv</span>       <span class="comment"># second field (unit)</span>
+
+<span class="comment"># Multiple fields</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f1,3</span> <span class="arg">enrolments.csv</span>     <span class="comment"># studentid and grade</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2-</span> <span class="arg">enrolments.csv</span>      <span class="comment"># field 2 to end of line</span>
+
+<span class="comment"># Tab-separated files (TSV): tab is the default delimiter, so -d is not needed</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-f2</span> <span class="arg">data.tsv</span>
+
+<span class="comment"># /etc/passwd: system user database, colon-delimited</span>
+<span class="comment"># format: username:password:uid:gid:info:home:shell</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d':' -f1</span> <span class="arg">/etc/passwd</span>           <span class="comment"># extract just the usernames</span>
+
+<span class="comment"># Cut by character position: extract timestamp (first 19 chars)</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-c1-19</span> <span class="arg">app.log</span>                   <span class="comment"># e.g. "2026-05-01 10:32:44"</span></code></pre>
+
+<h3>sort — ordering lines</h3>
+
+<pre><code><span class="comment"># Default: lexicographic (alphabetical) — "10" comes before "2"</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'10\n2\n1\n20\n'</span> <span class="arg">|</span> <span class="cmd">sort</span>        <span class="comment"># output: 1, 10, 2, 20  ← wrong for numbers</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'10\n2\n1\n20\n'</span> <span class="arg">|</span> <span class="cmd">sort -n</span>     <span class="comment"># output: 1, 2, 10, 20  ← correct</span>
+
+<span class="comment"># Reverse order</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">-nr</span> <span class="arg">numbers.txt</span>                 <span class="comment"># largest first</span>
+
+<span class="comment"># Sort a CSV by the third field (grade), case-insensitive</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">-t',' -k3,3 -f</span> <span class="arg">enrolments.csv</span>
+
+<span class="comment"># Deduplicate in one step (-u = sort then keep unique lines)</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">-u</span> <span class="arg">names.txt</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Alphabetical vs numerical sort</strong>
+  Never use bare <code>sort</code> on numbers — it sorts digit by digit, so <code>10</code> comes before <code>2</code>. Always use <code>sort -n</code> when the values are numeric. This is the most common <code>sort</code> mistake.
+</div>
+
+<h3>uniq — collapsing or counting duplicates</h3>
+
+<pre><code><span class="comment"># Remove adjacent duplicates (sort first, otherwise scattered dupes survive)</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">names.txt</span> <span class="arg">|</span> <span class="cmd">uniq</span>
+
+<span class="comment"># Count how many times each line appears</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">names.txt</span> <span class="arg">|</span> <span class="cmd">uniq -c</span>
+
+<span class="comment"># Show only lines that appear MORE than once</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">names.txt</span> <span class="arg">|</span> <span class="cmd">uniq -d</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Why sort before uniq?</strong>
+  <code>uniq</code> only removes <em>adjacent</em> duplicate lines. If identical lines are scattered across the file, <code>uniq</code> alone will miss them. Sorting first brings all identical lines together so <code>uniq</code> sees and collapses them correctly.
+</div>
+
+<h3>Putting them together — full pipeline examples</h3>
+
+<pre><code><span class="comment"># Count distinct units from a CSV, most enrolled first</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2</span> <span class="arg">enrolments.csv</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span> <span class="arg">|</span> <span class="cmd">sort -nr</span>
+<span class="out">     42 FIT2109</span>
+<span class="out">     38 FIT1051</span>
+<span class="out">     21 FIT3155</span>
+
+<span class="comment"># Count how often each error code appears in a log, highest first</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-Eo</span> <span class="arg">'ERROR [0-9]+'</span> <span class="arg">server.log</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span> <span class="arg">|</span> <span class="cmd">sort -nr</span>
+<span class="out">      8 ERROR 404</span>
+<span class="out">      3 ERROR 500</span>
+<span class="out">      1 ERROR 503</span>
+
+<span class="comment"># Extract timestamps from a log and find the top 5 busiest minutes</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-c1-16</span> <span class="arg">app.log</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span> <span class="arg">|</span> <span class="cmd">sort -nr</span> <span class="arg">|</span> <span class="cmd">head -5</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Create sample data and work through the pipeline step by step:
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'31234567,FIT2109,HD\n31234568,FIT1051,D\n31234569,FIT2109,C\n31234570,FIT1051,HD\n31234571,FIT2109,D\n'</span> <span class="arg">&gt; enrolments.csv</span>
+
+<span class="comment"># Step by step — watch what each tool adds</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2</span> <span class="arg">enrolments.csv</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2</span> <span class="arg">enrolments.csv</span> <span class="arg">|</span> <span class="cmd">sort</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2</span> <span class="arg">enrolments.csv</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2</span> <span class="arg">enrolments.csv</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span> <span class="arg">|</span> <span class="cmd">sort -nr</span></code></pre>
+  Before running each line: predict what will change. This step-by-step approach is the right way to build and debug any pipeline.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

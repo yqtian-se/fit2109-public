@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.9 — Shell Scripting Basics — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.9 Shell Scripting Basics</h2>
+
+<p>A shell script is a plain text file containing shell commands. The shell reads and executes them exactly as if you had typed them at the prompt — the same evaluation rules, the same quoting requirements, the same exit status. Scripts make workflows repeatable: one command runs a whole sequence reliably.</p>
+
+<h3>Making a script runnable</h3>
+<p>Two things are required before you can run a script with <code>./script.sh</code>:</p>
+<ol>
+  <li>A <strong>shebang</strong> on line 1 — tells the OS which interpreter to use.</li>
+  <li>The <strong>execute permission bit</strong> set on the file.</li>
+</ol>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+<span class="comment"># The shebang must be the very first line.</span>
+<span class="comment"># #!/usr/bin/env bash finds Bash via PATH — portable across macOS and Linux.</span>
+echo "Hello from a script"</code></pre>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">u+x greet.sh</span>   <span class="comment"># add execute bit for owner</span>
+<span class="prompt-sym">$</span> <span class="cmd">./greet.sh</span>
+<span class="out">Hello from a script</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Why #!/usr/bin/env bash?</strong>
+  On macOS, <code>/bin/bash</code> is an old Bash 3.x kept for compatibility. Homebrew installs a modern Bash elsewhere. Using <code>#!/usr/bin/env bash</code> finds whichever <code>bash</code> is first on your <code>$PATH</code>, so scripts work consistently on macOS and Linux without hardcoding a path.
+</div>
+
+<h3>Positional arguments</h3>
+<p>Arguments passed when running a script are available as numbered variables:</p>
+
+<table class="key-table">
+  <thead><tr><th>Variable</th><th>Value</th></tr></thead>
+  <tbody>
+    <tr><td><code>$1</code>, <code>$2</code>, …</td><td>First, second, … positional argument.</td></tr>
+    <tr><td><code>$#</code></td><td>Total number of arguments passed.</td></tr>
+    <tr><td><code>$@</code></td><td>All arguments as separate words. Quote as <code>"$@"</code> to preserve spaces in individual arguments.</td></tr>
+    <tr><td><code>$0</code></td><td>The name of the script itself.</td></tr>
+    <tr><td><code>${1:-default}</code></td><td>Use <code>$1</code> if set; otherwise use <code>default</code>.</td></tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+name=${1:-world}
+echo "Hello, $name"</code></pre>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">./greet.sh</span>
+<span class="out">Hello, world</span>
+<span class="prompt-sym">$</span> <span class="cmd">./greet.sh</span> <span class="arg">Alice</span>
+<span class="out">Hello, Alice</span></code></pre>
+
+<h3>Conditionals</h3>
+<p>The <code>if</code> statement branches on exit status. The <code>[ ]</code> test command evaluates conditions and returns 0 (true) or 1 (false):</p>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+file="$1"
+if [ -f "$file" ]; then
+    echo "File exists: $file"
+    wc -l &lt; "$file"      # < feeds the file into wc -l via stdin (covered in Week 1)
+else
+    echo "File not found: $file" &gt;&amp;2  # >&2 sends this message to stderr, not stdout
+    exit 1
+fi</code></pre>
+
+<p>Common file test operators inside <code>[ ]</code>:</p>
+<table class="key-table">
+  <thead><tr><th>Test</th><th>True when</th></tr></thead>
+  <tbody>
+    <tr><td><code>-f "$path"</code></td><td>Path exists and is a regular file.</td></tr>
+    <tr><td><code>-d "$path"</code></td><td>Path exists and is a directory.</td></tr>
+    <tr><td><code>-e "$path"</code></td><td>Path exists (any type).</td></tr>
+    <tr><td><code>-z "$str"</code></td><td>String is empty.</td></tr>
+    <tr><td><code>-n "$str"</code></td><td>String is non-empty.</td></tr>
+    <tr><td><code>"$a" = "$b"</code></td><td>Strings are equal.</td></tr>
+    <tr><td><code>"$a" != "$b"</code></td><td>Strings are not equal.</td></tr>
+  </tbody>
+</table>
+
+<h3>Loops</h3>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+<span class="comment"># Loop over positional arguments</span>
+for file in "$@"; do
+    if [ -f "$file" ]; then
+        echo "$file: $(wc -l &lt; "$file") lines"
+    else
+        echo "$file: not found" &gt;&amp;2
+    fi
+done</code></pre>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+<span class="comment"># Loop over files matching a pattern</span>
+for log in logs/*.log; do
+    echo "Processing $log"
+    grep -c 'ERROR' "$log" || echo "  no errors"
+done</code></pre>
+
+<div class="callout callout-warn">
+  <strong>Write errors to stderr, not stdout</strong>
+  Error messages should go to standard error (<code>&amp;2</code>) so they do not contaminate the script's output when it is used in a pipeline:
+  <pre style="margin:10px 0 0;"><code>echo "Error: file not found" &gt;&amp;2
+exit 1</code></pre>
+  A caller piping your script's stdout into another tool will only see clean output, not error messages mixed in.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Write a script <code>count_errors.sh</code> that takes a log file as its first argument, counts how many lines contain ERROR, and prints the count. If no argument is given, print a usage message to stderr and exit 1. Test it with and without an argument.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

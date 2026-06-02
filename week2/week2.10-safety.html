@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.10 — Writing Reliable Scripts — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.10 Writing Reliable Scripts</h2>
+
+<p>A script that runs without crashing is not the same as a script that behaves correctly. Shell scripts fail in silent, dangerous ways: they continue past errors, expand empty variables into blank arguments, and treat a failed pipeline stage as a success. Three habits prevent the most common failures.</p>
+
+<h3>The safe script header</h3>
+<p>Start every non-trivial script with this header:</p>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+set -u
+set -o pipefail</code></pre>
+
+<h3>Habit 1: set -u — fail on unset variables</h3>
+<p>Without <code>set -u</code>, a typo in a variable name silently expands to an empty string, which can cause commands to run with wrong arguments:</p>
+
+<pre><code><span class="comment"># Without set -u: typo expands to empty string — rm sees just /</span>
+target_dir="/tmp/myapp"
+rm -rf "$trget_dir/"   <span class="comment"># typo: $trget_dir is empty → rm -rf /</span>
+
+<span class="comment"># With set -u: Bash catches the typo immediately</span>
+set -u
+rm -rf "$trget_dir/"   <span class="comment"># error: trget_dir: unbound variable</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>The missing quote is dangerous too</strong>
+  Even with <code>set -u</code>, an unquoted variable can cause harm if it contains spaces. Both <code>set -u</code> and quoting are needed — they guard against different failure modes.
+</div>
+
+<h3>Habit 2: set -o pipefail — catch pipeline failures</h3>
+<p>By default, a pipeline's exit status is the exit status of its <em>last</em> command only. This means a failing intermediate step is silently ignored:</p>
+
+<pre><code><span class="comment"># Without pipefail: grep fails (file missing), wc -l sees empty input</span>
+<span class="comment"># exit status is 0 (wc -l succeeded) — no sign of the error</span>
+grep 'ERROR' missing.log | wc -l
+echo $?   <span class="comment"># prints 0 — misleading!</span>
+
+<span class="comment"># With pipefail: the pipeline exit status is the last non-zero exit status</span>
+set -o pipefail
+grep 'ERROR' missing.log | wc -l
+echo $?   <span class="comment"># prints 2 (grep's error code for file-not-found)</span></code></pre>
+
+<h3>Habit 3: quote every variable</h3>
+<p>This is a repetition from Section 2.2, but it belongs in the safety checklist: any variable that might contain spaces, newlines, or glob characters must be quoted everywhere it appears in a script:</p>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+set -u
+set -o pipefail
+file="$1"
+
+<span class="comment"># Every reference to $file is quoted</span>
+if [ -f "$file" ]; then
+    wc -l &lt; "$file"
+else
+    echo "File not found: $file" &gt;&amp;2
+    exit 1
+fi</code></pre>
+
+<h3>Spotting problems in an unsafe script</h3>
+<p>Here is a script with six distinct problems. Can you find them all?</p>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+file=$1
+if [ -f $file ]; then
+    grep ERROR $file | sort | uniq -c
+else
+    echo File not found: $file
+fi</code></pre>
+
+<p>The problems:</p>
+<ol>
+  <li><strong><code>$1</code> not quoted on assignment line</strong> — safe here (no word-splitting on assignment), but inconsistent style that invites copy-paste errors elsewhere.</li>
+  <li><strong><code>$file</code> unquoted in <code>[ -f $file ]</code></strong> — if <code>$file</code> is empty or has spaces, the test expression breaks.</li>
+  <li><strong><code>$file</code> unquoted in <code>grep ERROR $file</code></strong> — word-splits a filename with spaces into multiple arguments.</li>
+  <li><strong>No <code>set -u</code></strong> — if the script is called without an argument, <code>$file</code> is empty and the script proceeds silently with wrong behaviour.</li>
+  <li><strong>No <code>exit 1</code> in the else branch</strong> — a caller using <code>&amp;&amp;</code> would think the script succeeded.</li>
+  <li><strong>Error message to stdout</strong> — <code>echo File not found: $file</code> should be <code>echo "File not found: $file" &gt;&amp;2</code>.</li>
+</ol>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Copy the unsafe script above. Then:
+  <ol style="margin-top:8px;">
+    <li>Run it with no arguments — what happens?</li>
+    <li>Run it with a filename that contains a space — what happens?</li>
+    <li>Add <code>set -u</code> and <code>set -o pipefail</code>, quote all variables, and fix the exit status. Run the same tests again.</li>
+  </ol>
+  Use <a href="https://www.shellcheck.net/" target="_blank">shellcheck.net</a> to check your fixed version — it will report any remaining issues.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

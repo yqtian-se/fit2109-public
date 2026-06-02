@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.4 — Exit Status and Command Chaining — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.4 Exit Status and Command Chaining</h2>
+
+<p>Every program that runs on Unix returns a number when it exits. This number — the <strong>exit status</strong> — is how commands communicate success or failure to the shell. Understanding exit status unlocks the ability to write commands that branch automatically based on whether something worked.</p>
+
+<h3>The convention: 0 is success</h3>
+<ul>
+  <li><strong>Exit status 0</strong> means the command succeeded.</li>
+  <li><strong>Any non-zero value</strong> (typically 1–255) means the command failed or encountered a problem. Different tools use different non-zero codes to distinguish kinds of failure.</li>
+</ul>
+
+<pre><code><span class="comment"># Check the exit status of the last command with $?</span>
+<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">demo_dir</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$?</span>
+<span class="out">0</span>                  <span class="comment"># success</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">demo_dir</span>   <span class="comment"># already exists — fails</span>
+<span class="out">mkdir: demo_dir: File exists</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$?</span>
+<span class="out">1</span>                  <span class="comment"># failure</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Read $? immediately</strong>
+  <code>$?</code> is overwritten by each command, including <code>echo</code> itself. If you need to store the status of a command, capture it right away: <code>status=$?</code> before running anything else.
+</div>
+
+<h3>Conventional exit codes to know</h3>
+<p>While any non-zero value means failure, some values have conventional meanings that make debugging faster:</p>
+
+<table class="key-table">
+  <thead><tr><th>Exit status</th><th>Conventional meaning</th><th>How to reproduce</th></tr></thead>
+  <tbody>
+    <tr><td><code>0</code></td><td>Success.</td><td>Any command that completes normally.</td></tr>
+    <tr><td><code>1</code></td><td>General error (the most common non-zero value).</td><td><code>mkdir existing_dir</code></td></tr>
+    <tr><td><code>126</code></td><td>Command found but not executable.</td><td><code>chmod -x script.sh; ./script.sh</code> — the <code>./</code> prefix (run from current directory) is explained in section 2.9</td></tr>
+    <tr><td><code>127</code></td><td>Command not found — shell could not locate it in <code>$PATH</code>.</td><td><code>notacommand</code></td></tr>
+    <tr><td><code>128+N</code></td><td>Terminated by signal N (e.g., 130 = Ctrl+C, which sends signal 2).</td><td><code>Ctrl+C</code> during a running command.</td></tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment"># 127: command not found</span>
+<span class="prompt-sym">$</span> <span class="cmd">notacommand</span>
+<span class="out">bash: notacommand: command not found</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$?</span>
+<span class="out">127</span>
+
+<span class="comment"># 126: not executable</span>
+<span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">-x script.sh</span>
+<span class="prompt-sym">$</span> <span class="cmd">./script.sh</span>
+<span class="out">bash: ./script.sh: Permission denied</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$?</span>
+<span class="out">126</span></code></pre>
+
+<h3>Command chaining with &amp;&amp; and ||</h3>
+<p>The shell provides two operators that branch on exit status, making it possible to write conditional logic in a single line:</p>
+
+<table class="key-table">
+  <thead><tr><th>Operator</th><th>Meaning</th><th>Common use</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>cmd1 &amp;&amp; cmd2</code></td>
+      <td>Run <code>cmd2</code> <strong>only if</strong> <code>cmd1</code> succeeded (exit 0).</td>
+      <td>Chain dependent steps: compile then run.</td>
+    </tr>
+    <tr>
+      <td><code>cmd1 || cmd2</code></td>
+      <td>Run <code>cmd2</code> <strong>only if</strong> <code>cmd1</code> failed (non-zero).</td>
+      <td>Provide a fallback or bail out on failure.</td>
+    </tr>
+    <tr>
+      <td><code>cmd1 ; cmd2</code></td>
+      <td>Run <code>cmd2</code> <strong>always</strong>, regardless of <code>cmd1</code>'s result.</td>
+      <td>Sequence commands with no dependency.</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment"># && — second command only runs if first succeeds</span>
+<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">build</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"directory created"</span>
+<span class="out">directory created</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">build</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"directory created"</span>   <span class="comment"># already exists</span>
+<span class="out">mkdir: build: File exists</span>
+<span class="comment"># echo does NOT run</span>
+
+<span class="comment"># || — second command only runs if first fails</span>
+<span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">"/nonexistent"</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"cd failed, staying put"</span>
+<span class="out">cd failed, staying put</span></code></pre>
+
+<h3>The most important pattern: bail out on failure</h3>
+<p>In scripts, the most common use of <code>||</code> is to stop immediately if a critical step fails. This prevents later commands from running in the wrong state — for example, deleting files from the wrong directory because <code>cd</code> silently failed.</p>
+
+<pre><code><span class="comment"># If cd fails, exit the script immediately instead of proceeding</span>
+<span class="cmd">cd</span> <span class="arg">"$target_dir"</span> <span class="arg">||</span> <span class="cmd">exit</span> <span class="arg">1</span>
+
+<span class="comment"># grep exit status: 0 if match found, 1 if no match, 2 on error</span>
+<span class="comment"># (-q = quiet: no output, exit status only — grep flags are covered in section 2.6)</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"ERROR"</span> <span class="arg">app.log</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"Errors found in log"</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">"CRITICAL"</span> <span class="arg">app.log</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"No CRITICAL lines"</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>The silent cd failure trap</strong>
+  Consider this script fragment:
+  <pre style="margin:10px 0 0;"><code>cd "$backup_dir"
+rm -rf *</code></pre>
+  If <code>cd</code> fails without a guard, the shell keeps running and <code>rm -rf *</code> deletes everything in your <em>current</em> directory instead of the backup directory. Always guard <code>cd</code> with <code>|| exit 1</code>:
+  <pre style="margin:10px 0 0;"><code>cd "$backup_dir" || exit 1
+rm -rf *</code></pre>
+</div>
+
+<h3>Exit status in practice</h3>
+
+<pre><code><span class="comment"># Check whether a file exists without printing anything</span>
+<span class="prompt-sym">$</span> <span class="cmd">test</span> <span class="arg">-f notes.txt</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"file exists"</span>
+
+<span class="comment"># Create a directory only if it does not already exist</span>
+<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p logs</span>   <span class="comment"># -p: no error if it already exists</span>
+
+<span class="comment"># Chain: compile, then run, then clean up — all steps dependent</span>
+<span class="prompt-sym">$</span> <span class="cmd">gcc</span> <span class="arg">-o prog main.c</span> <span class="arg">&amp;&amp;</span> <span class="cmd">./prog</span> <span class="arg">&amp;&amp;</span> <span class="cmd">rm</span> <span class="arg">prog</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">/nonexistent</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"A"</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"B"</span></code></pre>
+  Before running: which message will print, A or B, and why? Then try:
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">/tmp</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"A"</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"B"</span></code></pre>
+  What changed?
+</div>
+
+<div class="callout callout-warn">
+  <strong>The &&/|| chain is not if/else</strong>
+  <code>cmd1 &amp;&amp; cmd2 || cmd3</code> looks like an if/else but is not safe as one. If <code>cmd2</code> exits non-zero, <code>cmd3</code> will also run — because <code>||</code> sees the combined non-zero status of <code>cmd1 &amp;&amp; cmd2</code>. For reliable branching in scripts, use the <code>if</code> statement introduced in section 2.9.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

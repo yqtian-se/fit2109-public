@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.11 — SSH and Remote Access — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.11 SSH and Remote Access</h2>
+
+<p>SSH (Secure Shell) encrypts a connection between two machines, letting you run commands on a remote server as if you were sitting at its terminal. It is the standard tool for accessing cloud servers, compute clusters, and university lab machines. Key-based authentication replaces password prompts with a cryptographic proof of identity.</p>
+
+<h3>How key-based authentication works</h3>
+<p>SSH uses a key <em>pair</em>: two mathematically linked files generated together.</p>
+
+<table class="key-table">
+  <thead><tr><th></th><th>Private key</th><th>Public key</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Where it lives</strong></td>
+      <td><code>~/.ssh/id_ed25519</code> — your machine only.</td>
+      <td><code>~/.ssh/id_ed25519.pub</code> — copied to each server.</td>
+    </tr>
+    <tr>
+      <td><strong>Who sees it</strong></td>
+      <td>Nobody. Never share it. Treat it like a password.</td>
+      <td>The server stores it in <code>~/.ssh/authorized_keys</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>What it does</strong></td>
+      <td>Signs a challenge from the server to prove your identity.</td>
+      <td>The server uses it to verify the signature — no password needed.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>When you connect, the server sends a challenge. Your SSH client signs it with your private key. The server verifies the signature using the stored public key. If they match, you are in — no password sent over the network.</p>
+
+<h3>Generating a key pair</h3>
+
+<pre><code><span class="comment"># Generate a new Ed25519 key pair (modern, recommended over RSA)</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh-keygen</span> <span class="arg">-t ed25519 -C "your@email.com"</span>
+<span class="out">Generating public/private ed25519 key pair.</span>
+<span class="out">Enter file in which to save the key (~/.ssh/id_ed25519): </span>  <span class="comment"># press Enter</span>
+<span class="out">Enter passphrase (empty for no passphrase): </span>               <span class="comment"># set one for security</span>
+
+<span class="comment"># Check what was created</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-la ~/.ssh/</span>
+<span class="out">-rw-------  id_ed25519      </span><span class="comment"># private key — permissions must be 600</span>
+<span class="out">-rw-r--r--  id_ed25519.pub  </span><span class="comment"># public key — safe to share</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Permissions matter</strong>
+  SSH will refuse to use a private key if it is readable by anyone other than you. If you see a permissions warning, fix it: <code>chmod 600 ~/.ssh/id_ed25519</code>.
+</div>
+
+<h3>Copying your public key to a server</h3>
+
+<pre><code><span class="comment"># ssh-copy-id appends your public key to the server's authorized_keys</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh-copy-id</span> <span class="arg">-i ~/.ssh/id_ed25519.pub user@hostname</span>
+
+<span class="comment"># If ssh-copy-id is not available (e.g., older macOS), do it manually</span>
+<span class="prompt-sym">$</span> <span class="cmd">cat</span> <span class="arg">~/.ssh/id_ed25519.pub</span> <span class="arg">|</span> <span class="cmd">ssh</span> <span class="arg">user@hostname 'mkdir -p ~/.ssh &amp;&amp; cat &gt;&gt; ~/.ssh/authorized_keys'</span></code></pre>
+
+<h3>Connecting and running commands</h3>
+
+<pre><code><span class="comment"># Open an interactive shell on the remote machine</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh</span> <span class="arg">user@hostname</span>
+
+<span class="comment"># Run a single command on the remote machine and return</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh</span> <span class="arg">user@hostname</span> <span class="arg">'pwd &amp;&amp; uname -a'</span>
+
+<span class="comment"># Run a remote command and capture its output locally</span>
+<span class="prompt-sym">$</span> <span class="cmd">result</span>=<span class="arg">$(ssh user@hostname 'ls /var/log/*.log | wc -l')</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"Remote has $result log files"</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Quote the remote command carefully</strong>
+  The remote command is passed as a single argument, so single-quote it to prevent the <em>local</em> shell from expanding variables or globs. Single quotes make everything literal locally — the text is sent as-is to the remote machine, where the <em>remote</em> shell then expands any variable references it finds.
+</div>
+
+<h3>Transferring files with scp</h3>
+<p><code>scp</code> (secure copy) uses the SSH connection to transfer files. Its syntax mirrors <code>cp</code>: source then destination, with remote paths written as <code>user@host:/path</code>.</p>
+
+<pre><code><span class="comment"># Copy a local file to the remote machine</span>
+<span class="prompt-sym">$</span> <span class="cmd">scp</span> <span class="arg">deploy.sh user@hostname:/tmp/</span>
+
+<span class="comment"># Copy a file from the remote machine to the current local directory</span>
+<span class="prompt-sym">$</span> <span class="cmd">scp</span> <span class="arg">user@hostname:/var/log/app.log .</span>
+
+<span class="comment"># Copy a whole directory recursively (-r)</span>
+<span class="prompt-sym">$</span> <span class="cmd">scp</span> <span class="arg">-r src/ user@hostname:~/project/</span>
+
+<span class="comment"># Collect results after a long-running remote computation</span>
+<span class="prompt-sym">$</span> <span class="cmd">ssh</span> <span class="arg">user@hostname 'python3 experiment.py > run.log 2>&amp;1'</span>
+<span class="prompt-sym">$</span> <span class="cmd">scp</span> <span class="arg">user@hostname:run.log .</span></code></pre>
+
+<h3>Interactive file transfer with sftp</h3>
+<p><code>sftp</code> provides a more interactive file-transfer experience over the same SSH transport. Instead of specifying everything on one command line, you get a prompt where you can browse and transfer files step by step — useful when you are not sure of the exact remote path.</p>
+
+<pre><code><span class="comment"># Start an sftp session</span>
+<span class="prompt-sym">$</span> <span class="cmd">sftp</span> <span class="arg">user@hostname</span>
+<span class="out">sftp&gt;</span> <span class="cmd">pwd</span>               <span class="comment"># remote working directory</span>
+<span class="out">sftp&gt;</span> <span class="cmd">ls</span>                <span class="comment"># list remote files</span>
+<span class="out">sftp&gt;</span> <span class="cmd">put</span> <span class="arg">analysis.sh</span>   <span class="comment"># upload a local file</span>
+<span class="out">sftp&gt;</span> <span class="cmd">get</span> <span class="arg">results.txt</span>   <span class="comment"># download a remote file</span>
+<span class="out">sftp&gt;</span> <span class="cmd">mkdir</span> <span class="arg">output</span>      <span class="comment"># create a remote directory</span>
+<span class="out">sftp&gt;</span> <span class="cmd">quit</span></code></pre>
+
+<table class="key-table">
+  <thead><tr><th>sftp command</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>ls</code> / <code>lls</code></td><td>List remote / local files.</td></tr>
+    <tr><td><code>cd</code> / <code>lcd</code></td><td>Change remote / local directory.</td></tr>
+    <tr><td><code>put file</code></td><td>Upload <code>file</code> from local to remote.</td></tr>
+    <tr><td><code>get file</code></td><td>Download <code>file</code> from remote to local.</td></tr>
+    <tr><td><code>quit</code></td><td>Close the session.</td></tr>
+  </tbody>
+</table>
+
+<h3>Why key-based auth matters in scripts</h3>
+<p>Password authentication cannot be automated — a script cannot type a password interactively. Key-based authentication works silently: the SSH client reads the private key from disk and signs the challenge without any user interaction. This is why CI/CD systems, deployment scripts, and cron jobs all use key pairs.</p>
+
+<div class="callout callout-try">
+  <strong>Putting it together</strong>
+  Plan the sequence of commands to:
+  <ol style="margin-top:8px;">
+    <li>Copy a script called <code>report.sh</code> to a remote server at <code>/home/user/</code>.</li>
+    <li>Make it executable on the remote machine.</li>
+    <li>Run it there and collect its output into a local file called <code>report.txt</code>.</li>
+  </ol>
+  Write the three commands before checking your answer in class. Think about which shell (local or remote) evaluates each part.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2.6 — Searching Text with grep — FIT2109 Week 2</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>2.6 Searching Text with grep</h2>
+
+<p><code>grep</code> searches files (or standard input) for lines matching a pattern and prints matching lines. It is one of the most used Unix tools — you will reach for it daily to inspect logs, find code, and build pipelines. The flags you choose completely change what it does.</p>
+
+<h3>Essential flags</h3>
+
+<table class="key-table">
+  <thead><tr><th style="width:6rem;">Flag</th><th>Meaning</th><th>Typical use</th></tr></thead>
+  <tbody>
+    <tr><td><code>-E</code></td><td>Extended regex — enables <code>+</code>, <code>?</code>, <code>|</code>, <code>()</code>.</td><td>Almost always — use <code>grep -E</code> instead of bare <code>grep</code>.</td></tr>
+    <tr><td><code>-i</code></td><td>Case-insensitive match.</td><td>Searching logs where case varies.</td></tr>
+    <tr><td><code>-n</code></td><td>Prefix each matching line with its line number.</td><td>Jumping to the right line in an editor.</td></tr>
+    <tr><td><code>-o</code></td><td>Print <em>only</em> the matched text, not the whole line.</td><td>Extracting values like error codes or IP addresses.</td></tr>
+    <tr><td><code>-q</code></td><td>Quiet — produce no output, only set exit status.</td><td>Scripts that check "does this pattern exist?"</td></tr>
+    <tr><td><code>-r</code></td><td>Recursive search through a directory tree.</td><td>Finding a function name across all source files.</td></tr>
+    <tr><td><code>-v</code></td><td>Invert — print lines that do <em>not</em> match.</td><td>Filtering out noise lines from a log.</td></tr>
+    <tr><td><code>-c</code></td><td>Count of matching lines (not the lines themselves).</td><td>How many errors are in this log?</td></tr>
+    <tr><td><code>-h</code></td><td>Suppress the filename prefix when searching multiple files.</td><td>Pipeline-friendly output: <code>find … -exec grep -h 'pat' {} +</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Building grep pipelines</h3>
+<p>The real power of <code>grep</code> comes from combining flags and piping results into other tools:</p>
+
+<pre><code><span class="comment"># Exact line-start match</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">'^ERROR'</span> <span class="arg">server.log</span>
+
+<span class="comment"># Extended regex: WARN or WARNING</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E</span> <span class="arg">'WARN(ING)?'</span> <span class="arg">server.log</span>
+
+<span class="comment"># Extract just the error codes (e.g. "ERROR 404")</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-Eo</span> <span class="arg">'ERROR [0-9]+'</span> <span class="arg">server.log</span>
+
+<span class="comment"># Count how often each error code appears, most frequent first</span>
+<span class="comment"># (sort, uniq, and cut are introduced in section 2.7)</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-Eo</span> <span class="arg">'ERROR [0-9]+'</span> <span class="arg">server.log</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span> <span class="arg">|</span> <span class="cmd">sort -nr</span>
+
+<span class="comment"># Search all Python files for TODO or FIXME, with line numbers</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-rEn</span> <span class="arg">'TODO|FIXME'</span> <span class="arg">src/</span>
+
+<span class="comment"># Quiet check in a script — only exit status matters</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-q</span> <span class="arg">'ERROR'</span> <span class="arg">app.log</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"errors found"</span></code></pre>
+
+<h3>More grep patterns</h3>
+<p>These cover the patterns you will reach for most often once you are past the basics:</p>
+
+<pre><code><span class="comment"># ^ anchors to start of line; $ anchors to end of line</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">'^ERROR'</span> <span class="arg">app.log</span>          <span class="comment"># lines that START with ERROR</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">'failed$'</span> <span class="arg">app.log</span>         <span class="comment"># lines that END with failed</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">'^$'</span> <span class="arg">file.txt</span>              <span class="comment"># empty lines (nothing between start and end)</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-v</span> <span class="arg">'^$'</span> <span class="arg">file.txt</span>           <span class="comment"># non-empty lines (invert the match)</span>
+
+<span class="comment"># Optional character with ? (requires -E)</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E</span> <span class="arg">'colou?r'</span> <span class="arg">docs.txt</span>     <span class="comment"># matches "color" and "colour"</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E</span> <span class="arg">'WARN(ING)?'</span> <span class="arg">app.log</span>  <span class="comment"># matches "WARN" and "WARNING"</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E</span> <span class="arg">'https?://'</span> <span class="arg">links.txt</span>  <span class="comment"># matches "http://" and "https://"</span>
+
+<span class="comment"># -l: print only the filenames that contain a match (not the matching lines)</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-rl</span> <span class="arg">'TODO'</span> <span class="arg">src/</span>            <span class="comment"># which files have TODO?</span>
+
+<span class="comment"># Context lines around a match</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-A 2</span> <span class="arg">'ERROR'</span> <span class="arg">app.log</span>       <span class="comment"># 2 lines After each match</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-B 1</span> <span class="arg">'ERROR'</span> <span class="arg">app.log</span>       <span class="comment"># 1 line Before each match</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-C 2</span> <span class="arg">'ERROR'</span> <span class="arg">app.log</span>       <span class="comment"># 2 lines Context (before AND after)</span>
+
+<span class="comment"># Multiple patterns: lines matching EITHER pattern</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-e 'ERROR'</span> <span class="arg">-e 'WARN'</span> <span class="arg">app.log</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E</span> <span class="arg">'ERROR|WARN'</span> <span class="arg">app.log</span>   <span class="comment"># equivalent using alternation</span></code></pre>
+
+<h3>Understanding -o with pipelines</h3>
+<p>The <code>-o</code> flag is key for data extraction. Instead of returning the whole matching line, it returns only the part that matched your pattern — one match per line, even if there are multiple matches on the same source line. This makes it straightforward to count, sort, or further process specific values:</p>
+
+<pre><code><span class="comment"># Log file contains lines like:</span>
+<span class="comment"># 2026-05-01 ERROR 404 Page not found</span>
+<span class="comment"># 2026-05-01 ERROR 500 Database error</span>
+<span class="comment"># 2026-05-02 ERROR 404 Page not found</span>
+
+<span class="comment"># -o extracts just the matching portion from each line</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-Eo</span> <span class="arg">'ERROR [0-9]+'</span> <span class="arg">server.log</span>
+<span class="out">ERROR 404</span>
+<span class="out">ERROR 500</span>
+<span class="out">ERROR 404</span>
+
+<span class="comment"># Now easy to count</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-Eo</span> <span class="arg">'ERROR [0-9]+'</span> <span class="arg">server.log</span> <span class="arg">|</span> <span class="cmd">sort</span> <span class="arg">|</span> <span class="cmd">uniq -c</span> <span class="arg">|</span> <span class="cmd">sort -nr</span>
+<span class="out">      2 ERROR 404</span>
+<span class="out">      1 ERROR 500</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>grep exit status</strong>
+  <ul style="margin-top:8px;">
+    <li><strong>0</strong> — at least one matching line was found.</li>
+    <li><strong>1</strong> — no matching lines found.</li>
+    <li><strong>2</strong> — an error occurred (e.g., file not found).</li>
+  </ul>
+  This is why <code>grep -q 'pattern' file &amp;&amp; echo "found"</code> works: the exit status drives the <code>&amp;&amp;</code> branching.
+</div>
+
+<div class="callout callout-warn">
+  <strong>Always quote the pattern</strong>
+  <code>grep -E WARN(ING)? file</code> — the shell will try to glob-expand <code>(ING)?</code> before passing it to grep. Always single-quote regex patterns: <code>grep -E 'WARN(ING)?'</code>.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Create a sample log and practise the grep flags:
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'ERROR 404 Not found\nERROR 500 Server error\nWARNING high load\nERROR 404 Not found\n'</span> <span class="arg">&gt; server.log</span>
+
+<span class="comment"># Anchors and counting</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">'^ERROR'</span> <span class="arg">server.log</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-c</span> <span class="arg">'ERROR'</span> <span class="arg">server.log</span>
+
+<span class="comment"># Extraction with -o</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-Eo</span> <span class="arg">'ERROR [0-9]+'</span> <span class="arg">server.log</span>
+
+<span class="comment"># Optional character</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-E</span> <span class="arg">'WARN(ING)?'</span> <span class="arg">server.log</span>
+
+<span class="comment"># Context lines</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">-A1</span> <span class="arg">'ERROR 500'</span> <span class="arg">server.log</span></code></pre>
+  The <code>sort</code>, <code>uniq</code>, and <code>cut</code> tools that shape grep output further are covered in section 2.7.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 2 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>
