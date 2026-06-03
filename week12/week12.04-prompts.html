@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.4 — Prompt Engineering — FIT2109 Week 12</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; border-radius: 8px; padding: 18px 20px; margin: 16px 0; overflow-x: auto; }
+  pre code { background: none; color: #cdd6f4; font-size: 0.87em; padding: 0; border-radius: 0; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fff8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00634f; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+  .compare-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 20px; }
+  .compare-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+  .compare-card.vague h4 { color: #c0392b; }
+  .compare-card.specific h4 { color: #2e7d32; }
+  .compare-card p, .compare-card ul { font-size: 0.9rem; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>12.4 Prompt Engineering for Agent Tasks</h2>
+
+<p>The quality of what an agent produces is almost entirely determined by the quality of what you ask for. "Vague input → vague output" is not a rule of thumb — it is a near-guarantee. Learning to write a good prompt is the most immediately transferable skill in this week's material.</p>
+
+<h3>The three ingredients of an effective prompt</h3>
+<ol>
+  <li><strong>Task.</strong> What you want done. Be specific: name the function, file, or behaviour you want changed. "Fix the bug" is not a task — "In <code>parse.py</code>, <code>parse_date()</code> crashes on empty strings" is a task.</li>
+  <li><strong>Context.</strong> The language, framework, existing structure, and any relevant constraints the agent needs to understand your project. What it cannot see, it invents.</li>
+  <li><strong>Constraints.</strong> What the agent must <em>not</em> do. This is the most commonly omitted ingredient and the most common cause of runaway rewrites. "Do not change the function signature." "Do not add new dependencies." "Do not modify any file in <code>tests/</code>."</li>
+</ol>
+
+<h3>Vague vs specific</h3>
+<div class="compare-grid">
+  <div class="compare-card vague">
+    <h4>Vague prompt</h4>
+    <p>"Fix my code."</p>
+    <p>The agent has no idea which file, which function, what the expected behaviour is, or what "fix" means. It will make something up — typically by rewriting whatever it finds first in a way that seems plausible to it.</p>
+  </div>
+  <div class="compare-card specific">
+    <h4>Specific prompt</h4>
+    <p>"<code>find_matches()</code> in <code>data.py</code> is O(n²) because it searches a list on every iteration. Rewrite it to use a set for the lookup. Do not change the function signature or modify any test files."</p>
+    <p>The agent knows exactly what to touch, why, how, and what to leave alone. The resulting diff is reviewable in under a minute.</p>
+  </div>
+</div>
+
+<h3>The most common failure: missing constraints</h3>
+<p>When you give an agent a task with no constraints, it optimises for completeness. "Add error handling to my script" without constraints will often produce a full rewrite — because to the agent, the most thorough way to add error handling is to restructure the code. This is not malicious or stupid; it is the natural result of an agent trying to do a good job with incomplete instructions.</p>
+<p>The fix is to treat prompts like code specifications. If a function spec is missing edge-case handling, the implementation will be wrong. If a prompt is missing scope constraints, the agent output will exceed scope.</p>
+
+<div class="callout callout-warn">
+  <strong>No constraints means no scope</strong>
+  An agent given "refactor this module" with no constraints may change the public API, rename functions, swap the data structures, add a dependency, and reorganise the file layout — all in one pass. Each change is individually reasonable; together they produce a diff you cannot review in an hour. Always say what must not change.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Take a task you would normally Google — looking up how to sort a dictionary by value, or how to read a CSV file — and instead write a properly constrained agent prompt for it. Include the task, the language and framework, and at least two constraints. Notice how the constraints force you to think more precisely about what you actually want.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

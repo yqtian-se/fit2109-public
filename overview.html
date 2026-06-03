@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How to Learn This Unit — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-tip   { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-tip  strong { color: #00695c; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .principle { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 28px; }
+  .principle-num { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: #4361ee; color: #fff; font-weight: 700; font-size: 1rem; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .principle-body h4 { font-size: 1rem; font-weight: 700; margin-bottom: 4px; color: #1a1a2e; }
+  .principle-body p { margin-bottom: 0; color: #444; font-size: 0.95rem; }
+  .week-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  .week-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 16px 18px; }
+  .week-card .label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #4361ee; margin-bottom: 4px; }
+  .week-card .title { font-weight: 600; font-size: 0.95rem; color: #1a1a2e; }
+  .week-card .desc  { font-size: 0.88rem; color: #666; margin-top: 4px; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .week-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>FIT2109: How to Learn This Unit</h1>
+  <p class="sub">Applied Computing Skills · Monash University</p>
+  <p style="margin-top:18px;color:#c8d8f0;font-size:0.97rem;">This unit covers tools and practices that every software project relies on: the shell, text processing, version control, debugging, performance, and reproducible environments. You will use these skills in every unit and job that follows — but <em>only</em> if you build the habit of using them yourself.</p>
+</div>
+
+<h3>Four things you should understand from day one</h3>
+
+<div class="principle">
+  <div class="principle-num">1</div>
+  <div class="principle-body">
+    <h4>We teach concepts — you practise everywhere</h4>
+    <p>Workshops introduce the core ideas. The real learning happens when you apply them: in your applied sessions, coursework assessments, and in other units where you reach for a tool you saw here. Passive reading is not enough — you need to type the commands, break things, and fix them.</p>
+  </div>
+</div>
+
+<div class="principle">
+  <div class="principle-num">2</div>
+  <div class="principle-body">
+    <h4>Read before you come to class</h4>
+    <p>Each week has pre-reading materials linked from the unit page. Workshop time is not a lecture — it is where we work through the hard parts together, ask questions, and go deeper. If you arrive without having read, you will spend the session catching up on material you could have absorbed at your own pace beforehand.</p>
+  </div>
+</div>
+
+<div class="principle">
+  <div class="principle-num">3</div>
+  <div class="principle-body">
+    <h4>There is far more to learn than we can cover — and that is the point</h4>
+    <p>The shell ecosystem alone could fill a year-long course. We have chosen the concepts that unlock the rest: once you understand <em>why</em> pipes exist, or <em>what</em> a process is, the thousands of tools built on top of them start to make sense. Our goal is to give you a foundation you can extend on your own.</p>
+  </div>
+</div>
+
+<div class="principle">
+  <div class="principle-num">4</div>
+  <div class="principle-body">
+    <h4>Do not try to memorise commands</h4>
+    <p>No one does. Experienced engineers spend their careers looking things up. What we actually assess is your ability to break a problem down, identify what kind of tool would help, find its usage, and adapt it. These meta-skills — reading documentation, analysing errors, thinking systematically — transfer to every technology you will ever touch.</p>
+  </div>
+</div>
+
+<div class="principle">
+  <div class="principle-num">5</div>
+  <div class="principle-body">
+    <h4>Be curious — explore and share what you find</h4>
+    <p>The best way to learn a tool is to poke at it: try a flag you have not seen, pipe two commands together and see what happens, break something on purpose and figure out why. Curiosity is what turns a beginner into someone who actually knows the tool. That said — some commands are irreversible. Never run <code>rm -rf *</code> or any variant unless you are absolutely certain what it will delete, because there is no undo.</p>
+  </div>
+</div>
+
+<div class="principle">
+  <div class="principle-num">6</div>
+  <div class="principle-body">
+    <h4>Share what you find</h4>
+    <p>When you discover something interesting, post it on Ed so your classmates can learn from it. If you spot an error or improvement in the course materials, we genuinely welcome pull requests — the repository is open at <a href="https://github.com/yqtian-se/fit2109-public" target="_blank">github.com/yqtian-se/fit2109-public</a>.</p>
+  </div>
+</div>
+
+<div class="callout callout-tip">
+  <strong>A practical habit that separates good engineers</strong>
+  When a command fails, read the error message carefully before searching for an answer. Most errors contain the fix. Building the reflex to read before reaching for Google is one of the most valuable things you can take from this unit.
+</div>
+
+<hr class="divider">
+
+<h3>Topics covered this semester</h3>
+<p>These are the weeks taught in this unit. Each links to its pre-reading overview.</p>
+
+<div class="week-grid">
+  <div class="week-card">
+    <div class="label">Week 1</div>
+    <div class="title">Introduction to the Shell</div>
+    <div class="desc">Navigation, files, permissions, pipes, and <code>$PATH</code>.</div>
+  </div>
+  <div class="week-card">
+    <div class="label">Week 2</div>
+    <div class="title">Shell Evaluation, Scripting &amp; Remote Access</div>
+    <div class="desc">Quoting, expansion, scripts, SSH, and file transfer.</div>
+  </div>
+  <div class="week-card">
+    <div class="label">Week 6</div>
+    <div class="title">Reproducible Environments</div>
+    <div class="desc">Virtual machines, Docker containers, package managers, and lockfiles.</div>
+  </div>
+  <div class="week-card">
+    <div class="label">Week 8</div>
+    <div class="title">Debugging — Systematic Bug Hunting</div>
+    <div class="desc">Mental models for finding bugs, debuggers, and logging.</div>
+  </div>
+  <div class="week-card">
+    <div class="label">Week 9</div>
+    <div class="title">Profiling &amp; Performance</div>
+    <div class="desc">Measuring where time is spent and knowing when optimisation is worth it.</div>
+  </div>
+  <div class="week-card">
+    <div class="label">Week 12</div>
+    <div class="title">Capstone / Review</div>
+    <div class="desc">Bringing it together across tools, workflows, and your own projects.</div>
+  </div>
+</div>
+
+<div class="callout callout-note">
+  <strong>Not all weeks are listed here</strong>
+  This unit is co-taught. The weeks above are covered by Dr. Yongqiang Tian. Other weeks are taught by your co-teaching staff — check the unit page for their pre-reading materials and topics.
+</div>
+
+<hr class="divider">
+
+<h3>Meet the CE of this unit</h3>
+<p><a href="https://yqtian.com/" target="_blank"><strong>Dr. Yongqiang Tian</strong></a> is the Chief Examiner of FIT2109 and teaches weeks 1, 2, 6, 8, 9, and 12. His research focuses on improving developer productivity — much of it directly relevant to this unit. For example, his work on <a href="https://dl.acm.org/doi/full/10.1145/3517193" target="_blank">bash scripting</a> and <a href="https://github.com/uw-pluverse/perses" target="_blank">Perses</a> (a program reducer) connects closely to the shell, scripting, and debugging topics you will cover here. You can find his projects and contact details at <a href="https://yqtian.com/" target="_blank">yqtian.com</a>.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

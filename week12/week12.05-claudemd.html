@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.5 — Project Context Files — FIT2109 Week 12</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; border-radius: 8px; padding: 18px 20px; margin: 16px 0; overflow-x: auto; }
+  pre code { background: none; color: #cdd6f4; font-size: 0.87em; padding: 0; border-radius: 0; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fff8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00634f; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>12.5 Project Context Files — Grounding the Agent</h2>
+
+<p>Every time you start a session, the agent arrives knowing nothing about your project. It does not know your naming conventions, which files are off-limits, how to run the tests, or what constraints the project is working under. Without guidance, it invents plausible answers to all of those questions — and those invented answers are frequently wrong.</p>
+<p>A project context file solves this problem. In Claude Code, the file is <code>CLAUDE.md</code>. In Codex, the common project instruction file is <code>AGENTS.md</code>. Other tools may use their own filename or settings panel. The teaching idea is the same: write down the project facts the agent must not invent. Think of it as a README written for the agent, not for humans.</p>
+
+<h3>What to put in it</h3>
+<table class="key-table">
+  <thead><tr><th>Category</th><th>What to write</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Project purpose</strong></td><td>One or two sentences on what the project does and its main components.</td><td>Prevents the agent from misinterpreting the codebase as something it resembles superficially.</td></tr>
+    <tr><td><strong>Build and test commands</strong></td><td>Exact commands: <code>make test</code>, <code>pytest tests/</code>, <code>npm run build</code>.</td><td>The agent will run these to verify its changes. Without them, it guesses — or skips verification.</td></tr>
+    <tr><td><strong>Naming conventions</strong></td><td>snake_case, camelCase, file naming patterns, module structure rules.</td><td>Prevents the agent from generating code in a different style to the rest of the project.</td></tr>
+    <tr><td><strong>No-touch files</strong></td><td>Files the agent must not modify: migration scripts, generated files, third-party vendored code.</td><td>The agent cannot infer which files are sensitive — it needs to be told explicitly.</td></tr>
+    <tr><td><strong>Known constraints</strong></td><td>No new pip dependencies. No print() in library code. Python 3.11 only.</td><td>Prevents the agent from introducing changes that technically work but violate project rules.</td></tr>
+  </tbody>
+</table>
+
+<h3>An example</h3>
+<pre><code># MyProject
+
+## Build &amp; test
+- `make test` runs all tests
+- `make lint` runs ruff
+
+## Conventions
+- snake_case for all functions
+- No print() in library code
+- Tests live in tests/
+
+## Do not touch
+- legacy/migration.py
+</code></pre>
+
+<p>This file takes about five minutes to write for a small project. For a larger project, a good project context file is the difference between an agent that makes sensible targeted edits and one that produces a diff you spend an hour untangling.</p>
+
+<div class="callout callout-warn">
+  <strong>Without project context, the agent invents your project</strong>
+  An agent without a context file will infer naming conventions from what it sees, assume the test command is <code>pytest</code> or <code>npm test</code> based on the project type, and decide for itself which files are important. These inferences are plausible but frequently wrong. The first time the agent runs the wrong test command, or edits a file you needed untouched, write the project instruction file your tool expects.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this — write a context-file stub</strong>
+  Pick any project you already have on your machine (an assignment, a personal script, anything). Write a minimal project context file for it: one line describing what it does, the command to run the tests, one naming convention, and one file the agent should not touch. Use <code>CLAUDE.md</code> for Claude Code, <code>AGENTS.md</code> for Codex, or the equivalent file/settings for your tool. If you do not have a project handy, invent a tiny Python utility and write the context file it would need.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

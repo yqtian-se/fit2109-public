@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.8 — Verification Workflow — FIT2109 Week 12</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fff8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00634f; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>12.8 Verification — Reading What the Agent Wrote</h2>
+
+<p>The most dangerous moment in an agent workflow is not when the agent acts — it is when you accept the result without reading it. Tests passing is a necessary condition for correctness, not a sufficient one. The four-step verification workflow below is the minimum responsible practice for any AI-generated code you intend to keep.</p>
+
+<h3>The four-step verification workflow</h3>
+<table class="key-table">
+  <thead><tr><th>Step</th><th>What to do</th><th>What to look for</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>1. Read the diff</strong></td>
+      <td>Before running anything, open the diff and read every changed line. In Git: <code>git diff</code> or <code>git diff --staged</code>.</td>
+      <td>Did the agent change files you did not ask it to touch? Did it remove error handling? Did it change a public API silently? Does any line surprise you?</td>
+    </tr>
+    <tr>
+      <td><strong>2. Run the tests</strong></td>
+      <td>Run the full test suite, not just the tests for the changed function. Use <code>make test</code> or equivalent.</td>
+      <td>Failing tests are an obvious signal. But also check: did the agent add new tests that pass trivially, or delete tests that were inconvenient? Passing tests on weaker coverage is not confidence.</td>
+    </tr>
+    <tr>
+      <td><strong>3. Explain it</strong></td>
+      <td>For every function or block the agent changed, write one sentence in plain English describing what it does. If you cannot, you do not understand it yet.</td>
+      <td>The inability to explain a function is the clearest signal that you have not actually verified it. This is the step that catches hallucinated logic — code that looks right but does something subtly different.</td>
+    </tr>
+    <tr>
+      <td><strong>4. Check edge cases</strong></td>
+      <td>Manually test or reason through: empty input, maximum-size input, unexpected types, missing files, network errors — whatever the function is supposed to handle.</td>
+      <td>Agents reliably under-test edge cases. The generated tests usually cover the happy path. Edge cases are where hallucinated logic tends to surface.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Academic integrity</h3>
+<p>Monash University permits the use of AI tools in FIT2109 when that use is allowed by the assessment instructions and disclosed appropriately. Permission to use a tool does not remove responsibility for the work. You should expect to explain code you submit: what each function does, why the design is appropriate, and how you checked it.</p>
+<p>The rule is: <strong>you may use AI tools if you disclose it and can explain every line you submit.</strong> Submitting code you cannot explain is academic misconduct, regardless of who or what wrote it. The tool writes code; the responsibility is yours.</p>
+<p>The four-step workflow above is not just good engineering practice — it is also how you ensure you can satisfy that standard. Strong coding knowledge is what makes this possible: without it, you cannot tell whether the AI helped, guessed, or quietly broke the program.</p>
+
+<div class="callout callout-warn">
+  <strong>Tests passing is not the same as code being correct</strong>
+  An agent can produce code that passes all existing tests while still being wrong. The tests may not cover the relevant cases. The agent may have changed the behaviour in a way the tests were not designed to catch. Tests increase confidence — they do not replace reading and understanding the code.
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Use any AI tool to generate a short function (10–20 lines) for a task of your choice. Then apply the four steps: read what it produced, run or mentally trace it, explain each line out loud as if to a classmate, and find one input it would handle incorrectly. The aim is to notice what the tool got right, what it missed, and which parts of your own programming knowledge let you tell the difference.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

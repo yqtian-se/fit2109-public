@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.1 — Why GenAI Now — FIT2109 Week 12</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>12.1 Why GenAI Became Capable Now</h2>
+
+<p>Generative AI for code did not arrive gradually. It crossed a capability threshold in a short window, driven by three changes that happened simultaneously. Understanding what those changes were helps you reason about what these tools can and cannot do — and why their limitations are structural, not temporary bugs waiting to be fixed.</p>
+
+<p>First, separate the concept from the product name. <strong>GenAI</strong> is the underlying capability: a model generates likely text, code, images, or other artefacts from a prompt. A <strong>GenAI API</strong> is the programmable interface that lets your own software call that model for a narrow task. <strong>ChatGPT</strong>, <strong>Claude</strong>, and <strong>Gemini</strong> are familiar chat interfaces around that kind of model. <strong>Codex CLI</strong>, <strong>Claude Code</strong>, and <strong>Gemini CLI</strong> are agent interfaces that let a model work closer to your files, shell commands, Git history, and tests.</p>
+
+<h3>Three shifts that changed the landscape</h3>
+<table class="key-table">
+  <thead><tr><th>Shift</th><th>What happened</th><th>Why it mattered</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Architecture</strong></td>
+      <td>The Transformer architecture (2017) replaced older sequence models. Transformers use attention mechanisms that relate every part of an input to every other part, allowing them to handle long, structured text effectively.</td>
+      <td>Previous models struggled with long-range dependencies in code — a variable defined 200 lines up, a function called 50 lines later. Transformers handle this naturally.</td>
+    </tr>
+    <tr>
+      <td><strong>Scale</strong></td>
+      <td>Models were trained on essentially all public code available on the internet — billions of lines across GitHub, Stack Overflow, documentation, and tutorials.</td>
+      <td>The sheer volume of diverse examples means the model has encountered most patterns that appear in everyday software work. It is not reasoning from first principles; it is completing patterns it has seen many times.</td>
+    </tr>
+    <tr>
+      <td><strong>APIs</strong></td>
+      <td>Capability was packaged as a service. You do not need a research lab, a GPU cluster, or a machine learning background to use a frontier model — you call an API.</td>
+      <td>This made it practical to build coding tools on top of models. Codex CLI, Claude Code, Gemini CLI, Cline, Aider, and Copilot are all, at their core, interfaces to an underlying model API.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Why code specifically?</h3>
+<p>Of all the things these models do well, code is where the gains have been most dramatic. There are concrete reasons for this:</p>
+<ul>
+  <li><strong>Vast public supply.</strong> GitHub alone contains hundreds of millions of repositories. There is more high-quality, labelled code publicly available than almost any other structured data type.</li>
+  <li><strong>Highly structured and consistent.</strong> Code follows strict syntactic rules, uses consistent naming patterns, and has predictable structure. This makes it easier for a model to learn and reproduce.</li>
+  <li><strong>Correctness is measurable.</strong> Tests either pass or fail. This is unusually clear feedback compared to, say, evaluating whether a summary is accurate. It also means models can be fine-tuned using test results as a reward signal.</li>
+  <li><strong>Huge demand willing to pay for it.</strong> Developer time is expensive. There is strong commercial pressure to invest in improving coding models, which drives continued progress.</li>
+</ul>
+
+<h3>What this means for you</h3>
+<p>These three shifts do not mean AI has become generally intelligent or reliably correct. They mean it has become very good at <em>pattern completion</em> over structured text. Code is structured text. So the model often produces code that looks syntactically right, follows common idioms, and resembles code that works — without any internal understanding of whether it actually does what you need.</p>
+<p>The product examples will change. The important workflow idea is stable: a model API lets a program call a model; a chat interface helps you ask and receive; an agent interface can read, act, observe, and continue. That extra ability is useful, but it also increases the risk if you do not verify the result.</p>
+<p>The next page covers exactly this: what that distinction between pattern-matching and understanding means for where the tools succeed and where they fail.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check</strong>
+  Transformers use <em>attention</em> to relate any token in a sequence to any other token, regardless of distance. Code has variables that are defined in one place and referenced in many others. Why does this make attention particularly useful for code, compared to older sequence models that processed tokens strictly left-to-right?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

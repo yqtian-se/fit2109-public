@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 12 — Agentic Coding Tools — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-tool { background: #e3f2fd; color: #1565c0; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; transition: box-shadow 0.15s; }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .name a { color: #4361ee; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #d0d8f0; border-radius: 20px; padding: 5px 14px; font-size: 0.84rem; color: #4361ee; text-decoration: none; }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .tool-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Explore freely</span>
+<h2>Week 12 Agentic Coding Tools at a Glance</h2>
+
+<h3>When to reach for which tool</h3>
+<table class="key-table">
+  <thead><tr><th>Situation</th><th>Best tool</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td>Explaining a small snippet or brainstorming options</td><td>ChatGPT, Claude, or Gemini</td><td>Chat is good when you provide the context and want text back. You still apply changes manually.</td></tr>
+    <tr><td>Calling a model from your own program for classification, extraction, or summarisation</td><td>GenAI API</td><td>Use a provider SDK or HTTP API, ask for structured output, validate the response in code, and handle failure cases explicitly.</td></tr>
+    <tr><td>OpenAI/ChatGPT workflow; want a terminal coding agent</td><td>Codex CLI</td><td>Runs locally in the terminal, works with repository context, and can be guided by project instruction files such as <code>AGENTS.md</code>.</td></tr>
+    <tr><td>Terminal-first workflow; need full shell and file access</td><td>Claude Code</td><td>Native CLI, configurable with <code>CLAUDE.md</code> and <code>--allowedTools</code>; fits this unit's workshop demos and terminal workflow.</td></tr>
+    <tr><td>Google/Gemini workflow; want an open-source terminal agent</td><td>Gemini CLI</td><td>Brings Gemini into the terminal for code understanding, file operations, command execution, and automation.</td></tr>
+    <tr><td>Working inside VS Code; want to see every action before it runs</td><td>Cline</td><td>Open-source, model-agnostic, shows all file reads and commands in the UI before executing.</td></tr>
+    <tr><td>Git-centric workflow; want every agent change auto-committed</td><td>Aider</td><td>Git-native by design; changes are committed automatically, giving a clean undo path with <code>git log</code>.</td></tr>
+    <tr><td>Inline autocomplete while typing; subscription already active</td><td>GitHub Copilot</td><td>The most widely deployed tool; best for line-by-line suggestions without leaving the editor.</td></tr>
+    <tr><td>Personal or autonomous-agent automation beyond coding</td><td>OpenClaw-style agent framework</td><td>Useful as a general-agent example, but higher-risk: persistent memory, tool access, and external integrations need a strong harness.</td></tr>
+    <tr><td>Connecting an agent to an external service (database, GitHub, Slack)</td><td>MCP server</td><td>Standard protocol; works with any MCP-compatible agent. Add a server, expand capability without changing the model.</td></tr>
+  </tbody>
+</table>
+
+<h3>Tool reference cards</h3>
+<div class="tool-grid">
+  <div class="tool-card">
+    <div class="name"><a href="https://chatgpt.com" target="_blank">ChatGPT</a></div>
+    <div class="desc">OpenAI's chat interface. Strong for explanation, planning, examples, and reviewing snippets when you provide the relevant context. Treat it as a conversational assistant unless you explicitly connect it to agentic tools.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://platform.openai.com/docs" target="_blank">GenAI APIs</a></div>
+    <div class="desc">Provider APIs let your own software call a model for narrow tasks such as classification, extraction, and summarisation. Use structured output, validate responses in code, and avoid sending data the task does not need.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://help.openai.com/en/articles/11096431" target="_blank">Codex CLI</a></div>
+    <div class="desc">OpenAI's command-line coding agent. Runs from the terminal, works near Git and shell commands, and can use project instructions such as <code>AGENTS.md</code> to stay aligned with repository conventions.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Claude Code</a></div>
+    <div class="desc">Anthropic's official CLI agent. Run <code>claude</code> in any terminal. Full shell and file access. Reads <code>CLAUDE.md</code> automatically. Supports <code>--allowedTools</code> for scoping permissions. Useful for workshop demos where the diff can be reviewed carefully.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://google-gemini.github.io/gemini-cli/" target="_blank">Gemini CLI</a></div>
+    <div class="desc">Google's open-source terminal agent for Gemini. Useful for repository exploration, file manipulation, command execution, dynamic troubleshooting, and automation from a command-line workflow.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://github.com/cline/cline" target="_blank">Cline</a></div>
+    <div class="desc">Open-source VS Code extension. Model-agnostic — works with Claude, GPT-4, Gemini, and local models. Every file read and command run is shown in the extension panel before it executes, giving you fine-grained visibility and control.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://aider.chat" target="_blank">Aider</a></div>
+    <div class="desc">Open-source CLI agent optimised for Git workflows. Automatically commits each set of changes with a descriptive message, making the agent's history visible and reversible via <code>git log</code> and <code>git revert</code>.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://github.com/features/copilot" target="_blank">GitHub Copilot</a></div>
+    <div class="desc">Closed, subscription-based IDE integration. Provides inline code completions as you type, and a chat interface for larger tasks. The most widely deployed AI coding tool in industry. Available in VS Code, JetBrains, and other IDEs.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name">OpenClaw</div>
+    <div class="desc">A general autonomous-agent framework example rather than a FIT2109 coding recommendation. It is useful for thinking about persistent memory, messaging integrations, tool permissions, prompt injection, and why audit logs matter.</div>
+  </div>
+  <div class="tool-card">
+    <div class="name"><a href="https://modelcontextprotocol.io" target="_blank">MCP (Model Context Protocol)</a></div>
+    <div class="desc">The open standard (Anthropic, 2024) for connecting agents to external tools and data sources. Not a tool itself — a protocol. Any MCP-compatible agent can use any MCP server: filesystem, GitHub, PostgreSQL, Slack, browser, and more. The ecosystem is growing rapidly.</div>
+  </div>
+</div>
+
+<h3>Minimal Codex CLI workflow</h3>
+<p>For this workshop, students only need the safe local pattern. Start inside a Git repository, ask for a narrow change, review the diff, and run the tests yourself.</p>
+
+<table class="key-table">
+  <thead><tr><th>Step</th><th>Command or action</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <tr><td>Start in the project</td><td><code>cd my-project</code> then <code>git status</code></td><td>You need to know the working tree state before letting an agent touch it.</td></tr>
+    <tr><td>Launch Codex</td><td><code>codex "Explain this repo structure"</code></td><td>Good first task: read-only understanding before edits.</td></tr>
+    <tr><td>Ask for a scoped edit</td><td><code>codex --sandbox workspace-write --ask-for-approval on-request "Add one test for the empty-input case. Do not change production code."</code></td><td>The prompt constrains scope; sandbox and approvals constrain actions.</td></tr>
+    <tr><td>Review manually</td><td><code>git diff</code></td><td>The agent's output is a proposal, not a decision.</td></tr>
+    <tr><td>Verify</td><td><code>make test</code> or the project test command</td><td>Tests are evidence; you still need to understand the changed code.</td></tr>
+  </tbody>
+</table>
+
+<h3>Reference links</h3>
+<div class="ext-links">
+  <a class="ext-link" href="https://help.openai.com/en/articles/11096431" target="_blank">Codex CLI getting started</a>
+  <a class="ext-link" href="https://help.openai.com/en/articles/11381614-api-codex-cli-and-sign-in-with-chatgpt" target="_blank">Codex CLI and ChatGPT sign-in</a>
+  <a class="ext-link" href="https://platform.openai.com/docs" target="_blank">OpenAI API documentation</a>
+  <a class="ext-link" href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank">Claude Code documentation</a>
+  <a class="ext-link" href="https://google-gemini.github.io/gemini-cli/" target="_blank">Gemini CLI documentation</a>
+  <a class="ext-link" href="https://github.com/cline/cline" target="_blank">Cline on GitHub</a>
+  <a class="ext-link" href="https://aider.chat/docs/usage.html" target="_blank">Aider usage guide</a>
+  <a class="ext-link" href="https://docs.github.com/en/copilot" target="_blank">GitHub Copilot docs</a>
+  <a class="ext-link" href="https://modelcontextprotocol.io/introduction" target="_blank">MCP introduction</a>
+  <a class="ext-link" href="https://github.com/modelcontextprotocol/servers" target="_blank">MCP server registry</a>
+</div>
+
+<div class="callout callout-note">
+  <strong>The landscape changes fast</strong>
+  The tools listed here were checked in June 2026. New agents, new MCP servers, and new IDE integrations are released frequently. The concepts — prompting, project context files, harness, verification — are stable. The specific tools are not. Check official documentation before installing a CLI tool or relying on a feature described here.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

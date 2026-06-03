@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.3 — Agents vs Chatbots — FIT2109 Week 12</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; border-radius: 8px; padding: 18px 20px; margin: 16px 0; overflow-x: auto; }
+  pre code { background: none; color: #cdd6f4; font-size: 0.87em; padding: 0; border-radius: 0; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fff8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try strong { color: #00634f; }
+  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+  .compare-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 20px; }
+  .compare-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; }
+  .compare-card.chatbot h4 { color: #1565c0; }
+  .compare-card.agent  h4 { color: #2e7d32; }
+  .compare-card p, .compare-card ul { font-size: 0.9rem; }
+  .compare-card ul { margin: 6px 0 0 18px; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .compare-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>12.3 Agents vs Chatbots, and the Read → Plan → Act Loop</h2>
+
+<p>When people say "I use AI to help me code," they often mean different things. A student asking ChatGPT to explain a function is doing something fundamentally different from running Codex CLI, Claude Code, or Gemini CLI to refactor a module. The difference is not just the brand name — it is the nature of the interaction and what the tool can actually do to your project.</p>
+
+<div class="compare-grid">
+  <div class="compare-card chatbot">
+    <h4>A chatbot</h4>
+    <ul>
+      <li>You ask a question; it responds with text.</li>
+      <li>One turn at a time — you drive every step.</li>
+      <li>In a basic chat workflow, it only sees the context you provide.</li>
+      <li>You usually copy-paste its output into your editor manually.</li>
+      <li>No persistent state between turns (in most configurations).</li>
+    </ul>
+  </div>
+  <div class="compare-card agent">
+    <h4>An agent</h4>
+    <ul>
+      <li>You give it a <strong>goal</strong>, not just a prompt.</li>
+      <li>It reads your files, runs commands, and inspects the output.</li>
+      <li>It loops through a read → plan → act cycle — until the goal is met or it is stuck.</li>
+      <li>It writes changes directly to your repository.</li>
+      <li>It can call external tools (search, databases, APIs) via protocols like MCP.</li>
+    </ul>
+  </div>
+</div>
+
+<h3>The read → plan → act loop</h3>
+<p>The fundamental unit of agent behaviour is a loop. Each iteration has three phases:</p>
+<ol>
+  <li><strong>Read context.</strong> The agent reads relevant files, past conversation, error messages, and tool results to understand the current state.</li>
+  <li><strong>Plan next action.</strong> Based on the context, the agent decides which tool to call next — read a file, run a command, write an edit, search for documentation.</li>
+  <li><strong>Act and observe.</strong> The agent executes the action and gets back a result. That result becomes new context for the next iteration.</li>
+</ol>
+<p>The loop repeats until the agent judges that the goal has been met, or it runs out of steps, or it gets stuck and asks you for guidance. This is why agents can complete multi-step tasks that would require many back-and-forth exchanges with a chatbot.</p>
+
+<h3>What actual CLI usage looks like</h3>
+<p>A CLI coding agent is normally used from inside a Git repository. The terminal command starts the conversation, but Git and tests are still your verification tools.</p>
+
+<pre><code>cd my-project
+git status
+
+codex --sandbox workspace-write \
+  --ask-for-approval on-request \
+  "Inspect this repo and suggest one safe first improvement."
+
+git diff
+make test</code></pre>
+
+<p>The same workflow shape applies to other CLI agents such as <code>claude</code> or <code>gemini</code>: start in the right directory, give a narrow prompt, watch what the agent reads and runs, inspect the diff, then test before accepting the change.</p>
+
+<h3>Codex commands worth recognising</h3>
+<table class="key-table">
+  <thead><tr><th>Command</th><th>Use it when</th></tr></thead>
+  <tbody>
+    <tr><td><code>codex</code></td><td>You want an interactive terminal session.</td></tr>
+    <tr><td><code>codex "prompt"</code></td><td>You want to start the session with a specific request.</td></tr>
+    <tr><td><code>codex --cd DIR "prompt"</code></td><td>You want Codex to work from a particular repository or subdirectory.</td></tr>
+    <tr><td><code>codex exec "prompt"</code></td><td>You want a non-interactive run that can fit into scripts or automation.</td></tr>
+    <tr><td><code>codex review</code></td><td>You want Codex to review a diff rather than edit files.</td></tr>
+    <tr><td><code>codex doctor</code></td><td>You need to diagnose installation, authentication, configuration, or runtime issues.</td></tr>
+    <tr><td><code>AGENTS.md</code></td><td>You want durable project instructions: commands, conventions, files not to touch, and review expectations.</td></tr>
+  </tbody>
+</table>
+
+<h3>The current landscape</h3>
+<table class="key-table">
+  <thead><tr><th>Tool</th><th>Interface</th><th>Key characteristic</th></tr></thead>
+  <tbody>
+    <tr><td><strong>ChatGPT / Claude / Gemini</strong></td><td>Chat app</td><td>Best for explanation, brainstorming, and small snippets when you provide the context explicitly.</td></tr>
+    <tr><td><strong>Codex CLI</strong></td><td>CLI — <code>codex</code> in terminal</td><td>OpenAI's terminal coding agent. Works close to shell commands, diffs, tests, and repository context.</td></tr>
+    <tr><td><strong>Claude Code</strong></td><td>CLI — <code>claude</code> in terminal</td><td>Anthropic's official coding agent. Full shell and file access. Configurable with CLAUDE.md and --allowedTools.</td></tr>
+    <tr><td><strong>Gemini CLI</strong></td><td>CLI — <code>gemini</code> in terminal</td><td>Google's open-source terminal agent. Useful for code understanding, file operations, command execution, and automation.</td></tr>
+    <tr><td><strong>Cline</strong></td><td>VS Code extension</td><td>Open-source and model-agnostic. Every file read and command run is shown in the UI before it happens.</td></tr>
+    <tr><td><strong>Aider</strong></td><td>CLI — Git-native</td><td>Open-source. Changes are committed to Git automatically by default, giving you a clean undo path.</td></tr>
+    <tr><td><strong>GitHub Copilot</strong></td><td>IDE autocomplete + chat</td><td>Inline suggestion in the editor. Closed, subscription-based. The most widely deployed tool in industry.</td></tr>
+    <tr><td><strong>OpenClaw</strong></td><td>Self-hosted agent framework</td><td>A broader personal/autonomous-agent example. It shows why tool access, memory, permissions, and audit logs matter beyond coding.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  If you have a CLI agent installed, run <code>codex --help</code>, <code>claude --help</code>, or <code>gemini --help</code> and note what tool categories are listed. How do they map to the three phases of the read → plan → act loop? If you do not have one installed yet, skim one official CLI guide and find the same answer there.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>
