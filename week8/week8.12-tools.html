@@ -45,6 +45,7 @@
 <table class="key-table">
   <thead><tr><th>Situation</th><th>Reach for</th><th>Quick command</th></tr></thead>
   <tbody>
+    <tr><td>Understanding why a bug isn't visible</td><td>RIP model (Reachability, Infection, Propagation)</td><td>Ask: is the faulty line reached? Does it corrupt state? Does that state reach output?</td></tr>
     <tr><td>Before running — catch issues in source</td><td>Lint: <code>pylint</code>, <code>flake8</code>, <code>shellcheck</code></td><td><code>pylint myscript.py</code></td></tr>
     <tr><td>Program crashes with an error message</td><td>Read the traceback bottom-up</td><td>Look for the last line of <em>your</em> code in the stack</td></tr>
     <tr><td>Need more runtime detail</td><td>Logging (<code>logging</code> module)</td><td><code>logging.basicConfig(level=logging.DEBUG)</code></td></tr>

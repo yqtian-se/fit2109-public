@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8.2 — The RIP Model — FIT2109 Week 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .rip-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 24px 0; }
+  .rip-card { border-radius: 10px; padding: 20px; text-align: center; }
+  .rip-r { background: #e8f5e9; border: 2px solid #a5d6a7; }
+  .rip-i { background: #fff3e0; border: 2px solid #ffcc80; }
+  .rip-p { background: #e3f2fd; border: 2px solid #90caf9; }
+  .rip-card .letter { font-size: 2.2rem; font-weight: 800; margin-bottom: 6px; }
+  .rip-r .letter { color: #2e7d32; }
+  .rip-i .letter { color: #e65100; }
+  .rip-p .letter { color: #1565c0; }
+  .rip-card .word { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .rip-card .def  { font-size: 0.85rem; color: #444; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .rip-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>8.2 The RIP Model: From Fault to Failure</h2>
+
+<p>A bug in your source code does not automatically produce a wrong result. Between the bug sitting in a line of code and you seeing wrong output in your terminal, three separate conditions must all be satisfied. Understanding this chain — called the <strong>RIP model</strong> — explains why bugs can hide, why tests sometimes miss them, and why debugging sometimes feels like chasing a ghost.</p>
+
+<div class="rip-grid">
+  <div class="rip-card rip-r">
+    <div class="letter">R</div>
+    <div class="word">Reachability</div>
+    <div class="def">The faulty line of code must actually be <em>executed</em> by the program under the given inputs.</div>
+  </div>
+  <div class="rip-card rip-i">
+    <div class="letter">I</div>
+    <div class="word">Infection</div>
+    <div class="def">Executing the faulty line must cause the program <em>state</em> — variables, memory, data structures — to become incorrect.</div>
+  </div>
+  <div class="rip-card rip-p">
+    <div class="letter">P</div>
+    <div class="word">Propagation</div>
+    <div class="def">The infected (incorrect) state must <em>propagate</em> to the program's output so that a failure is actually observable.</div>
+  </div>
+</div>
+
+<p>If <strong>any one</strong> of R, I, or P does not hold, the bug exists in the code but produces no visible symptom — until some future input or code change makes all three conditions true at once.</p>
+
+<h3>A concrete example</h3>
+
+<pre><code>def discount(price, code):
+    if code == "STUDENT":
+        price = price * 0.9   # bug: should be 0.85 for student rate
+    return price
+
+print(discount(100, "STAFF"))    # → 100  (R not met: bug line not reached)
+print(discount(100, "STUDENT"))  # → 90.0 (R ✓, I ✓, P ✓ → visible failure)</code></pre>
+
+<p>With the input <code>"STAFF"</code>, the faulty line is never reached — R fails, so no failure is visible. With <code>"STUDENT"</code>, all three conditions hold and the wrong discount appears.</p>
+
+<h3>Why each condition can fail independently</h3>
+
+<table class="key-table">
+  <thead><tr><th>Condition</th><th>Why it might not hold</th><th>Classic symptom</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>R — Reachability</strong></td>
+      <td>The faulty code is inside a branch, loop condition, or error handler that is never triggered by current tests or inputs.</td>
+      <td>"It works fine on my test cases" — the bug is in an untested path.</td>
+    </tr>
+    <tr>
+      <td><strong>I — Infection</strong></td>
+      <td>The faulty line runs but accidentally produces the correct result anyway (e.g., an off-by-one on an index where the extra element happens to have the expected value).</td>
+      <td>Bug disappears or appears intermittently depending on data content.</td>
+    </tr>
+    <tr>
+      <td><strong>P — Propagation</strong></td>
+      <td>The infected state is overwritten, discarded, or masked before it reaches any output — e.g., a wrong intermediate value gets recalculated correctly downstream.</td>
+      <td>"The variable is wrong at line 12, but the final output is correct" — something downstream corrects it.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>RIP explains common debugging frustrations</h3>
+
+<ul>
+  <li><strong>The bug disappears when you add a <code>print</code>.</strong> Adding a print statement can change timing, memory layout, or even variable values in subtle ways — altering R or I just enough to suppress the symptom. The bug is still there.</li>
+  <li><strong>It works on your machine, fails in CI.</strong> Different inputs or environment values change whether R is satisfied, or change the data content that determines whether I holds.</li>
+  <li><strong>All tests pass, but the production system crashes.</strong> Your tests never triggered R — the faulty path was not covered.</li>
+  <li><strong>You fix the crash, but the output is still wrong.</strong> You fixed the failure point (where P collapsed) without addressing the original fault.</li>
+</ul>
+
+<h3>How to use RIP while debugging</h3>
+
+<p>When you find a bug, work backwards through the chain:</p>
+<ol>
+  <li><strong>Start at the failure</strong> — what observable wrong output did you see? (This is P collapsing.)</li>
+  <li><strong>Trace the infected state</strong> — which variable or piece of data is wrong just before the failure? Walk backwards through the call chain to find where it first became wrong. (This is I.)</li>
+  <li><strong>Find the fault</strong> — which line of code is responsible for corrupting that state? Confirm it is actually executed with your failing input. (This is R.)</li>
+</ol>
+
+<div class="callout callout-note">
+  <strong>Concept check</strong>
+  Consider a function that computes a running total: <code>total = x</code> instead of <code>total += x</code>. If the list has only one element, R ✓, I ✓ — but does P hold? Does a failure appear? What if the list has two elements?
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Take any small Python program you have written. Introduce a deliberate off-by-one error in a loop. Now design two inputs: one where all three RIP conditions hold (failure is visible) and one where at least one condition fails (bug present but no failure). This is exactly the gap that test coverage tries to close.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 8 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>
