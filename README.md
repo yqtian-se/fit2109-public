@@ -2,7 +2,7 @@
 
 Pre-reading HTML slides and workshop resources for **FIT2109: Computer Science Workshop** at Monash University.
 
-Author: [Dr. Yongqiang Tian](https://yqtian.com)
+Author: [Dr. Yongqiang Tian](https://yqtian.com) · [Unit handbook](https://handbook.monash.edu/2026/units/FIT2109)
 
 ## Contents
 
