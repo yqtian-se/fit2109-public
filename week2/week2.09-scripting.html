@@ -139,6 +139,21 @@ for log in logs/*.log; do
     grep -c 'ERROR' "$log" || echo "  no errors"
 done</code></pre>
 
+<h3>Recognising Bash functions</h3>
+<p>Bash can also group commands into a function. A function gives a small command sequence a name so the script can call it more than once. In Week 2, you only need to recognise this pattern when you see it in examples or checking scripts; you are not expected to design large function-based scripts yet.</p>
+
+<pre><code><span class="comment">#!/usr/bin/env bash</span>
+warn() {
+    echo "warning: $1" &gt;&amp;2
+}
+
+warn "missing input"</code></pre>
+
+<div class="callout callout-note">
+  <strong>Inside a function, arguments restart</strong>
+  Inside <code>warn()</code>, <code>$1</code> means the first argument passed to <code>warn</code>, not necessarily the first argument passed to the whole script. This is one reason we treat functions as a recognition topic for now.
+</div>
+
 <div class="callout callout-warn">
   <strong>Write errors to stderr, not stdout</strong>
   Error messages should go to standard error (<code>&amp;2</code>) so they do not contaminate the script's output when it is used in a pipeline:

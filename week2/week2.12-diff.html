@@ -142,7 +142,7 @@
 <span class="prompt-sym">$</span> <span class="cmd">diff</span> <span class="arg">-q expected.txt</span> <span class="arg">&lt;(./my_script.sh input.txt)</span> <span class="arg">&amp;&amp;</span> <span class="cmd">echo</span> <span class="arg">"PASS"</span> <span class="arg">||</span> <span class="cmd">echo</span> <span class="arg">"FAIL"</span></code></pre>
 
 <h3>A reusable test script skeleton</h3>
-<p>Here is a shell script pattern for testing multiple inputs at once. It uses shell functions, <code>local</code> variables, and arithmetic — constructs covered beyond Week 2. Read it as a reference template you can adapt, not as something to memorise now.</p>
+<p>Here is a shell script pattern for testing multiple inputs at once. It uses shell functions, <code>local</code> variables, and arithmetic. Week 2 only asks you to recognise the basic function shape; read this as a reference template you can adapt later, not as something to memorise now.</p>
 
 <pre><code><span class="comment">#!/usr/bin/env bash</span>
 set -u
