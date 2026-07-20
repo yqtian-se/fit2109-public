@@ -31,11 +31,18 @@
   .member p { font-size: 0.92rem; color: #555; margin-bottom: 0; }
   .member.placeholder-card { border-style: dashed; background: #fafafa; }
   .placeholder { color: #bbb; font-style: italic; }
+  .session-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 20px 0; }
+  .session { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px 20px; }
+  .session .label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #4361ee; margin-bottom: 4px; }
+  .session .time { font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .session .where, .session .dates, .session .staff { font-size: 0.9rem; color: #555; }
+  .session .dates { margin-top: 4px; }
+  .session .staff { margin-top: 8px; }
   .guideline-row { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 18px; }
   .guideline-icon { flex-shrink: 0; width: 32px; height: 32px; border-radius: 8px; background: #eef0f8; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-top: 2px; }
   .guideline-body h4 { font-size: 0.97rem; font-weight: 700; margin-bottom: 2px; color: #1a1a2e; }
   .guideline-body p { font-size: 0.92rem; color: #555; margin-bottom: 0; }
-  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .team-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .team-grid, .session-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -66,14 +73,14 @@
 
   <div class="member">
     <div class="photo"><img src="https://research.monash.edu/files-asset/730848279/photo.jpeg?f=jpg&w=160" alt="Dr. Abdul Rafae"></div>
-    <h4>Abdul Rafae</h4>
+    <h4>Dr. Abdul Rafae</h4>
     <div class="role">Unit Coordinator and Lecturer · Malaysia Campus</div>
     <p>Supports FIT2109 delivery at the Malaysia campus. <a href="https://research.monash.edu/en/persons/abdul-rafae/" target="_blank">Profile</a></p>
   </div>
 
   <div class="member">
     <div class="photo"><img src="https://research.monash.edu/files-asset/783542540/passport_pic.png?f=jpg&w=160" alt="Dr. Sharana Dharshikgan Suresh Dass"></div>
-    <h4>Sharana Dharshikgan Suresh Dass</h4>
+    <h4>Dr. Sharana Dharshikgan Suresh Dass</h4>
     <div class="role">Lecturer · Malaysia Campus</div>
     <p>Supports FIT2109 delivery at the Malaysia campus. <a href="https://research.monash.edu/en/persons/sharana-dharshikgan-suresh-dass/" target="_blank">Profile</a></p>
   </div>
@@ -137,6 +144,59 @@
     <h4>Sam Lee</h4>
     <div class="role">Teaching Assistant · Clayton Campus · Applied Sessions</div>
     <p><a href="mailto:sam.lee2@monash.edu">sam.lee2@monash.edu</a></p>
+  </div>
+
+</div>
+
+<!-- WORKSHOPS -->
+<h3>Workshops</h3>
+<div class="session-grid">
+
+  <div class="session">
+    <div class="label">Workshop 01</div>
+    <div class="time">Thursday · 8:00am-10:00am</div>
+    <div class="where">Clayton · CL_Anc-19.LTB_G31 FF-Col (176)</div>
+    <div class="dates">Dates: 30/7-17/9, 1/10-22/10</div>
+    <div class="staff">Staff: Dr. Yongqiang Tian, Dr. Zahra Mirzamomen, Aaron Guo, Kaviraj Palanivel</div>
+  </div>
+
+</div>
+
+<!-- APPLIED SESSIONS -->
+<h3>Applied Sessions</h3>
+<p>All applied sessions are at Clayton campus and run in <strong>CL_Exh-20.AFB_304 FF-Col (60)</strong>.</p>
+<div class="session-grid">
+
+  <div class="session">
+    <div class="label">Applied 01</div>
+    <div class="time">Wednesday · 10:00am-12:00pm</div>
+    <div class="where">Clayton · CL_Exh-20.AFB_304 FF-Col (60)</div>
+    <div class="dates">Dates: 29/7-16/9, 30/9-21/10</div>
+    <div class="staff">Staff: Dr. Zahra Mirzamomen, Aaron Guo, Yash Baranwal</div>
+  </div>
+
+  <div class="session">
+    <div class="label">Applied 02</div>
+    <div class="time">Wednesday · 2:00pm-4:00pm</div>
+    <div class="where">Clayton · CL_Exh-20.AFB_304 FF-Col (60)</div>
+    <div class="dates">Dates: 29/7-16/9, 30/9-21/10</div>
+    <div class="staff">Staff: Dr. Zahra Mirzamomen, Aaron Guo, Yash Baranwal</div>
+  </div>
+
+  <div class="session">
+    <div class="label">Applied 03</div>
+    <div class="time">Thursday · 2:00pm-4:00pm</div>
+    <div class="where">Clayton · CL_Exh-20.AFB_304 FF-Col (60)</div>
+    <div class="dates">Dates: 30/7-17/9, 1/10-22/10</div>
+    <div class="staff">Staff: Sam Lee, Kaviraj Palanivel, Allen (Chenxi) Gu</div>
+  </div>
+
+  <div class="session">
+    <div class="label">Applied 04</div>
+    <div class="time">Thursday · 4:00pm-6:00pm</div>
+    <div class="where">Clayton · CL_Exh-20.AFB_304 FF-Col (60)</div>
+    <div class="dates">Dates: 30/7-17/9, 1/10-22/10</div>
+    <div class="staff">Staff: Yuqing Xiao, Allen (Chenxi) Gu, Sam Lee</div>
   </div>
 
 </div>
