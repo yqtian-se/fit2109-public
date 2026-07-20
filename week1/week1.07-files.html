@@ -145,6 +145,27 @@
     .tool-grid { grid-template-columns: 1fr; }
     .page { padding: 24px 16px 60px; }
   }
+
+  /* --- copy-to-run terminal cards --- */
+  .term { background:#1e1e2e; border-radius:10px; overflow:hidden; margin:16px 0; border:1px solid #2a2a3d; }
+  .term-bar { display:flex; align-items:center; gap:10px; background:#181826; padding:8px 12px; border-bottom:1px solid #2a2a3d; }
+  .term-bar .dots { display:flex; gap:6px; }
+  .term-bar .dots i { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .term-bar .dots i:nth-child(1){ background:#ff5f57; }
+  .term-bar .dots i:nth-child(2){ background:#febc2e; }
+  .term-bar .dots i:nth-child(3){ background:#28c840; }
+  .term-title { flex:1; font-family:"SF Mono",Consolas,monospace; font-size:0.72rem; color:#8a8aa8; }
+  .copy-btn { font-family:"SF Mono",Consolas,monospace; font-size:0.72rem; font-weight:600; color:#cdd6f4;
+              background:#2b2b40; border:1px solid #3a3a55; border-radius:6px; padding:4px 12px; cursor:pointer; }
+  .copy-btn:hover { background:#3a3a55; }
+  .copy-btn.ok { background:#a6e3a1; color:#14251a; border-color:#a6e3a1; }
+  .term pre { margin:0; border-radius:0; }
+  .term-body .l { display:block; white-space:pre; }
+  .term-body .out { color:#8b93b4; }
+  .term-foot { display:flex; gap:14px; background:#181826; border-top:1px dashed #33334d; padding:7px 14px;
+               font-family:"SF Mono",Consolas,monospace; font-size:0.68rem; color:#8a8aa8; }
+  .in-key::before { content:"$ "; color:#a6e3a1; }
+  .out-key::before { content:"\25A9 "; color:#5a6180; }
 </style>
 </head>
 <body>
@@ -155,7 +176,9 @@
 <p>The <strong>working directory</strong> is where the shell is currently located. Every command that involves a file uses the working directory as the starting point unless you give an absolute path.</p>
 <p>The core file manipulation commands:</p>
 
-<pre><code><span class="comment"># See where you are and what's here</span>
+<div class="term" data-copy="pwd&#10;ls -la&#10;mkdir week1&#10;touch notes.txt&#10;cp notes.txt backup.txt&#10;mv notes.txt summary.txt&#10;rm backup.txt">
+  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash</span><button class="copy-btn" type="button">Copy</button></div>
+  <pre class="term-body"><code><span class="comment"># See where you are and what's here</span>
 <span class="prompt-sym">$</span> <span class="cmd">pwd</span>                          <span class="comment"># print working directory</span>
 <span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-la</span>                       <span class="comment"># list all files with details</span>
 
@@ -167,6 +190,7 @@
 <span class="prompt-sym">$</span> <span class="cmd">cp</span> <span class="arg">notes.txt backup.txt</span>      <span class="comment"># copy a file</span>
 <span class="prompt-sym">$</span> <span class="cmd">mv</span> <span class="arg">notes.txt summary.txt</span>    <span class="comment"># rename/move a file</span>
 <span class="prompt-sym">$</span> <span class="cmd">rm</span> <span class="arg">backup.txt</span>               <span class="comment"># delete a file (no undo!)</span></code></pre>
+</div>
 
 <div class="callout callout-warn">
   <strong>Caution</strong>
@@ -185,7 +209,9 @@
   </tbody>
 </table>
 
-<pre><code><span class="comment"># List only .txt files</span>
+<div class="term" data-copy="ls *.txt&#10;cp *.log backup/&#10;rm *.tmp">
+  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash</span><button class="copy-btn" type="button">Copy</button></div>
+  <pre class="term-body"><code><span class="comment"># List only .txt files</span>
 <span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">*.txt</span>
 
 <span class="comment"># Copy all .log files into a backup directory</span>
@@ -193,6 +219,7 @@
 
 <span class="comment"># Remove all .tmp files (careful — no undo!)</span>
 <span class="prompt-sym">$</span> <span class="cmd">rm</span> <span class="arg">*.tmp</span></code></pre>
+</div>
 
 <div class="callout callout-note">
   <strong>The shell expands globs, not the command</strong>
@@ -207,17 +234,39 @@
 
 <div class="callout callout-try">
   <strong>Try this in Ed</strong>
-  <pre><code><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p ~/fit2109/week1</span>
-<span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">~/fit2109/week1</span>
-<span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">notes.txt</span>
-<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">data</span>
-<span class="prompt-sym">$</span> <span class="cmd">cp</span> <span class="arg">notes.txt data/notes-copy.txt</span>
-<span class="prompt-sym">$</span> <span class="cmd">mv</span> <span class="arg">notes.txt summary.txt</span>
-<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-la</span></code></pre>
+  <div class="term" data-copy="mkdir -p ~/fit2109/week1&#10;cd ~/fit2109/week1&#10;touch notes.txt&#10;mkdir data&#10;cp notes.txt data/notes-copy.txt&#10;mv notes.txt summary.txt&#10;ls -la">
+  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash — try this in Ed</span><button class="copy-btn" type="button">Copy</button></div>
+  <pre class="term-body"><code><span class="l"><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p ~/fit2109/week1</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">~/fit2109/week1</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">notes.txt</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">data</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cp</span> <span class="arg">notes.txt data/notes-copy.txt</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">mv</span> <span class="arg">notes.txt summary.txt</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-la</span></span><span class="l out">total 0</span><span class="l out">drwxr-xr-x  4 you  staff  128 Jul 20 14:02 .</span><span class="l out">drwxr-xr-x  3 you  staff   96 Jul 20 14:01 ..</span><span class="l out">drwxr-xr-x  3 you  staff   96 Jul 20 14:02 data</span><span class="l out">-rw-r--r--  1 you  staff    0 Jul 20 14:02 summary.txt</span></code></pre>
+  <div class="term-foot"><span class="in-key">you type</span><span class="out-key">shell prints</span></div>
+</div>
   What changed between each step? Which commands created something? Which renamed?
 </div>
 <hr class="divider">
 <p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 1 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
 </div>
+<script>
+  (function () {
+    function fallback(text, done) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly','');
+        ta.style.position='fixed'; ta.style.top='-1000px'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); done();
+      } catch (e) {}
+    }
+    function flash(btn){ var o=btn.textContent; btn.textContent='Copied'; btn.classList.add('ok');
+      setTimeout(function(){ btn.textContent=o; btn.classList.remove('ok'); },1400); }
+    document.querySelectorAll('.copy-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var t=btn.closest('.term'); var text=t?t.getAttribute('data-copy'):'';
+        if(!text) return; var done=function(){ flash(btn); };
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(text,done); });
+        } else { fallback(text,done); }
+      });
+    });
+  })();
+</script>
 </body>
 </html>

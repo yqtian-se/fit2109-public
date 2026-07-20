@@ -145,6 +145,27 @@
     .tool-grid { grid-template-columns: 1fr; }
     .page { padding: 24px 16px 60px; }
   }
+
+  /* --- copy-to-run terminal cards --- */
+  .term { background:#1e1e2e; border-radius:10px; overflow:hidden; margin:16px 0; border:1px solid #2a2a3d; }
+  .term-bar { display:flex; align-items:center; gap:10px; background:#181826; padding:8px 12px; border-bottom:1px solid #2a2a3d; }
+  .term-bar .dots { display:flex; gap:6px; }
+  .term-bar .dots i { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .term-bar .dots i:nth-child(1){ background:#ff5f57; }
+  .term-bar .dots i:nth-child(2){ background:#febc2e; }
+  .term-bar .dots i:nth-child(3){ background:#28c840; }
+  .term-title { flex:1; font-family:"SF Mono",Consolas,monospace; font-size:0.72rem; color:#8a8aa8; }
+  .copy-btn { font-family:"SF Mono",Consolas,monospace; font-size:0.72rem; font-weight:600; color:#cdd6f4;
+              background:#2b2b40; border:1px solid #3a3a55; border-radius:6px; padding:4px 12px; cursor:pointer; }
+  .copy-btn:hover { background:#3a3a55; }
+  .copy-btn.ok { background:#a6e3a1; color:#14251a; border-color:#a6e3a1; }
+  .term pre { margin:0; border-radius:0; }
+  .term-body .l { display:block; white-space:pre; }
+  .term-body .out { color:#8b93b4; }
+  .term-foot { display:flex; gap:14px; background:#181826; border-top:1px dashed #33334d; padding:7px 14px;
+               font-family:"SF Mono",Consolas,monospace; font-size:0.68rem; color:#8a8aa8; }
+  .in-key::before { content:"$ "; color:#a6e3a1; }
+  .out-key::before { content:"\25A9 "; color:#5a6180; }
 </style>
 </head>
 <body>
@@ -194,25 +215,51 @@
 </div>
 
 <p>The <code>chmod</code> command changes permissions. Two styles:</p>
-<pre><code><span class="comment"># Octal (numeric): set all permissions at once</span>
+<div class="term" data-copy="chmod 755 script.sh&#10;chmod 600 secret.txt&#10;chmod u+x script.sh&#10;chmod o-rw secret.txt">
+  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash</span><button class="copy-btn" type="button">Copy</button></div>
+  <pre class="term-body"><code><span class="comment"># Octal (numeric): set all permissions at once</span>
 <span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">755 script.sh</span>    <span class="comment"># rwxr-xr-x: owner full, others read+exec</span>
 <span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">600 secret.txt</span>   <span class="comment"># rw-------: owner only</span>
 
 <span class="comment"># Symbolic: change specific bits</span>
 <span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">u+x script.sh</span>    <span class="comment"># add execute for owner</span>
 <span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">o-rw secret.txt</span>  <span class="comment"># remove read+write from others</span></code></pre>
+</div>
 
 <div class="callout callout-try">
   <strong>Try this in Ed</strong>
-  <pre><code><span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">foo.txt</span>
-<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-l foo.txt</span>           <span class="comment"># note the default permissions</span>
-<span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">600 foo.txt</span>
-<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-l foo.txt</span>           <span class="comment"># what changed?</span>
-<span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">u+x foo.txt</span>
-<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-l foo.txt</span>           <span class="comment"># and now?</span></code></pre>
+  <div class="term" data-copy="touch foo.txt&#10;ls -l foo.txt&#10;chmod 600 foo.txt&#10;ls -l foo.txt&#10;chmod u+x foo.txt&#10;ls -l foo.txt">
+  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash — watch the permission bits change</span><button class="copy-btn" type="button">Copy</button></div>
+  <pre class="term-body"><code><span class="l"><span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">foo.txt</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-l foo.txt</span></span><span class="l out">-rw-r--r--  1 you  staff  0 Jul 20 14:05 foo.txt</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">600 foo.txt</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-l foo.txt</span></span><span class="l out">-rw-------  1 you  staff  0 Jul 20 14:05 foo.txt</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">u+x foo.txt</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-l foo.txt</span></span><span class="l out">-rwx------  1 you  staff  0 Jul 20 14:05 foo.txt</span></code></pre>
+  <div class="term-foot"><span class="in-key">you type</span><span class="out-key">shell prints</span></div>
+</div>
 </div>
 <hr class="divider">
 <p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 1 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
 </div>
+<script>
+  (function () {
+    function fallback(text, done) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly','');
+        ta.style.position='fixed'; ta.style.top='-1000px'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); done();
+      } catch (e) {}
+    }
+    function flash(btn){ var o=btn.textContent; btn.textContent='Copied'; btn.classList.add('ok');
+      setTimeout(function(){ btn.textContent=o; btn.classList.remove('ok'); },1400); }
+    document.querySelectorAll('.copy-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var t=btn.closest('.term'); var text=t?t.getAttribute('data-copy'):'';
+        if(!text) return; var done=function(){ flash(btn); };
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(text,done); });
+        } else { fallback(text,done); }
+      });
+    });
+  })();
+</script>
 </body>
 </html>
