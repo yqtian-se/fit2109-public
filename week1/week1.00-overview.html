@@ -48,6 +48,10 @@
 </div>
 
 <h3>A scenario</h3>
+<figure style="margin:22px auto;text-align:center;max-width:360px;">
+  <img src="images/gui-vs-cli.jpg" alt="Meme: GUI users vs CLI users — the shell isn't about being better, it's one line versus fifty clicks" style="max-width:100%;height:auto;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+  <figcaption style="font-size:0.82rem;color:#666;margin-top:8px;">Every meme aside — the shell isn't about being "better". It does in one line what the GUI makes you click fifty times.</figcaption>
+</figure>
 <p>It is 11 pm. Your machine learning experiment needs 14 hours to run and your laptop battery won't last. Your team uses a shared Linux server — 32 cores, always on, sitting in a data centre you will never physically touch. A local server in the lab would have the same problem: you cannot sit next to it for 14 hours overnight. So you open a terminal, connect remotely over SSH, and the server's computing power is available to you from anywhere with an internet connection.</p>
 <p>There is no desktop, no file manager, no right-click menu — just a prompt. That is not an oversight. Servers deliberately omit graphical interfaces: a GUI consumes memory and CPU that are better spent on the actual workload, and there is often no monitor attached anyway. Every major cloud provider — AWS, GCP, Azure — gives you a Linux server with a shell and nothing more. You set up the project directory, copy your dataset into place, make the training script executable, and pipe its output into a log file so you can check progress from anywhere in the morning. When the run finishes, a one-line pipeline tells you whether it succeeded.</p>
 <p>This is not a contrived exercise. Cloud servers, university HPC clusters, CI/CD build machines, and production web servers all work exactly this way — Linux, no GUI, shell only. The shell is not a relic from the past; it is the control surface that underlies modern software work. Learning it this week means every tool you encounter later — Git, Docker, deployment pipelines — will make immediate sense.</p>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task 0 — Set Up Your Machine — FIT2109 Week 1</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb;
+  }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 0.95rem; font-weight: 700; color: #1a1a2e; margin: 20px 0 8px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-tool { background: #e3f2fd; color: #1565c0; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031;
+  }
+
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  /* ---- terminal cards: copy + expected output ---- */
+  .term { background: #1e1e2e; border-radius: 10px; overflow: hidden; margin: 16px 0;
+          border: 1px solid #2a2a3d; }
+  .term-bar { display: flex; align-items: center; gap: 10px; background: #181826;
+              padding: 8px 12px; border-bottom: 1px solid #2a2a3d; }
+  .term-bar .dots { display: flex; gap: 6px; }
+  .term-bar .dots i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+  .term-bar .dots i:nth-child(1) { background: #ff5f57; }
+  .term-bar .dots i:nth-child(2) { background: #febc2e; }
+  .term-bar .dots i:nth-child(3) { background: #28c840; }
+  .term-title { flex: 1; font-family: "SF Mono", Consolas, monospace; font-size: 0.72rem; color: #8a8aa8; }
+  .copy-btn { font-family: "SF Mono", Consolas, monospace; font-size: 0.72rem; font-weight: 600;
+              color: #cdd6f4; background: #2b2b40; border: 1px solid #3a3a55; border-radius: 6px;
+              padding: 4px 12px; cursor: pointer; }
+  .copy-btn:hover { background: #3a3a55; }
+  .copy-btn.ok { background: #a6e3a1; color: #14251a; border-color: #a6e3a1; }
+  .term-body { margin: 0; padding: 14px 18px; overflow-x: auto;
+               font-family: "SF Mono", "Fira Code", Consolas, monospace;
+               font-size: 0.86rem; line-height: 1.7; color: #cdd6f4; }
+  .term-body .l { display: block; white-space: pre; }
+  .term-body .out { color: #8b93b4; }
+  .term-body .ok  { color: #a6e3a1; }
+  .term-body .bad { color: #f38ba8; }
+  .term-foot { display: flex; gap: 14px; background: #181826; border-top: 1px dashed #33334d;
+               padding: 7px 14px; font-family: "SF Mono", Consolas, monospace;
+               font-size: 0.68rem; color: #8a8aa8; }
+  .in-key::before  { content: "$ "; color: #a6e3a1; }
+  .out-key::before { content: "\25A9 "; color: #5a6180; }
+  .prompt-sym { color: #a6e3a1; } .cmd { color: #89dceb; }
+  .arg { color: #fab387; } .comment { color: #6c7086; }
+
+  /* ---- per-OS layout ---- */
+  .os-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+  .os-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; }
+  .os-card h3 { margin-top: 0; display: flex; align-items: center; gap: 8px; }
+  .os-ic { width: 24px; height: 24px; border-radius: 6px; display: inline-grid; place-items: center;
+           font-size: 0.8rem; color: #fff; }
+  .os-ic.win { background: #0a7bd6; } .os-ic.mac { background: #111; }
+
+  /* ---- placeholder screenshots ---- */
+  figure.shot { margin: 14px 0; position: relative; }
+  figure.shot svg { width: 100%; height: auto; border-radius: 10px; border: 2px dashed #f0c94a; }
+  figure.shot .ph { position: absolute; top: 8px; right: 8px; background: #e5402c; color: #fff;
+                    font-family: "SF Mono", Consolas, monospace; font-size: 0.56rem; font-weight: 700;
+                    letter-spacing: 0.07em; text-transform: uppercase; padding: 3px 8px;
+                    border-radius: 5px; }
+  figure.shot figcaption { font-size: 0.78rem; color: #666; margin-top: 8px; }
+
+  /* ---- troubleshooting ---- */
+  .tr { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .tr th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .tr td { padding: 12px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .tr td:first-child { font-family: "SF Mono", Consolas, monospace; font-size: 0.8rem; color: #c0392b; width: 38%; }
+  .tr tr:last-child td { border-bottom: none; }
+
+  /* ---- final checklist ---- */
+  .checklist { background: linear-gradient(135deg, #1a1a2e, #0f3460); color: #fff;
+               border-radius: 12px; padding: 24px 26px; margin: 28px 0; }
+  .checklist h3 { color: #fff; margin: 0 0 14px; }
+  .checklist ul { list-style: none; margin: 0; padding: 0; }
+  .checklist li { display: flex; gap: 12px; align-items: flex-start; color: #dbe4f5; margin-bottom: 10px; }
+  .checklist .box { flex-shrink: 0; width: 20px; height: 20px; border: 2px solid #4f6bbf;
+                    border-radius: 5px; margin-top: 2px; }
+  .checklist code { background: rgba(255,255,255,0.12); color: #a6e3a1; }
+  .checklist .stop { margin-top: 16px; font-family: "SF Mono", Consolas, monospace; font-size: 0.82rem;
+                     font-weight: 700; letter-spacing: 0.04em; color: #ffd36b; text-transform: uppercase; }
+
+  @media (max-width: 700px) { .os-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Task 0 — Set Up Your Machine</h1>
+  <p class="sub">Week 1 · Do this <strong>before</strong> your applied class · FIT2109</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this page you will have</p>
+    <ol class="goals">
+      <li>File extensions and hidden files visible in your file manager.</li>
+      <li>A working Linux shell you can type commands into.</li>
+      <li>The Week 1 starter project unzipped at <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">~/fit2109/week1-rescue</code>.</li>
+      <li>A first checker score of <strong>1/10</strong> — your starting line.</li>
+    </ol>
+  </div>
+</div>
+
+<span class="section-badge badge-tool">Before your applied class</span>
+<h2>0.1 Before you start</h2>
+
+<div class="callout callout-warn">
+  <strong>Update your operating system first</strong>
+  Windows: <em>Settings → Windows Update</em>. Mac: <em>System Settings → General → Software Update</em>.
+  For your security and to avoid confusing setup errors, do not skip this.
+</div>
+
+<div class="callout callout-note">
+  <strong>About the screenshots on this page</strong>
+  The two window images below are <strong>placeholder mock-ups</strong>, not real screenshots. They will be replaced
+  with real captures. The menu names and steps are correct — follow the written steps.
+</div>
+
+<h2>0.2 Make file extensions and hidden files visible</h2>
+<p>You will be working with files such as <code>check_progress.sh</code> and hidden dot-files. Turn these on so nothing is invisible to you.</p>
+
+<div class="os-grid">
+
+  <div class="os-card">
+    <h3><span class="os-ic win">&#9638;</span> Windows 11</h3>
+    <ol>
+      <li>Open <strong>File Explorer</strong>.</li>
+      <li>Click <strong>View</strong> → <strong>Show</strong>.</li>
+      <li>Tick <strong>File name extensions</strong>.</li>
+      <li>Tick <strong>Hidden items</strong>.</li>
+    </ol>
+    <figure class="shot">
+      <span class="ph">Placeholder &middot; replace with real screenshot</span>
+      <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Windows File Explorer View menu with File name extensions ticked">
+        <rect x="0" y="0" width="520" height="300" rx="8" fill="#f3f5f9"/>
+        <rect x="0" y="0" width="520" height="30" rx="8" fill="#e4e8f0"/>
+        <text x="16" y="20" font-family="Segoe UI,sans-serif" font-size="12" fill="#59606e">File Explorer</text>
+        <rect x="0" y="30" width="520" height="34" fill="#fbfcfe"/>
+        <rect x="14" y="39" width="66" height="18" rx="9" fill="#eef1f7" stroke="#dbe0ea"/>
+        <text x="26" y="52" font-family="Segoe UI,sans-serif" font-size="11" fill="#3a4150">+ New</text>
+        <rect x="424" y="39" width="60" height="18" rx="5" fill="#dfe8fb" stroke="#9db8f0"/>
+        <text x="432" y="52" font-family="Segoe UI,sans-serif" font-size="12" fill="#2a4a9a">View</text>
+        <rect x="360" y="66" width="150" height="128" rx="8" fill="#ffffff" stroke="#c9d0dd"/>
+        <text x="374" y="88" font-family="Segoe UI,sans-serif" font-size="11.5" fill="#3a4150">List</text>
+        <text x="374" y="110" font-family="Segoe UI,sans-serif" font-size="11.5" fill="#3a4150">Details</text>
+        <line x1="368" y1="122" x2="502" y2="122" stroke="#eceff4"/>
+        <text x="374" y="140" font-family="Segoe UI,sans-serif" font-size="11.5" fill="#3a4150">Item check boxes</text>
+        <rect x="366" y="146" width="140" height="20" rx="4" fill="#eaf1ff"/>
+        <text x="374" y="160" font-family="Segoe UI,sans-serif" font-size="11.5" fill="#12306e" font-weight="700">&#10003; File name extensions</text>
+        <text x="374" y="182" font-family="Segoe UI,sans-serif" font-size="11.5" fill="#3a4150">Hidden items</text>
+        <path d="M500 216 C 556 206, 544 152, 512 158" fill="none" stroke="#e5402c" stroke-width="4"/>
+        <path d="M512 158 l 16 -4 l -8 15 z" fill="#e5402c"/>
+        <text x="322" y="240" font-family="Segoe UI,sans-serif" font-size="12" fill="#e5402c" font-weight="700">tick this</text>
+      </svg>
+      <figcaption><strong>Mock-up, not a real screenshot.</strong> Steps: View → Show → tick “File name extensions”.</figcaption>
+    </figure>
+  </div>
+
+  <div class="os-card">
+    <h3><span class="os-ic mac">&#63743;</span> macOS</h3>
+    <ol>
+      <li>Open <strong>Finder</strong>.</li>
+      <li>Menu bar: <strong>Finder → Settings</strong>.</li>
+      <li>Choose the <strong>Advanced</strong> tab.</li>
+      <li>Tick <strong>Show all filename extensions</strong>.</li>
+      <li>Hidden files: press <code>&#8984; &#8679; .</code> in any Finder window.</li>
+    </ol>
+    <figure class="shot">
+      <span class="ph">Placeholder &middot; replace with real screenshot</span>
+      <svg viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="macOS Finder Settings Advanced tab with Show all filename extensions ticked">
+        <rect x="0" y="0" width="520" height="300" rx="10" fill="#ececec"/>
+        <rect x="0" y="0" width="520" height="34" rx="10" fill="#e0e0e0"/>
+        <circle cx="22" cy="17" r="6" fill="#ff5f57"/><circle cx="42" cy="17" r="6" fill="#febc2e"/><circle cx="62" cy="17" r="6" fill="#28c840"/>
+        <text x="260" y="21" text-anchor="middle" font-family="-apple-system,sans-serif" font-size="12.5" fill="#3a3a3a" font-weight="600">Finder Settings</text>
+        <g font-family="-apple-system,sans-serif" font-size="11" fill="#555" text-anchor="middle">
+          <text x="150" y="58">General</text><text x="230" y="58">Tags</text><text x="305" y="58">Sidebar</text>
+          <rect x="352" y="44" width="78" height="22" rx="6" fill="#d6e4fb" stroke="#a7c3f2"/>
+          <text x="391" y="59" fill="#1c47a3" font-weight="700">Advanced</text>
+        </g>
+        <line x1="20" y1="76" x2="500" y2="76" stroke="#d4d4d4"/>
+        <g font-family="-apple-system,sans-serif" font-size="12" fill="#2b2b2b">
+          <rect x="40" y="92" width="310" height="22" rx="4" fill="#eef4ff"/>
+          <rect x="46" y="97" width="13" height="13" rx="3" fill="#2f6bff"/>
+          <text x="70" y="107" font-weight="700" fill="#12306e">Show all filename extensions</text>
+          <rect x="46" y="127" width="13" height="13" rx="3" fill="#2f6bff"/>
+          <text x="70" y="137">Show warning before changing an extension</text>
+          <rect x="46" y="157" width="13" height="13" rx="3" fill="#2f6bff"/>
+          <text x="70" y="167">Show warning before emptying the Bin</text>
+        </g>
+        <path d="M470 104 C 520 100, 500 96, 358 103" fill="none" stroke="#e5402c" stroke-width="4"/>
+        <path d="M358 103 l 17 -5 l -6 15 z" fill="#e5402c"/>
+        <text x="400" y="90" font-family="-apple-system,sans-serif" font-size="12" fill="#e5402c" font-weight="700">tick this</text>
+      </svg>
+      <figcaption><strong>Mock-up, not a real screenshot.</strong> Steps: Finder → Settings → Advanced → tick “Show all filename extensions”.</figcaption>
+    </figure>
+  </div>
+
+</div>
+
+<h2>0.3 Open a Linux shell</h2>
+<p>This unit is about the <strong>Linux</strong> shell, so you need one. Pick whichever applies to you.</p>
+
+<div class="os-grid">
+  <div class="os-card">
+    <h3><span class="os-ic win">&#9638;</span> Windows</h3>
+    <p><strong>Important:</strong> PowerShell and Command Prompt are <em>not</em> Linux shells and cannot run our
+      <code>bash</code> scripts. Use one of these instead:</p>
+    <ul>
+      <li><strong>Easiest — no install:</strong> use the <strong>Ed workspace terminal</strong> in your browser. Every “Try this in Ed” in the reading runs there.</li>
+      <li><strong>On your laptop:</strong> install <strong>WSL</strong> (Ubuntu). Open <strong>PowerShell as Administrator</strong>, run the command below, then restart and set a username and password.</li>
+    </ul>
+    <div class="term" data-copy="wsl --install">
+      <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">PowerShell (Administrator)</span><button class="copy-btn" type="button">Copy</button></div>
+      <pre class="term-body"><span class="l"><span class="prompt-sym">&gt;</span> <span class="cmd">wsl</span> <span class="arg">--install</span></span><span class="l out">Installing: Ubuntu ...</span><span class="l out">Restart your computer to finish.</span></pre>
+    </div>
+    <p style="font-size:0.88rem;color:#666;">Afterwards, open <strong>Ubuntu</strong> from the Start menu to get your shell.</p>
+  </div>
+
+  <div class="os-card">
+    <h3><span class="os-ic mac">&#63743;</span> macOS</h3>
+    <p>macOS already ships with a shell — you do not need to install anything.</p>
+    <ul>
+      <li>Press <code>&#8984; Space</code>, type <strong>Terminal</strong>, press <strong>Return</strong>.</li>
+      <li>You will see a prompt ending in <code>%</code> or <code>$</code>. That is the shell.</li>
+      <li>Or use the <strong>Ed workspace terminal</strong> in your browser.</li>
+    </ul>
+    <div class="term" data-copy="whoami">
+      <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">Terminal — check it works</span><button class="copy-btn" type="button">Copy</button></div>
+      <pre class="term-body"><span class="l"><span class="prompt-sym">$</span> <span class="cmd">whoami</span></span><span class="l out">student</span></pre>
+      <div class="term-foot"><span class="in-key">you type</span><span class="out-key">shell prints</span></div>
+    </div>
+  </div>
+</div>
+
+<h2>0.4 Get the starter project and run the first check</h2>
+<p>These steps are the <strong>same on Windows (WSL), macOS, and Ed</strong>. Download <code>week1-rescue.zip</code> from Ed first, then run:</p>
+
+<div class="term" data-copy="mkdir -p ~/fit2109&#10;cd ~/fit2109&#10;unzip week1-rescue.zip&#10;cd week1-rescue&#10;bash check_progress.sh">
+  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash — expect 1/10 the first time</span><button class="copy-btn" type="button">Copy</button></div>
+  <pre class="term-body"><span class="l"><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p ~/fit2109</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">~/fit2109</span></span><span class="l comment"># move week1-rescue.zip into this folder first, then:</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">unzip</span> <span class="arg">week1-rescue.zip</span></span><span class="l out">Archive:  week1-rescue.zip</span><span class="l out">   creating: week1-rescue/</span><span class="l out">  inflating: week1-rescue/check_progress.sh</span><span class="l out">  inflating: week1-rescue/project/logs/app.log</span><span class="l out">   ...</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">week1-rescue</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">check_progress.sh</span></span><span class="l ok">[PASS] starter project structure is present</span><span class="l bad">[FAIL] evidence/location.txt records the lab directory</span><span class="l out">   ... (8 more FAIL)</span><span class="l out">Score: 1/10 (10%)</span></pre>
+  <div class="term-foot"><span class="in-key">you type</span><span class="out-key">shell prints</span></div>
+</div>
+
+<div class="callout callout-note">
+  <strong>1/10 is the correct starting score</strong>
+  You are <em>meant</em> to fail the other nine checks right now. The applied class is about making them pass, one
+  task at a time. Notice also that <code>bash check_progress.sh</code> runs the script through the
+  <code>bash</code> interpreter — this works without the execute bit, which is why you do not need
+  <code>chmod</code> here. Running it as <code>./check_progress.sh</code> <em>would</em> need the execute bit.
+</div>
+
+<h2>0.5 It is not working — HELP!</h2>
+<p>These four errors stop most people. Find your error message and apply the fix.</p>
+
+<table class="tr">
+  <thead><tr><th>What you see</th><th>What it means and how to fix it</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>bash: check_progress.sh:<br>No such file or directory</td>
+      <td><strong>You are in the wrong folder.</strong> Run <code>pwd</code> — it must end in <code>/week1-rescue</code>.
+        If not, run <code>cd ~/fit2109/week1-rescue</code>. Then run <code>ls</code> and check you can see <code>check_progress.sh</code>.</td>
+    </tr>
+    <tr>
+      <td>unzip: command not found</td>
+      <td><strong>WSL / Ubuntu:</strong> run <code>sudo apt update &amp;&amp; sudo apt install unzip</code>.
+        <strong>Mac:</strong> unzip is built in — if you see this, you are probably not in a Linux shell.</td>
+    </tr>
+    <tr>
+      <td>bash: command not found<br>(on Windows)</td>
+      <td><strong>You are in PowerShell or Command Prompt, not Linux.</strong> Open <strong>Ubuntu (WSL)</strong>
+        from the Start menu, or use the Ed workspace terminal. Windows' own shells cannot run <code>bash</code> scripts.</td>
+    </tr>
+    <tr>
+      <td>Permission denied</td>
+      <td>You do not need this for <code>check_progress.sh</code> (it runs via <code>bash file</code>).
+        For a script you run as <code>./script.sh</code>, add the execute bit first:
+        <code>chmod u+x script.sh</code> — Task 3 of the applied class covers exactly this.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="checklist">
+  <h3>Before you move on to Task 1, confirm:</h3>
+  <ul>
+    <li><span class="box"></span> File name extensions and hidden files are visible.</li>
+    <li><span class="box"></span> A Linux shell opens and <code>whoami</code> prints your username.</li>
+    <li><span class="box"></span> The starter is unzipped at <code>~/fit2109/week1-rescue</code>.</li>
+    <li><span class="box"></span> <code>bash check_progress.sh</code> prints <strong>Score: 1/10</strong>.</li>
+  </ul>
+  <p class="stop">Do not proceed until all four boxes are ticked.</p>
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 1 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+
+<script>
+  (function () {
+    function fallback(text, done) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta); done();
+      } catch (e) { /* clipboard unavailable */ }
+    }
+    function flash(btn) {
+      var o = btn.textContent;
+      btn.textContent = 'Copied'; btn.classList.add('ok');
+      setTimeout(function () { btn.textContent = o; btn.classList.remove('ok'); }, 1400);
+    }
+    document.querySelectorAll('.copy-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var term = btn.closest('.term');
+        var text = term ? term.getAttribute('data-copy') : '';
+        if (!text) return;
+        var done = function () { flash(btn); };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(function () { fallback(text, done); });
+        } else { fallback(text, done); }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
