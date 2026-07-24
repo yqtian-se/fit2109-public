@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.12 — Multi-File Editing: Split Views and Multi-Cursor — FIT2109 Week 3</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Core material</span>
+<h2>3.12 Multi-File Editing: Split Views and Multi-Cursor</h2>
+
+<p>Most authentic programming work is multi-file. Even a small change can involve a source file, a test file, a configuration file, and perhaps a build script or README entry. You have to move beyond the idea that editing means "modify one file, save, and close." VS Code's interface is designed explicitly for this broader style of work: you can open as many editors as needed side by side, vertically and horizontally, and editor groups can hold stacks of open items. That gives you a physical way of seeing relationships between files — a function definition on one side, a call site on another, a failing test below or beside them. That layout is not cosmetic; it changes how easily you can reason about a change.</p>
+
+<h3>Compare before changing</h3>
+<p>One of the first multi-file habits worth building is <em>compare before changing</em>. If you're renaming a function, updating a configuration value, or aligning a test with an implementation, it often helps to keep both files visible simultaneously. Split editing reduces unnecessary context switching and lowers the chance of "change one thing, forget the related place." A multi-file codebase becomes easier to understand when its related pieces can be seen in parallel rather than only serially.</p>
+
+<h3>How to split the editor</h3>
+<p>A <strong>split</strong> creates a second editor group next to the one you're in — the file you already have open stays put, and the new group is empty until you put something in it. There are three ways to create one:</p>
+
+<table class="key-table">
+  <thead><tr><th>Method</th><th>How</th><th>Best for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Split Editor</strong></td><td><span class="keycap">Ctrl</span>+<span class="keycap">\</span> (<span class="keycap">Cmd</span>+<span class="keycap">\</span>), or the split icon in the top-right of the tab bar</td><td>Splitting the file you're already looking at, so you can scroll the two halves independently</td></tr>
+    <tr><td><strong>Open to the Side</strong></td><td><span class="keycap">Ctrl</span>+<span class="keycap">Enter</span> (<span class="keycap">Cmd</span>+<span class="keycap">Enter</span>) after selecting a file in Quick Open (<a href="week3.10-navigation.html">3.10</a>), or <span class="keycap">Alt</span>+click (<span class="keycap">Option</span>+click on macOS) a file in the Explorer</td><td>Opening a <em>different</em> file directly into a new group, in one step</td></tr>
+    <tr><td><strong>Drag a tab</strong></td><td>Drag any tab to the left, right, top, or bottom edge of the editor area</td><td>Choosing exactly where the new group lands — dragging to the bottom splits horizontally instead of side by side</td></tr>
+  </tbody>
+</table>
+
+<p>Once you have more than one group, <span class="keycap">Ctrl</span>+<span class="keycap">1</span>, <span class="keycap">Ctrl</span>+<span class="keycap">2</span>, <span class="keycap">Ctrl</span>+<span class="keycap">3</span> (<span class="keycap">Cmd</span>+<span class="keycap">1</span>/<span class="keycap">2</span>/<span class="keycap">3</span>) jump your cursor focus straight to group 1, 2, or 3 without touching the mouse. <span class="keycap">Ctrl</span>+<span class="keycap">W</span> (<span class="keycap">Cmd</span>+<span class="keycap">W</span>) closes the active editor in whichever group has focus; closing a group's last editor removes the split.</p>
+
+<div class="diagram">
+  <svg width="640" height="230" viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono','Fira Code',Consolas,monospace">
+    <rect width="640" height="230" rx="10" fill="#1e1e2e"/>
+    <!-- Before: one group -->
+    <text x="20" y="24" fill="#8a8aa8" font-size="10">BEFORE — one editor group</text>
+    <rect x="20" y="32" width="200" height="182" rx="6" fill="#11111b"/>
+    <text x="30" y="50" fill="#8a8aa8" font-size="10">app.py</text>
+    <text x="30" y="76" fill="#c586c0" font-size="11">def</text>
+    <text x="56" y="76" fill="#89dceb" font-size="11">total(items):</text>
+    <text x="40" y="94" fill="#cdd6f4" font-size="11">s = 0</text>
+    <text x="40" y="112" fill="#a6e3a1" font-size="11">for x in items:</text>
+    <text x="50" y="130" fill="#cdd6f4" font-size="11">s += x</text>
+    <text x="40" y="148" fill="#cdd6f4" font-size="11">return s</text>
+    <!-- Arrow -->
+    <text x="265" y="92" text-anchor="middle" fill="#a6e3a1" font-size="11">Ctrl+\</text>
+    <text x="265" y="108" text-anchor="middle" fill="#a6e3a1" font-size="11">(Cmd+\)</text>
+    <path d="M232 125 L 298 125" stroke="#a6e3a1" stroke-width="2" marker-end="url(#arrow4)"/>
+    <defs>
+      <marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="#a6e3a1"/>
+      </marker>
+    </defs>
+    <!-- After: two groups -->
+    <text x="310" y="24" fill="#8a8aa8" font-size="10">AFTER — two editor groups, side by side</text>
+    <rect x="310" y="32" width="150" height="182" rx="6" fill="#11111b"/>
+    <text x="320" y="50" fill="#8a8aa8" font-size="10">app.py</text>
+    <text x="320" y="76" fill="#c586c0" font-size="11">def</text>
+    <text x="346" y="76" fill="#89dceb" font-size="11">total(items):</text>
+    <text x="330" y="94" fill="#cdd6f4" font-size="11">s = 0</text>
+    <text x="330" y="112" fill="#a6e3a1" font-size="11">for x in items:</text>
+    <text x="340" y="130" fill="#cdd6f4" font-size="11">s += x</text>
+    <text x="330" y="148" fill="#cdd6f4" font-size="11">return s</text>
+    <rect x="468" y="32" width="150" height="182" rx="6" fill="#11111b"/>
+    <text x="478" y="50" fill="#8a8aa8" font-size="10">test_app.py</text>
+    <text x="478" y="76" fill="#c586c0" font-size="11">def</text>
+    <text x="500" y="76" fill="#89dceb" font-size="11">test_total():</text>
+    <text x="488" y="94" fill="#cdd6f4" font-size="11">assert total(</text>
+    <text x="488" y="112" fill="#f9e2af" font-size="11">[1,2,3]</text>
+    <text x="548" y="112" fill="#cdd6f4" font-size="11">) == 6</text>
+  </svg>
+  <figcaption>Split Editor puts the test next to the function it tests — no more scrolling back and forth between two ends of the same file, or two different files entirely.</figcaption>
+</div>
+
+<h3>Multiple cursors and multiple selections</h3>
+<p>For repeated changes inside or across files, multiple cursors and multiple selections are extremely useful. Repeated edits are everywhere in code: renaming several lines in a config block, inserting the same prefix into several declarations, or adjusting similar function calls. Multi-cursor editing is faster than manual repetition, but its real value is not only speed — it helps you maintain visual control over a repeated change. You can see exactly which places are being affected <em>before</em> you commit the edit. That is an excellent habit in software work, where unintended text changes are costly.</p>
+
+<h3>Four ways to add a cursor</h3>
+<p>VS Code gives you several ways to create more than one cursor, and each suits a different situation:</p>
+
+<table class="key-table">
+  <thead><tr><th>Method</th><th>Shortcut</th><th>Best for</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Alt+Click</strong></td><td><span class="keycap">Alt</span>+click (<span class="keycap">Option</span>+click on macOS)</td><td>Placing cursors at specific, unrelated spots by eye</td></tr>
+    <tr><td><strong>Add Selection to Next Find Match</strong></td><td><span class="keycap">Ctrl</span>+<span class="keycap">D</span> (<span class="keycap">Cmd</span>+<span class="keycap">D</span>)</td><td>Selecting one occurrence, then adding the next ones one at a time so you can skip any you don't want</td></tr>
+    <tr><td><strong>Select All Occurrences</strong></td><td><span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">L</span> (<span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">L</span>)</td><td>Changing every match of the current selection at once</td></tr>
+    <tr><td><strong>Insert Cursor Above/Below</strong></td><td><span class="keycap">Ctrl</span>+<span class="keycap">Alt</span>+<span class="keycap">↑</span>/<span class="keycap">↓</span> (<span class="keycap">Cmd</span>+<span class="keycap">Option</span>+<span class="keycap">↑</span>/<span class="keycap">↓</span>)</td><td>Editing a vertical column of similar lines, one directly above or below the last</td></tr>
+    <tr><td><strong>Column (box) selection</strong></td><td><span class="keycap">Shift</span>+<span class="keycap">Alt</span>+drag (<span class="keycap">Shift</span>+<span class="keycap">Option</span>+drag on macOS)</td><td>Selecting a rectangular block across lines, instead of whole lines</td></tr>
+  </tbody>
+</table>
+<p>Whichever method you use, <span class="keycap">Esc</span> collapses everything back down to a single cursor.</p>
+
+<p>The distinction between the middle two matters. <code>Ctrl</code>+<code>D</code> selects matches <em>one at a time</em>, so if the fourth occurrence of a word is not one you actually want to change, you simply stop pressing it before you reach that one. <code>Ctrl</code>+<code>Shift</code>+<code>L</code> selects <em>all</em> matches immediately — faster, but with the same blind-spot risk as search-and-replace in <a href="week3.13-refactoring.html">3.13</a>: it cannot tell a variable name from an identical word inside a comment or string.</p>
+
+<div class="diagram">
+  <svg width="640" height="230" viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono','Fira Code',Consolas,monospace">
+    <rect width="640" height="230" rx="10" fill="#1e1e2e"/>
+    <!-- Before -->
+    <rect x="20" y="16" width="280" height="170" rx="6" fill="#11111b"/>
+    <text x="30" y="34" fill="#8a8aa8" font-size="10">BEFORE — Ctrl+D pressed twice</text>
+    <text x="30" y="64" fill="#cdd6f4" font-size="12">const width  = <tspan x="146" fill="#f9e2af">100</tspan></text>
+    <rect x="144" y="51" width="34" height="17" rx="2" fill="none" stroke="#f38ba8" stroke-width="1.5"/>
+    <text x="30" y="94" fill="#cdd6f4" font-size="12">const height = <tspan x="146" fill="#f9e2af">100</tspan></text>
+    <rect x="144" y="81" width="34" height="17" rx="2" fill="none" stroke="#f38ba8" stroke-width="1.5"/>
+    <text x="30" y="124" fill="#cdd6f4" font-size="12">const depth  = <tspan x="146" fill="#f9e2af">100</tspan></text>
+    <rect x="144" y="111" width="34" height="17" rx="2" fill="none" stroke="#f38ba8" stroke-width="1.5"/>
+    <text x="30" y="160" fill="#6c7086" font-size="10">3 cursors, all on "100"</text>
+    <!-- Arrow -->
+    <text x="320" y="88" text-anchor="middle" fill="#a6e3a1" font-size="12">type</text>
+    <text x="320" y="104" text-anchor="middle" fill="#f9e2af" font-size="12">200</text>
+    <path d="M304 120 L 336 120" stroke="#a6e3a1" stroke-width="2" marker-end="url(#arrow2)"/>
+    <defs>
+      <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="#a6e3a1"/>
+      </marker>
+    </defs>
+    <!-- After -->
+    <rect x="340" y="16" width="280" height="170" rx="6" fill="#11111b"/>
+    <text x="350" y="34" fill="#8a8aa8" font-size="10">AFTER — typed once</text>
+    <text x="350" y="64" fill="#cdd6f4" font-size="12">const width  = <tspan x="466" fill="#a6e3a1">200</tspan></text>
+    <text x="350" y="94" fill="#cdd6f4" font-size="12">const height = <tspan x="466" fill="#a6e3a1">200</tspan></text>
+    <text x="350" y="124" fill="#cdd6f4" font-size="12">const depth  = <tspan x="466" fill="#a6e3a1">200</tspan></text>
+    <text x="350" y="160" fill="#6c7086" font-size="10">all three updated together</text>
+  </svg>
+  <figcaption>Select "100" once, press Ctrl+D twice to add the next two matches, then type — all three cursors edit at the same time.</figcaption>
+</div>
+
+<h3>Column selection for aligned edits</h3>
+<p>Multi-cursor placement assumes you want to edit the <em>same text</em> in several places. Column (box) selection is different: it selects a rectangular region across several lines regardless of what text is there, which is exactly what you want when adding the same prefix or suffix to a block of otherwise-different lines. Hold <span class="keycap">Shift</span>+<span class="keycap">Alt</span> (<span class="keycap">Shift</span>+<span class="keycap">Option</span> on macOS) and drag from the top-left to the bottom-right corner of the block.</p>
+
+<div class="diagram">
+  <svg width="640" height="200" viewBox="0 0 640 200" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono','Fira Code',Consolas,monospace">
+    <rect width="640" height="200" rx="10" fill="#1e1e2e"/>
+    <!-- Before -->
+    <rect x="20" y="16" width="280" height="150" rx="6" fill="#11111b"/>
+    <text x="30" y="34" fill="#8a8aa8" font-size="10">BEFORE — Shift+Alt+drag a column</text>
+    <rect x="28" y="46" width="10" height="88" fill="none" stroke="#89dceb" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="44" y="60" fill="#cdd6f4" font-size="12">title</text>
+    <text x="44" y="80" fill="#cdd6f4" font-size="12">name</text>
+    <text x="44" y="100" fill="#cdd6f4" font-size="12">email</text>
+    <text x="44" y="120" fill="#cdd6f4" font-size="12">phone</text>
+    <text x="30" y="146" fill="#6c7086" font-size="10">one cursor per line, same column</text>
+    <!-- Arrow -->
+    <text x="320" y="82" text-anchor="middle" fill="#a6e3a1" font-size="12">type</text>
+    <text x="320" y="98" text-anchor="middle" fill="#f9e2af" font-size="12">- </text>
+    <path d="M304 114 L 336 114" stroke="#a6e3a1" stroke-width="2" marker-end="url(#arrow3)"/>
+    <defs>
+      <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L9,3 z" fill="#a6e3a1"/>
+      </marker>
+    </defs>
+    <!-- After -->
+    <rect x="340" y="16" width="280" height="150" rx="6" fill="#11111b"/>
+    <text x="350" y="34" fill="#8a8aa8" font-size="10">AFTER — typed once</text>
+    <text x="350" y="60" fill="#cdd6f4" font-size="12"><tspan fill="#a6e3a1">- </tspan>title</text>
+    <text x="350" y="80" fill="#cdd6f4" font-size="12"><tspan fill="#a6e3a1">- </tspan>name</text>
+    <text x="350" y="100" fill="#cdd6f4" font-size="12"><tspan fill="#a6e3a1">- </tspan>email</text>
+    <text x="350" y="120" fill="#cdd6f4" font-size="12"><tspan fill="#a6e3a1">- </tspan>phone</text>
+    <text x="350" y="146" fill="#6c7086" font-size="10">prefix added to every line at once</text>
+  </svg>
+  <figcaption>Column selection ignores what the text says — it selects a rectangle, so typing inserts the same characters at the same column on every line it touches.</figcaption>
+</div>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Open a file with a repeated word (several similar variable declarations, or a repeated string). Double-click one occurrence to select it, then press <code>Ctrl</code>+<code>D</code> (<code>Cmd</code>+<code>D</code> on macOS) a couple of times to add the next matches one at a time. Type a replacement and watch every selected occurrence update together. Then try <code>Shift</code>+<code>Alt</code>+drag (<code>Shift</code>+<code>Option</code>+drag on macOS) down the start of a few lines and type a short prefix, to feel the difference between matching-text cursors and column selection.
+</div>
+
+<p>Not every repeated change should be done this way, though — sometimes search-and-replace or a language-aware refactor is the safer or faster tool. That decision is the subject of <a href="week3.13-refactoring.html">3.13</a>.</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 3 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
