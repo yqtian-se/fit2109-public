@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.4 — $PATH and Environment Variables — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #8b93b4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.4 How Bash Finds a Command: $PATH and Environment Variables</h2>
+
+<p>When you type a command such as <code>python</code>, <code>git</code>, or <code>ls</code>, Bash does not simply look for a program with that name in one universal place. Command lookup follows a fixed order, and knowing it explains a surprising number of "why did <em>that</em> run?" moments.</p>
+
+<p>First, before any searching happens at all, Bash expands <strong>aliases</strong> — the shorthand names covered in <a href="week7.05-bashrc.html">section 7.5</a>. An alias is replaced textually, so if you have one, it wins outright. After that, if the command name contains no slash, Bash checks in this order:</p>
+
+<ol>
+  <li>Is it a <strong>shell function</strong>? A named block of shell commands you define yourself, also covered in <a href="week7.05-bashrc.html">section 7.5</a>.</li>
+  <li>Is it a <strong>shell builtin</strong> — a command built into Bash itself, such as <code>cd</code>?</li>
+  <li>Can it be found in one of the directories listed in <code>$PATH</code>? If so, Bash runs the program from the first directory that has it.</li>
+</ol>
+
+<p>If the command name <em>does</em> contain a slash, Bash skips all of this searching and tries to execute exactly the file you specified.</p>
+
+<p>This explains why <code>cd</code> behaves differently from most other commands. <code>cd</code> is a shell builtin, so it is handled directly by Bash rather than by searching the filesystem. It also explains why <code>./myscript.sh</code> works even when <code>myscript.sh</code> alone does not. The <code>./</code> includes a slash, so Bash executes the file path directly instead of searching PATH for a command name. As a speed optimisation, Bash also remembers where it found each command the first time, so repeat runs do not have to search every PATH directory again.</p>
+
+<p>A useful set of commands for exploring this is:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$PATH"</span>
+<span class="prompt-sym">$</span> <span class="cmd">type</span> <span class="arg">-a ls</span>
+<span class="prompt-sym">$</span> <span class="cmd">type</span> <span class="arg">-a cd</span>
+<span class="prompt-sym">$</span> <span class="cmd">command</span> <span class="arg">-v python3</span>
+<span class="prompt-sym">$</span> <span class="cmd">command</span> <span class="arg">-v git</span></code></pre>
+
+<p><code>echo "$PATH"</code> shows the colon-separated list of directories Bash searches. <code>type -a</code> is especially useful because it can show whether a name resolves to a builtin, function, alias, or executable path. <code>command -v</code> gives a concise way to ask whether a command can be found and where. These commands are practical diagnostic tools when something "works on one machine but not another."</p>
+
+<h3>A refresher: shell variables, environment variables, and <code>export</code></h3>
+
+<p>You met this in <a href="../week2/week2.03-variables.html">Week 2</a>, and it matters here because <code>PATH</code> is itself an environment variable. Briefly, to refresh:</p>
+
+<ul>
+  <li>Writing <code>name=value</code> creates a <strong>shell variable</strong>. It exists only in the shell you typed it in.</li>
+  <li><code>export name</code> promotes it to an <strong>environment variable</strong>, which means every program the shell launches from then on inherits a copy of it.</li>
+  <li>The environment is just that collection of name-value pairs handed down to child processes.</li>
+</ul>
+
+<p>This is why <code>PATH</code> has to be exported: the shell is not the only thing that needs it. Other environment variables shape how programs behave in the same way. <code>HOME</code> is your home directory, <code>SHELL</code> names the shell you are using, and <code>EDITOR</code> or <code>VISUAL</code> tell any program that needs a text editor which one to open — that is how <code>git commit</code> knows to launch Vim rather than something else.</p>
+
+<h3>Putting your own commands on the PATH</h3>
+
+<p>The classic use of all this is making your own scripts runnable by name. This is the scenario from the overview, start to finish:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p "$HOME/bin"</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">'echo "Hello from custom command"'</span> <span class="arg">&gt; "$HOME/bin/hello-fit2109"</span>
+<span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">u+x "$HOME/bin/hello-fit2109"</span>
+<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">PATH="$HOME/bin:$PATH"</span>
+<span class="prompt-sym">$</span> <span class="cmd">hello-fit2109</span>
+<span class="out">Hello from custom command</span></code></pre>
+
+<p><code>export PATH="$HOME/bin:$PATH"</code> puts <code>~/bin</code> at the <em>front</em> of the search list, so Bash finds your script there before looking anywhere else. Note that the old value is included on the right — forgetting <code>:$PATH</code> replaces the search list instead of extending it, and suddenly even <code>ls</code> cannot be found.</p>
+
+<p>That <code>export</code> applies only to the current shell, which is exactly the disappearing-setting problem from the overview. To make it permanent, put the line in a startup file — <code>~/.bashrc</code> for interactive shells, as <a href="week7.02-startup.html">section 7.2</a> explains.</p>
+
+<p>Command lookup is the mechanism; environment variables are the knobs that shape it. Between them they explain most cases of a command being found on one machine and not on another.</p>
+
+
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

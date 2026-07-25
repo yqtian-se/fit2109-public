@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.7 — Job Control, ps, and Signals — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.82rem; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.7 Managing Long-Running Commands: Job Control, ps, Signals, and nohup</h2>
+
+<p>A command-line environment is not only about startup files and customisation. It is also about managing running programs. Almost every command you have run in this unit so far has finished while you sat and waited for it. This section is about what to do when you do not want to wait — when a command takes twenty minutes and you need your shell back — and about how to see and control what is running on the machine.</p>
+
+<h3>Three words you need first</h3>
+<p>Three terms come up constantly in this section, so it is worth pinning them down before anything else:</p>
+
+<ul>
+  <li>A running program is a <strong>process</strong>, and the operating system gives each one a <strong>process ID</strong> (or <strong>PID</strong>) — a number that uniquely identifies it while it runs.</li>
+  <li>A command runs in the <strong>foreground</strong> when it holds your terminal: you see its output, and you cannot type another command until it finishes.</li>
+  <li>A command runs in the <strong>background</strong> when it keeps running but hands the prompt straight back to you, so you can carry on working in the same terminal.</li>
+</ul>
+
+<p>Bash's documentation defines <strong>job control</strong> as the ability to stop a process, resume it, and move it between the foreground and the background. Bash treats each pipeline you run as one <strong>job</strong> and keeps a table of the jobs currently running, which the <code>jobs</code> command displays.</p>
+
+<h3>Starting a command in the background</h3>
+<p>The easiest way to start a command directly in the background is to put <code>&amp;</code> at the end of it:</p>
+
+<pre><code><span class="cmd">sleep</span> <span class="arg">300 &amp;</span>
+<span class="out">[1] 48231</span>
+<span class="cmd">jobs</span>
+<span class="out">[1]+  Running                 sleep 300 &amp;</span></code></pre>
+
+<p>When Bash starts a job in the background, it prints two numbers: the <strong>job number</strong> in square brackets (<code>[1]</code>) and the process ID (<code>48231</code>). The job number is small and local to your shell, which is what makes it convenient to type. The <code>jobs</code> command then lists the active jobs and their status. Backgrounding suits commands that do not need you to interact with them, such as a long <code>find</code>, a test run, or a build.</p>
+
+<h3>Suspending and resuming</h3>
+<p>Often you only realise you need the shell back <em>after</em> starting a command in the foreground. Pressing <code>Ctrl-Z</code> pauses the foreground command and returns you to the prompt. The command is now <em>suspended</em>: still loaded, but frozen and using no CPU. From there you can resume it in the background with <code>bg</code>, or bring it back to the foreground with <code>fg</code>:</p>
+
+<pre><code><span class="cmd">python3</span> <span class="arg">long_task.py</span>
+<span class="comment"># press Ctrl-Z — the command pauses and you get the prompt back</span>
+<span class="out">[1]+  Stopped                 python3 long_task.py</span>
+<span class="cmd">bg</span> <span class="arg">%1</span>          <span class="comment"># resume it, but in the background</span>
+<span class="cmd">fg</span> <span class="arg">%1</span>          <span class="comment"># pull it back to the foreground</span></code></pre>
+
+<p>The <code>%1</code> here is a <strong>jobspec</strong>: <code>%</code> followed by a job number refers to that job, so <code>%1</code> means job 1. Typed on its own at the prompt, a jobspec such as <code>%1</code> does the same thing as <code>fg %1</code>. This shorthand is a large part of why job control feels quick once you have used it a few times.</p>
+
+<h3>Seeing every process: <code>ps</code></h3>
+
+<p><code>jobs</code> has an important limit: it only knows about work <em>this</em> shell started. It cannot see a program you launched from another terminal, something started at login, or a process belonging to another user. For the full picture you need <code>ps</code>, which lists processes running on the machine.</p>
+
+<p>On its own, <code>ps</code> is deliberately narrow — just your own processes attached to a terminal:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">ps</span>
+<span class="out">  PID TTY           TIME CMD
+77974 ttys000    0:00.02 -bash
+78006 ttys000    4:56.29 python long_task.py</span></code></pre>
+
+<p>The two invocations you will actually see people type are <code>ps aux</code> and <code>ps -ef</code>. Both mean "show me everything"; they are simply two different option styles that <code>ps</code> has inherited from its history, and on Linux both work:</p>
+
+<table class="key-table">
+  <thead><tr><th>Command</th><th>What it gives you</th></tr></thead>
+  <tbody>
+    <tr><td><code>ps</code></td><td>Your processes in the current terminal. A quick sanity check, nothing more.</td></tr>
+    <tr><td><code>ps aux</code></td><td>Every process on the machine, with CPU and memory columns. <code>a</code> = all users, <code>u</code> = user-friendly columns, <code>x</code> = include processes with no terminal (background services). Note there is no dash.</td></tr>
+    <tr><td><code>ps -ef</code></td><td>Every process in "full" format, including <strong>PPID</strong> — the parent process ID, which shows what launched what.</td></tr>
+    <tr><td><code>ps -p 48231</code></td><td>Just one process, by PID. Useful for checking whether something is still alive.</td></tr>
+    <tr><td><code>ps -u $USER</code></td><td>Every process belonging to one user, terminal or not.</td></tr>
+    <tr><td><code>ps -o pid,ppid,stat,%cpu,comm</code></td><td>Choose your own columns, when the default output is more than you want.</td></tr>
+  </tbody>
+</table>
+
+<p>Because there is far too much output to read, <code>ps</code> is almost always paired with the tools from Week 1 and Week 2 — a pipe into <code>grep</code>:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">ps</span> <span class="arg">aux</span> | <span class="cmd">grep</span> <span class="arg">long_task</span>
+<span class="out">student  48231  99.0  1.2  ...  python long_task.py
+student  48302   0.0  0.0  ...  grep long_task</span></code></pre>
+
+<p>Notice the second line: <code>grep</code> has found <em>itself</em>, because it is also a running process whose command line contains the word you searched for. This confuses everyone once. If it bothers you, <code>pgrep long_task</code> does the same search and prints just the PIDs, without matching itself.</p>
+
+<h3>Reading the STAT column</h3>
+
+<p>The <code>STAT</code> column in <code>ps aux</code> output is worth knowing, because it connects directly to what you just did with <code>Ctrl-Z</code>:</p>
+
+<table class="key-table">
+  <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>R</code></td><td>Running, or ready to run.</td></tr>
+    <tr><td><code>S</code></td><td>Sleeping — waiting for something, such as input or a timer. Most processes look like this.</td></tr>
+    <tr><td><code>T</code></td><td><strong>Stopped</strong> — exactly what a job suspended with <code>Ctrl-Z</code> looks like from the outside.</td></tr>
+    <tr><td><code>Z</code></td><td>Zombie — finished, but its parent has not collected its exit status yet.</td></tr>
+    <tr><td><code>+</code></td><td>Appended to another code (e.g. <code>S+</code>) to mean the process is in the foreground.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Run <code>sleep 300 &amp;</code>, then <code>ps -o pid,stat,comm -p</code> followed by the PID Bash printed. You should see <code>S</code>. Bring it to the foreground with <code>fg</code>, suspend it with <code>Ctrl-Z</code>, and run the same <code>ps</code> command again — the state should now be <code>T</code>.
+</div>
+
+<div class="callout callout-note">
+  <strong>Linux extras</strong>
+  On Linux, GNU <code>ps</code> adds long options that are handy but <em>not</em> available on macOS: <code>ps aux --sort=-%cpu</code> sorts by CPU use (highest first), and <code>--sort=-%mem</code> by memory. If you try these on a Mac you will get an "illegal option" error. For watching resource use live, <code>top</code> — or <code>htop</code>, if installed — is the better tool on either system.
+</div>
+
+<h3>Stopping a job: what a signal actually is</h3>
+<p>To stop a job completely, use <code>kill</code>:</p>
+
+<pre><code><span class="cmd">kill</span> <span class="arg">%1</span></code></pre>
+
+<p>Despite the name, <code>kill</code> does not have only one way to stop something. It sends a <strong>signal</strong> — a short, standard message the operating system delivers to a process, which the process can then react to. You have already been sending signals without knowing it: the <code>Ctrl-C</code> from Week 1 is one, and the "terminated by signal" exit codes from <a href="../week2/week2.04-exitstatus.html">Week 2</a> are what a shell reports afterwards.</p>
+
+<table class="key-table">
+  <thead><tr><th>You do</th><th>Signal sent</th><th>What it means</th></tr></thead>
+  <tbody>
+    <tr><td><code>Ctrl-C</code></td><td><code>SIGINT</code></td><td>"Please stop." The program can catch this and clean up first.</td></tr>
+    <tr><td><code>Ctrl-Z</code></td><td><code>SIGTSTP</code></td><td>"Please pause." This is what actually suspends a foreground job.</td></tr>
+    <tr><td><code>kill %1</code> (no options)</td><td><code>SIGTERM</code></td><td>"Please shut down." The default — a polite request the program can still catch.</td></tr>
+    <tr><td><code>kill -9 %1</code></td><td><code>SIGKILL</code></td><td>"Stop now." Cannot be caught or ignored; the kernel ends the process itself.</td></tr>
+  </tbody>
+</table>
+
+<p>The practical rule is to try a plain <code>kill</code> first and give the program a moment to shut down properly — closing files, releasing locks, saving state. Reach for <code>kill -9</code> only when the program ignores that and is still running, because <code>SIGKILL</code> gives it no chance to tidy up after itself.</p>
+
+<p>The examples above use <code>%1</code>, but <code>kill</code> accepts a <strong>PID</strong> just as happily — and that is the case you need whenever the process did not come from this shell and so has no job number. This is where <code>ps</code> earns its place: find the PID, then signal it.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">ps</span> <span class="arg">aux</span> | <span class="cmd">grep</span> <span class="arg">long_task</span>
+<span class="out">student  48231  99.0  1.2  ...  python long_task.py</span>
+<span class="prompt-sym">$</span> <span class="cmd">kill</span> <span class="arg">48231</span>          <span class="comment"># polite SIGTERM, by PID</span>
+<span class="prompt-sym">$</span> <span class="cmd">ps</span> <span class="arg">-p 48231</span>         <span class="comment"># still there? if so, escalate</span>
+<span class="prompt-sym">$</span> <span class="cmd">kill</span> <span class="arg">-9 48231</span></code></pre>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Run <code>sleep 300 &amp;</code>, then <code>jobs</code> to see it listed, then <code>kill %1</code> and <code>jobs</code> again. Watch the job disappear from the table.
+</div>
+
+<h3>Outliving the terminal: nohup and disown</h3>
+<p>Job control lasts only as long as the shell that started the job. Close the terminal and the shell sends its jobs a <code>SIGHUP</code> signal — short for "hang up" — and they normally stop with it. Two small tools get around this.</p>
+
+<p>If you know in advance that a command must outlive the terminal, start it with <code>nohup</code>:</p>
+
+<pre><code><span class="cmd">nohup</span> <span class="arg">python3 long_task.py &amp;</span>   <span class="comment"># ignores SIGHUP from the start</span></code></pre>
+
+<p><code>nohup</code> runs the command with <code>SIGHUP</code> ignored, and by default sends its output to a file called <code>nohup.out</code>, so the output still has somewhere to go once the terminal is gone.</p>
+
+<p>If the command is already running and you only now realise you need it to survive, <code>disown</code> fixes it after the fact. It removes the job from the shell's job table, so the shell no longer tracks it or signals it on exit:</p>
+
+<pre><code><span class="cmd">jobs</span>             <span class="comment"># find the job number, e.g. [1]</span>
+<span class="cmd">disown</span> <span class="arg">%1</span>        <span class="comment"># detach it — closing the terminal no longer stops it</span></code></pre>
+
+<p>Think of these as three levels of the same problem. Job control manages commands inside one shell session. <code>nohup</code> and <code>disown</code> keep a single command alive after that shell closes. When you want a whole working session — several commands, several panes, an editor left open mid-file — to survive a closed terminal or a dropped connection, you need the tools in <a href="week7.08-tmux.html">the next section</a>.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

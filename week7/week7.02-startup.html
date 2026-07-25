@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.2 — How a Shell Starts — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #8b93b4; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.2 How a Shell Starts, and Which Dotfiles It Reads</h2>
+
+<p>The previous section said dotfiles hold your shell's settings. This section answers the question that actually trips people up: <em>which</em> of those files does Bash read? The answer is not "all of them, always". Bash behaves differently depending on how it was started, and choosing the wrong file is the single most common reason a setting appears to be ignored.</p>
+
+<h3>Which files Bash reads, and when</h3>
+
+<p>The GNU Bash manual distinguishes between <strong>interactive login shells</strong>, <strong>interactive non-login shells</strong>, and <strong>non-interactive shells</strong>. Each case reads a different set of startup files:</p>
+
+<ul>
+  <li>For an <strong>interactive login shell</strong>, Bash reads <code>/etc/profile</code> first, then the first readable file among <code>~/.bash_profile</code>, <code>~/.bash_login</code>, and <code>~/.profile</code>.</li>
+  <li>For an <strong>interactive non-login shell</strong>, Bash reads <code>~/.bashrc</code>.</li>
+  <li>For a <strong>non-interactive shell</strong>, such as one running a script, Bash reads <em>no startup file at all</em> by default. It reads a file only if the <code>BASH_ENV</code> environment variable is set, in which case it runs the file that variable names. <code>BASH_ENV</code> is not set on a normal system, so in practice scripts start with no startup file.</li>
+</ul>
+
+<p>That last case surprises people often enough to be worth stating twice: a script does not inherit the customisations you have set up in your <code>~/.bashrc</code>. If something works when you type it yourself but fails inside a script, this is one of the first things to check.</p>
+
+<figure style="margin:24px auto;text-align:center;max-width:720px;">
+  <img src="images/image1.png" alt="Comparison of an Interactive Login Shell, Interactive Non-Login Shell, and Non-Interactive Shell — what starts each one, whether it reads login or interactive startup files, and example commands for each." style="max-width:100%;height:auto;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.12);border:1px solid #e0e0f0;">
+  <figcaption style="font-size:0.82rem;color:#666;margin-top:8px;">Login, interactive non-login, and non-interactive shells each start differently and read a different set of files.</figcaption>
+</figure>
+
+<p>A practical example helps. Suppose you open a terminal emulator on Ubuntu. That often gives you an interactive non-login shell, so your prompt customisations and your <strong>aliases</strong> — short names you define for longer commands, covered properly in <a href="week7.05-bashrc.html">section 7.5</a> — usually come from <code>~/.bashrc</code>. By contrast, if you connect with SSH in a way that starts a login shell, Bash may read <code>/etc/profile</code> and then <code>~/.bash_profile</code> or <code>~/.profile</code>. That means <code>~/.bash_profile</code> is often used for login-specific setup, while <code>~/.bashrc</code> is often used for interactive shell behaviour.</p>
+
+<h3>Checking how your own shell started</h3>
+
+<p>You do not have to guess which case you are in. Three small checks will tell you:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$0"</span>
+<span class="prompt-sym">$</span> <span class="cmd">shopt</span> <span class="arg">login_shell</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$-"</span></code></pre>
+
+<p><code>echo "$0"</code> shows how the shell was invoked. <code>echo "$-"</code> lists the shell's current option flags, and includes <code>i</code> if the shell is interactive.</p>
+
+<p>The middle one introduces a command worth knowing in its own right. <code>shopt</code> is Bash's command for checking and toggling optional shell behaviours. Used with just an option name it reports whether that option is currently on or off; <code>shopt -s name</code> switches an option on, and <code>shopt -u name</code> switches it off. So <code>shopt login_shell</code> reports whether the current Bash session is a login shell. You will meet <code>shopt</code> again in <a href="week7.06-history.html">section 7.6</a>, where it controls how command history is saved.</p>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Run the three checks above in a normal terminal window, then run them again inside an SSH session (or start one with <code>bash --login</code>). Compare the output: <code>login_shell</code> should flip from <code>off</code> to <code>on</code>, which tells you a different set of startup files was read.
+</div>
+
+<h3>Putting each setting in the right file</h3>
+
+<p>A very common beginner mistake is putting everything into one file without thinking about when that file is read. For example, say you define an alias — a short name for a longer command, such as <code>alias ll='ls -lah'</code> so that typing <code>ll</code> runs <code>ls -lah</code> — and you put it only in <code>~/.profile</code>. It will not appear in a normal non-login terminal, because that terminal only reads <code>~/.bashrc</code>. The mistake also runs the other way. Putting something interactive — an <code>echo "Welcome back!"</code>, say — into a login file can break automated tools that log in over SSH and expect nothing but the output they asked for. A safer mental model is:</p>
+
+<ul>
+  <li><code>~/.bashrc</code> for interactive shell customisations</li>
+  <li><code>~/.bash_profile</code> / <code>~/.profile</code> for login-time setup</li>
+  <li><code>BASH_ENV</code> only when you deliberately need a script to run setup first — normally you leave it unset</li>
+</ul>
+
+<div class="callout callout-warn">
+  <strong>Common trap</strong>
+  If a setting only seems to work "sometimes," check which file it lives in against which shell type you are actually starting. A setting in <code>~/.profile</code> alone will not appear in a terminal that only reads <code>~/.bashrc</code>.
+</div>
+
+<h3>Reusing one file from another: the <code>source</code> command</h3>
+
+<p>That mental model leaves an obvious problem. If your aliases live in <code>~/.bashrc</code>, and a login shell reads <code>~/.bash_profile</code> instead, then logging in over SSH gives you a shell without any of your customisations. The standard fix is to have the login file read the interactive one. The Bash manual itself shows the pattern:</p>
+
+<pre><code><span class="comment"># ~/.bash_profile</span>
+<span class="cmd">if</span> <span class="arg">[ -f ~/.bashrc ]; then</span>
+  <span class="cmd">.</span> <span class="arg">~/.bashrc</span>
+<span class="cmd">fi</span></code></pre>
+
+<p>The leading <code>.</code> here is the <strong>source</strong> command (also written as <code>source ~/.bashrc</code>) — it runs a file's commands directly inside the <em>current</em> shell, rather than starting a new process the way <code>./script.sh</code> would. That distinction is the whole point: whatever the sourced file defines — aliases, functions, variables — becomes part of the shell that sourced it, instead of disappearing with a separate process once the file finishes.</p>
+
+<p>This keeps one main place for interactive settings while still letting login shells reuse them. It is also how you apply changes without opening a new terminal: after editing <code>~/.bashrc</code>, run <code>source ~/.bashrc</code> and the current shell picks up the changes immediately.</p>
+
+<p>That covers the files your <em>shell</em> reads. Other programs you use have dotfiles of their own, read by a similar mechanism but at their own startup rather than the shell's — which is <a href="week7.03-otherdotfiles.html">the next section</a>.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

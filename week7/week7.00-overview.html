@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 7 Pre-Reading: Command-Line Environment — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; margin-bottom: 0; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; margin-bottom: 6px; }
+  .hero .quote { margin-top: 16px; font-style: italic; color: #8090b0; font-size: 0.95rem; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Week 7: Command-Line Environment</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <p class="quote">"The command line is not decoration — it is configuration, all the way down."</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol class="goals">
+      <li>Explain which startup files Bash reads for login, interactive non-login, and non-interactive shells.</li>
+      <li>Trace how <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">$PATH</code> and command lookup decide which program a command name actually runs.</li>
+      <li>Explain why programs read dotfiles at all, and configure your own with <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">~/.bashrc</code>, <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">~/.inputrc</code>, and <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">~/.vimrc</code>.</li>
+      <li>Search and manage command history with <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">Ctrl-R</code> and history-related environment variables.</li>
+      <li>Write aliases, functions, and a custom prompt with <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">PS1</code>.</li>
+      <li>Inspect what is running with <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">ps</code>, and control long-running commands with job control, signals, <code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">nohup</code>/<code style="background:rgba(255,255,255,0.1);color:#a6e3a1;">disown</code>, and persistent tmux sessions.</li>
+    </ol>
+  </div>
+</div>
+
+<h3>A scenario</h3>
+<p>In Week 1 you learned that the shell finds a program by searching the directories listed in <code>$PATH</code>, and in Week 2 that <code>export</code> makes a variable visible to other programs. So you write a small script of your own, make it executable with <code>chmod u+x</code>, and drop it in a <code>bin</code> folder in your home directory. To run it by name from anywhere, you type <code>export PATH="$HOME/bin:$PATH"</code>. It works.</p>
+<p>Then you close the terminal. You open a new one, type the script's name, and get <code>command not found</code> — the change is gone, because it only ever applied to that one shell. Fine: you put the <code>export</code> line into a file called <code>~/.profile</code>, because a web page said that is where it goes. Now it works when you SSH into the lab server, but it still does nothing in a new tab on your laptop. Nothing you typed was wrong, and yet the setting appears and disappears depending on how the terminal happened to be opened.</p>
+<p>None of this is random. Bash reads a specific, predictable set of files depending on exactly how it was started — login or not, interactive or not — and putting a setting in the wrong one of those files is the single most common reason a customisation "does not work". Once you know the rule, "why is my <code>PATH</code> different in this terminal?" stops being a mystery and becomes a five-second diagnosis.</p>
+<p>This week builds the layer above the shell commands you already know: the configuration, history, customisation, and process-management habits that turn a bare terminal into an environment you actually want to work in.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  Open a fresh terminal on your own machine right now and run <code>echo "$0"</code> and <code>echo "$-"</code>. Keep the output in mind — by the end of section 7.2 you will know exactly what it means.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
