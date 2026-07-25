@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.1 — What Dotfiles Are — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try strong { color: #00856a; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.1 What Dotfiles Are, and What They Do For You</h2>
+
+<p>Every setting in this week — your prompt, your aliases, your key bindings, your history — has to be stored somewhere, or it would vanish the moment you close the terminal. That somewhere is a <strong>dotfile</strong>. This short section defines what a dotfile is and what it is for; the two sections after it show which dotfiles your shell reads, and which other programs use them.</p>
+
+<div class="callout callout-note">
+  <strong>This week covers Bash</strong>
+  Everything in Week 7 is written for <em>Bash</em>, the default shell on most Linux systems and the one this unit uses throughout. Other shells exist — most notably <em>zsh</em>, which has been the default on macOS since 2019 — and the <em>concepts</em> here carry across to them almost unchanged: they all have startup files, a search path, aliases, a prompt variable, job control, and a history. What differs is the <em>file names</em>. A zsh user edits <code>~/.zshrc</code> where this week says <code>~/.bashrc</code>, and <code>~/.zprofile</code> where it says <code>~/.bash_profile</code>. If you are on a Mac and your terminal says <code>zsh</code>, learn the ideas here and then look up the equivalent file names for your shell — or run <code>bash</code> to follow along exactly.
+</div>
+
+<h3>The definition</h3>
+
+<p>A <strong>dotfile</strong> is a configuration file whose name begins with a dot. That leading dot is the whole trick: by convention, tools that list files treat a name starting with <code>.</code> as hidden, so <code>ls</code> will not show it unless you ask with <code>ls -a</code>.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">~</span>
+<span class="out">Desktop  Documents  Downloads  bin</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">-a ~</span>
+<span class="out">.        .bashrc         .gitconfig  .profile  Desktop    Downloads
+..       .bash_profile   .inputrc    .vimrc    Documents  bin</span></code></pre>
+
+<p>Beyond being hidden, there is nothing special about these files. They are ordinary text. You can open <code>~/.bashrc</code> in any editor from <a href="../week3/index.html">Week 3</a>, read it, and change it — no special command or permission is involved.</p>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Run <code>ls -a ~</code> on your own machine and count how many dotfiles are already there. Most people are surprised: you have been accumulating them since the first time you used the terminal, and if you set up Git in <a href="../week4/week4.02-config.html">Week 4</a> you created one yourself without being told that is what it was.
+</div>
+
+<h3>What they are for</h3>
+
+<p>Dotfiles exist to make settings <em>persist</em> and to keep them <em>out of the way</em>. Without them, every preference would have to be retyped in every new terminal. With them, your environment is described once, in a file, and rebuilt automatically each time a program starts. Broadly they serve three purposes:</p>
+
+<table class="key-table">
+  <thead><tr><th>Purpose</th><th>Example files</th><th>Covered in</th></tr></thead>
+  <tbody>
+    <tr><td>Set up your <strong>shell</strong> when it starts</td><td><code>~/.bashrc</code>, <code>~/.bash_profile</code>, <code>~/.profile</code></td><td><a href="week7.02-startup.html">7.2</a>, and what to put in them in <a href="week7.05-bashrc.html">7.5</a></td></tr>
+    <tr><td>Change how the <strong>command line behaves</strong> as you type</td><td><code>~/.inputrc</code></td><td><a href="week7.03-otherdotfiles.html">7.3</a></td></tr>
+    <tr><td>Configure <strong>individual programs</strong> you use</td><td><code>~/.vimrc</code>, <code>~/.gitconfig</code>, <code>~/.tmux.conf</code></td><td><a href="week7.03-otherdotfiles.html">7.3</a></td></tr>
+  </tbody>
+</table>
+
+<h3>Why they are worth taking seriously</h3>
+
+<p>The real payoff is repeatability. A dotfile turns your environment from something you rebuild from memory into something you can <em>declare</em>. Think about what that saves you. Without dotfiles, every reinstall means re-configuring by hand, and every new lab server means typing the same five setup commands again. With them, you copy a few files across and you are done. Better still, keep those files in a Git repository — the same version control from <a href="../week4/index.html">Weeks 4</a> and <a href="../week5/index.html">5</a> — and setting up a new machine becomes a single <code>git clone</code>. This is the same theme of reproducible environments the unit keeps returning to, applied to your own tools rather than to a project.</p>
+
+<p>One rule of thumb before you start editing them: use dotfiles to make the command line <em>predictable</em>, not chaotic. Keep them readable, add a comment explaining why each setting is there, and avoid turning them into a large pile of copied internet snippets you do not understand. A configuration you cannot explain is one you cannot debug — and a broken <code>~/.bashrc</code> affects every terminal you open afterwards.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

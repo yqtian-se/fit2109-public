@@ -14,6 +14,7 @@ Author: [Dr. Yongqiang Tian](https://yqtian.com) · [Unit handbook](https://hand
 | [Week 4](week4/index.html) | Version Control with Git: Foundations | 13 pre-reading slides |
 | [Week 5](week5/index.html) | Version Control with Git: Collaboration & History | 10 pre-reading slides |
 | [Week 6](week6/index.html) | Reproducible Environments and Containers | Pre-reading guide, setup, and further reading |
+| [Week 7](week7/index.html) | Command-Line Environment | 10 pre-reading slides |
 | [Week 8](week8/index.html) | Debugging: Systematic Bug Hunting | 13 pre-reading slides |
 | [Week 9](week9/index.html) | Profiling & Performance | 10 pre-reading slides |
 | [Week 12](week12/index.html) | Agentic Coding & AI Tools | 11 pre-reading slides |

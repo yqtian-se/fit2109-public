@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.6 — Command History — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .arg { color: #fab387; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.6 Command History and Reverse Search</h2>
+
+<p>Your command history is itself something the environment configures — how much of it is kept, where it is stored, and how you search it are all settings, not fixed behaviour.</p>
+
+<p>The <code>history</code> command lists previous commands, and a small set of history expansions let you reuse them without retyping:</p>
+
+<pre><code><span class="comment">history          # list recent commands with numbers
+!!                # re-run the previous command
+!$                # re-use the last argument of the previous command
+!42               # re-run history entry number 42
+!grep             # re-run the most recent command starting with "grep"</span></code></pre>
+
+<p>Far more useful day to day is <strong>incremental reverse search</strong>: press <code>Ctrl-R</code> and start typing — the shell searches your history live and shows the best match as you type. Press <code>Ctrl-R</code> again to step to an older match, and press Enter to run it, or the Right arrow / Esc to edit it first. <code>Ctrl-R</code> is a Readline binding, so it also works in the other command-line programs that use Readline.</p>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Press <code>Ctrl-R</code> right now in your terminal and type the first few letters of a command you ran earlier this session. Press <code>Ctrl-R</code> again to cycle to an older match.
+</div>
+
+<h3>Settings that control your history</h3>
+<p>How much history is kept, and where, is controlled by environment variables and shell options set in your startup files. The defaults are usually modest, and raising them costs almost nothing:</p>
+
+<table class="key-table">
+  <thead><tr><th>Setting</th><th>What it controls</th></tr></thead>
+  <tbody>
+    <tr><td><code>HISTSIZE</code></td><td>How many commands are kept in memory for the current session.</td></tr>
+    <tr><td><code>HISTFILESIZE</code></td><td>How many lines are kept in the history file on disk.</td></tr>
+    <tr><td><code>HISTFILE</code></td><td>Where that file lives. Defaults to <code>~/.bash_history</code>.</td></tr>
+    <tr><td><code>HISTCONTROL=ignoredups</code></td><td>Do not record a command identical to the one before it. <code>ignoreboth</code> also skips commands typed with a leading space.</td></tr>
+    <tr><td><code>shopt -s histappend</code></td><td>Append to the history file on exit instead of overwriting it — important once you have more than one terminal open.</td></tr>
+  </tbody>
+</table>
+
+<p>A reasonable set of history settings for <code>~/.bashrc</code>:</p>
+
+<pre><code><span class="comment"># ~/.bashrc
+HISTSIZE=10000            # commands remembered in this session
+HISTFILESIZE=20000        # lines kept in ~/.bash_history
+HISTCONTROL=ignoreboth    # skip duplicates and space-prefixed commands
+shopt -s histappend       # append on exit rather than overwrite</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Common trap</strong>
+  Without <code>histappend</code>, each shell overwrites the history file when it exits — so the last terminal you close wins, and everything typed in the others is lost. If you routinely keep several terminals open, set it.
+</div>
+
+<p>By default, Bash only writes history when a shell exits, so a command typed in one terminal is not searchable in another until you close the first one. If you want history shared between open terminals sooner, <code>PROMPT_COMMAND</code> — a variable holding a command that Bash runs automatically just before it redraws the prompt — can flush and reload it after every command:</p>
+
+<pre><code><span class="comment"># ~/.bashrc — write and re-read history after each command</span>
+<span class="arg">PROMPT_COMMAND=</span><span class="arg">"history -a; history -c; history -r"</span></code></pre>
+
+<p>Here <code>history -a</code> appends new commands to the file, <code>history -c</code> clears the in-memory list, and <code>history -r</code> reads the file back in. The cost is that your Up-arrow history now includes commands from other terminals, which some people find convenient and others find confusing — try it and keep it only if you like it.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

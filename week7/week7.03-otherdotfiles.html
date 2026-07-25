@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.3 — Dotfiles Beyond the Shell — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try strong { color: #00856a; }
+  .callout-warn strong { color: #c0392b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.86rem; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.3 Dotfiles Beyond the Shell, and Why They Work</h2>
+
+<p>Bash is not the only program that reads a dotfile. Your editor does, Git does, tmux does. Once you see the pattern behind all of them, an unfamiliar tool's configuration stops being a mystery — you know what kind of file to look for and where.</p>
+
+<h3>The mechanism: each program reads its own file at startup</h3>
+
+<p>There is no central settings system on a Unix machine, and the shell is not involved in any of this. The convention is simply that <strong>a program, when it starts, looks in your home directory for a file named after itself and reads it if it exists</strong>. Vim looks for <code>~/.vimrc</code>. Git looks for <code>~/.gitconfig</code>. tmux looks for <code>~/.tmux.conf</code>. Nothing coordinates them; each program does its own lookup, at its own startup, entirely independently.</p>
+
+<p>Two consequences follow, and they explain most confusion in this area:</p>
+
+<ul>
+  <li><strong>Each file is written in that program's own language, not in shell syntax.</strong> <code>~/.bashrc</code> contains shell commands because Bash runs it as shell commands. <code>~/.vimrc</code> contains Vim commands, <code>~/.tmux.conf</code> contains tmux commands, and <code>~/.gitconfig</code> is a plain key-value file. Shell syntax such as <code>export</code> or <code>if</code> does not work in the non-shell ones.</li>
+  <li><strong>The file is read at that program's startup — not yours.</strong> Editing <code>~/.vimrc</code> changes the next Vim you open; editing <code>~/.bashrc</code> changes the next shell. Nothing you change takes effect in a program that is already running, unless it offers a "reload config" command of its own.</li>
+</ul>
+
+<p>The <code>rc</code> in so many of these names is a historical leftover meaning "run commands" — a file of commands run at startup. You will see it in <code>bashrc</code>, <code>vimrc</code>, <code>inputrc</code>, and <code>screenrc</code>.</p>
+
+<h3><code>~/.inputrc</code> — how the command line feels to type into</h3>
+
+<p>This one is worth its own explanation, because it sits closest to the shell without belonging to it. When you edit a command line — moving the cursor, deleting a word, recalling earlier commands — that editing is not done by Bash itself but by <strong>Readline</strong>, a line-editing library that Bash and many other command-line programs use. Readline reads <code>~/.inputrc</code>:</p>
+
+<pre><code><span class="comment"># ~/.inputrc</span>
+set editing-mode vi
+set show-all-if-ambiguous on</code></pre>
+
+<p>Keeping this separate from shell startup is deliberate: how you like to edit text is a personal preference, independent of what your shell does. You may prefer <strong>Emacs-style</strong> editing — Readline's default, and the same family of bindings behind the <code>Ctrl-A</code> and <code>Ctrl-E</code> shortcuts from <a href="../week1/week1.04-keys.html">Week 1</a> — or <strong>vi-style</strong> bindings, which reuse the modal editing commands of Vim from <a href="../week3/week3.06-vim-basics.html">Week 3</a>. With <code>editing-mode vi</code>, the command line gains the same normal and insert modes you used in Vim, so <code>h</code>, <code>j</code>, <code>k</code>, <code>l</code>, <code>w</code> and <code>dd</code> work on the line you are typing.</p>
+
+<p>Because Readline is a shared library rather than a shell feature, one <code>~/.inputrc</code> changes the editing behaviour of <em>every</em> Readline-based program at once — which is exactly the point of putting it in a library.</p>
+
+<div class="callout callout-warn">
+  <strong>If your shell is not Bash</strong>
+  <code>~/.inputrc</code> configures <em>Readline</em>, and Readline is the library Bash links against — it is not shared by every shell. zsh, the macOS default, has its own line editor and ignores <code>~/.inputrc</code> completely, which is a common source of "I customised my line editing and nothing changed". The idea is the same; the file is not. Check which shell you are running before editing anything.
+</div>
+
+<h3><code>~/.vimrc</code> — configuring your editor</h3>
+
+<p>Week 3 introduced Vim but left its configuration alone. <code>~/.vimrc</code> is where it lives: a file of Vim commands, run every time Vim starts, exactly as if you had typed each one after opening the editor.</p>
+
+<pre><code><span class="comment">" ~/.vimrc — comments in Vim start with a double quote</span>
+set number
+set expandtab
+set tabstop=4
+syntax on</code></pre>
+
+<p>Note the comment character. In <code>~/.bashrc</code> a comment starts with <code>#</code>; in <code>~/.vimrc</code> it starts with <code>"</code>. That is the "own language" point made concrete — and a good reason not to copy lines between dotfiles without checking.</p>
+
+<h3>Dotfiles you have already met</h3>
+
+<table class="key-table">
+  <thead><tr><th>File</th><th>Belongs to</th><th>Written in</th></tr></thead>
+  <tbody>
+    <tr><td><code>~/.bashrc</code>, <code>~/.bash_profile</code></td><td>Bash — <a href="week7.02-startup.html">section 7.2</a></td><td>Shell commands</td></tr>
+    <tr><td><code>~/.inputrc</code></td><td>Readline, used by Bash and others</td><td><code>set</code> directives and key bindings</td></tr>
+    <tr><td><code>~/.vimrc</code></td><td>Vim — <a href="../week3/week3.06-vim-basics.html">Week 3</a></td><td>Vim commands</td></tr>
+    <tr><td><code>~/.gitconfig</code></td><td>Git — created for you by <code>git config --global</code> in <a href="../week4/week4.02-config.html">Week 4</a></td><td>Key-value sections</td></tr>
+    <tr><td><code>~/.tmux.conf</code>, <code>~/.screenrc</code></td><td>tmux and GNU Screen — <a href="week7.08-tmux.html">section 7.8</a></td><td>That tool's own commands</td></tr>
+  </tbody>
+</table>
+
+<p>The Git row is worth pausing on. When you ran <code>git config --global user.name "..."</code> in Week 4, Git wrote that setting into <code>~/.gitconfig</code> for you. You have been maintaining a dotfile since then — the only new idea this week is that you can open it and edit it directly.</p>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Run <code>cat ~/.gitconfig</code> and compare it with the identity you set in Week 4. Then run <code>git config --global --list</code>: the same information, read back through the tool instead of the file. Most dotfiles can be inspected both ways.
+</div>
+
+<h3>Finding the dotfile for an unfamiliar tool</h3>
+
+<p>When you meet a new command-line program, you do not have to guess. Its manual page names its configuration file. Many manuals collect these under a <code>FILES</code> heading near the end; others simply mention the file in the description, so search the page rather than assuming a fixed layout:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">man</span> <span class="arg">bash</span>          <span class="comment"># a FILES section listing ~/.bashrc, ~/.bash_profile, ~/.inputrc</span>
+<span class="prompt-sym">$</span> <span class="cmd">man</span> <span class="arg">tmux</span>          <span class="comment"># no FILES section; ~/.tmux.conf appears in the description</span></code></pre>
+
+<p>Inside the pager, type <code>/</code> followed by a search term and press Enter — <code>/\.conf</code> or <code>/FILES</code> will usually find it quickly. This is the same habit as looking up a flag rather than memorising it: the documentation tells you which file a tool reads, and the convention above tells you roughly what to expect inside it.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

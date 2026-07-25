@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.9 — Check Your Understanding — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  p  { margin-bottom: 14px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-quiz { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .quiz-q { background: #fff; border: 1px solid #dde; border-radius: 10px; padding: 20px 22px; margin: 18px 0; }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label { display: block; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0; }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+</style>
+</head>
+<body>
+<div class="page">
+<h2>7.9 Check Your Understanding</h2>
+<span class="section-badge badge-quiz">Quiz — 10 questions</span>
+
+<p>These questions check concepts, not syntax recall. Think through each one — and commit to an answer — before opening the answer key at the bottom.</p>
+
+<div class="quiz-q">
+  <div class="qnum">Question 1</div>
+  <div class="qtext">You open a new tab in a typical Linux terminal emulator. Which file in your home directory does Bash read as it starts?</div>
+  <div class="options">
+    <label><input type="radio" name="q1"> <code>/etc/profile</code> then <code>~/.bash_profile</code></label>
+    <label><input type="radio" name="q1"> <code>~/.bashrc</code>, because this is an interactive non-login shell</label>
+    <label><input type="radio" name="q1"> <code>BASH_ENV</code>, because this is a non-interactive shell</label>
+    <label><input type="radio" name="q1"> No files at all</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 2</div>
+  <div class="qtext">A shell script you wrote does not see an alias you defined in <code>~/.bashrc</code>. Why not?</div>
+  <div class="options">
+    <label><input type="radio" name="q2"> Scripts run in non-interactive shells, which do not read <code>~/.bashrc</code> at all</label>
+    <label><input type="radio" name="q2"> Aliases can only be defined inside scripts</label>
+    <label><input type="radio" name="q2"> <code>~/.bashrc</code> must be made executable first</label>
+    <label><input type="radio" name="q2"> The script needs to be run as root</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 3</div>
+  <div class="qtext">In an interactive Bash shell you define a shell function <code>foo</code>, and you also have an executable <code>/usr/local/bin/foo</code> on your <code>$PATH</code>. Which one runs when you type <code>foo</code>?</div>
+  <div class="options">
+    <label><input type="radio" name="q3"> The executable in <code>/usr/local/bin</code>, because <code>$PATH</code> is searched first</label>
+    <label><input type="radio" name="q3"> The function, because Bash checks functions before builtins and before <code>$PATH</code></label>
+    <label><input type="radio" name="q3"> Whichever was defined most recently</label>
+    <label><input type="radio" name="q3"> It is undefined — Bash would refuse to run either of them</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 4</div>
+  <div class="qtext">You are running Bash. You add <code>set editing-mode vi</code> to <code>~/.inputrc</code>, but line editing in the terminal you are sitting in does not change. Why?</div>
+  <div class="options">
+    <label><input type="radio" name="q4"> The file must be named <code>~/.bashrc</code> instead</label>
+    <label><input type="radio" name="q4"> The change only applies to shells started afterwards — your current session already read <code>~/.inputrc</code> at startup</label>
+    <label><input type="radio" name="q4"> <code>~/.inputrc</code> only works for GUI text editors</label>
+    <label><input type="radio" name="q4"> You need to restart the whole computer</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 5</div>
+  <div class="qtext">What is the key difference between an alias and a shell function?</div>
+  <div class="options">
+    <label><input type="radio" name="q5"> Aliases can take arguments naturally; functions cannot</label>
+    <label><input type="radio" name="q5"> Functions can use arguments, conditionals, and multiple commands; aliases are simple text substitutions</label>
+    <label><input type="radio" name="q5"> Aliases only work inside scripts</label>
+    <label><input type="radio" name="q5"> There is no real difference</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 6</div>
+  <div class="qtext">You set <code>PS1='\u@\h:\w\$ '</code>. What does the <code>\$</code> at the end display?</div>
+  <div class="options">
+    <label><input type="radio" name="q6"> A literal backslash followed by a dollar sign</label>
+    <label><input type="radio" name="q6"> <code>$</code> for a normal user, and <code>#</code> when running as root</label>
+    <label><input type="radio" name="q6"> The exit status of the last command</label>
+    <label><input type="radio" name="q6"> The current username</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 7</div>
+  <div class="qtext">You start <code>python3 train.py</code>, press <code>Ctrl-Z</code>, then run <code>jobs</code> and see <code>[1]+ Stopped</code>. What does typing <code>bg %1</code> do next?</div>
+  <div class="options">
+    <label><input type="radio" name="q7"> Kills the job immediately</label>
+    <label><input type="radio" name="q7"> Resumes the job in the background, freeing up your terminal for other commands</label>
+    <label><input type="radio" name="q7"> Brings the job back to the foreground</label>
+    <label><input type="radio" name="q7"> Restarts the job from the beginning</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 8</div>
+  <div class="qtext">What is the practical difference between <code>kill %1</code> and <code>kill -9 %1</code>?</div>
+  <div class="options">
+    <label><input type="radio" name="q8"> They are identical</label>
+    <label><input type="radio" name="q8"> <code>kill %1</code> sends SIGTERM, which the process can catch and clean up after; <code>kill -9 %1</code> sends SIGKILL, which cannot be caught or ignored</label>
+    <label><input type="radio" name="q8"> <code>kill -9</code> only pauses the process</label>
+    <label><input type="radio" name="q8"> <code>kill %1</code> requires root privileges and <code>kill -9</code> does not</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 9</div>
+  <div class="qtext">You start a long job with plain <code>&amp;</code> and forget to <code>nohup</code> it. You are about to close the terminal. What can you do to stop it dying with the shell?</div>
+  <div class="options">
+    <label><input type="radio" name="q9"> Nothing — it is too late once the job has started</label>
+    <label><input type="radio" name="q9"> Run <code>disown %1</code> to remove it from the shell's job table before closing</label>
+    <label><input type="radio" name="q9"> Run <code>kill %1</code> and start it again</label>
+    <label><input type="radio" name="q9"> Rename the process</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 10</div>
+  <div class="qtext">Why would you reach for tmux or screen instead of just using <code>nohup</code>?</div>
+  <div class="options">
+    <label><input type="radio" name="q10"> They are required before <code>nohup</code> will work at all</label>
+    <label><input type="radio" name="q10"> They give you back a full interactive session — several panes, shells, or programs — that you can detach and reattach, not just one surviving command</label>
+    <label><input type="radio" name="q10"> They only work on the machine you are physically sitting at</label>
+    <label><input type="radio" name="q10"> They replace the need for job control entirely</label>
+  </div>
+</div>
+
+<details style="margin-top:32px;background:#fff;border:1px solid #e0e0f0;border-radius:8px;padding:16px 20px;">
+  <summary style="cursor:pointer;font-weight:700;color:#4361ee;">Answer key — open only after committing to your answers</summary>
+
+  <ol style="margin:14px 0 4px 24px;">
+    <li style="margin-bottom:14px;"><strong><code>~/.bashrc</code>, because this is an interactive non-login shell</strong><br>
+    Opening a tab does not log you in — you are already logged in, and the terminal simply starts another shell. That shell is <em>interactive</em> (you type at it) but <em>non-login</em>, and the file for that case is <code>~/.bashrc</code>. The first option is the login-shell answer, which is what you would get by connecting over SSH; the third is the script answer. Remember that macOS Terminal.app is the exception that breaks this rule — it opens login shells (7.2).</li>
+
+    <li style="margin-bottom:14px;"><strong>Scripts run in non-interactive shells, which do not read <code>~/.bashrc</code> at all</strong><br>
+    A non-interactive shell reads no startup file unless <code>BASH_ENV</code> is set, and it normally is not — so nothing ever defines your alias inside the script. There is actually a <em>second</em> reason, which is worth knowing because it defeats the obvious workaround: alias expansion itself is switched off in non-interactive shells (<code>shopt expand_aliases</code> reports <code>off</code>). So even if you forced the script to source <code>~/.bashrc</code>, the alias still would not expand. This is exactly why aliases belong to interactive convenience and functions or scripts belong to automation (7.2, 7.5).</li>
+
+    <li style="margin-bottom:14px;"><strong>The function, because Bash checks functions before builtins and before <code>$PATH</code></strong><br>
+    The lookup order after alias expansion is function → builtin → <code>$PATH</code>, and it stops at the first hit. Your function shadows the executable completely. This is the mechanism behind a common trick — wrapping a real command in a function of the same name — and behind a common confusion, when a forgotten function silently overrides a program. <code>type -a foo</code> shows every candidate in priority order, which is how you diagnose it. Note the question specifies an <em>interactive</em> shell: in a script the function would not even be defined, so the <code>$PATH</code> executable would run (7.4).</li>
+
+    <li style="margin-bottom:14px;"><strong>The change only applies to shells started afterwards</strong><br>
+    A dotfile is read once, at startup. Your current shell read <code>~/.inputrc</code> when it began, so it is still using the settings from that moment — open a new terminal and vi mode will be there. The general rule from 7.3 is that editing a program's dotfile affects the <em>next</em> run of that program, not the one already running. Readline does offer an escape hatch here: pressing <code>Ctrl-x Ctrl-r</code> re-reads <code>~/.inputrc</code> in the current shell. The other options are all false — the file name is right, and <code>~/.inputrc</code> has nothing to do with GUI editors (7.3).</li>
+
+    <li style="margin-bottom:14px;"><strong>Functions can use arguments, conditionals, and multiple commands; aliases are simple text substitutions</strong><br>
+    An alias is replaced textually before the command runs, so there is no mechanism for it to receive an argument in the middle of the expansion — anything you type lands on the end. A function is real shell code with <code>$1</code>, <code>$2</code>, conditionals and loops available. The practical rule: alias for a fixed shorthand such as <code>gs='git status'</code>, function as soon as an argument or a decision is involved, script once it deserves its own file (7.5).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>$</code> for a normal user, and <code>#</code> when running as root</strong><br>
+    <code>\$</code> is a prompt escape, not a literal dollar sign, and its whole purpose is to warn you: the moment your prompt ends in <code>#</code> you are root, and a mistyped command can affect the whole system. That is why leaving <code>\$</code> in your prompt is worth doing even if you never customise anything else. The first option is what you would see only if the backslash were itself escaped, which is not what this prompt does (7.5).</li>
+
+    <li style="margin-bottom:14px;"><strong>Resumes the job in the background, freeing up your terminal</strong><br>
+    <code>Ctrl-Z</code> suspended the job — <code>Stopped</code> means frozen, using no CPU, not finished. <code>bg</code> sends it a continue signal and lets it run on without holding the prompt; <code>fg</code> would resume it in the foreground instead, which is the third option. Nothing here kills or restarts it. One caveat: a job moved to the background that then tries to <em>read</em> from the terminal will stop again immediately, because only the foreground job may take your keyboard input — so <code>bg</code> suits output-only work such as a build or a test run (7.7).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>kill %1</code> sends SIGTERM, which the process can catch and clean up after; <code>kill -9 %1</code> sends SIGKILL, which cannot be caught or ignored</strong><br>
+    Despite its name, <code>kill</code> just delivers a signal, and the process decides how to react. SIGTERM is a request: a well-written program uses it to flush buffers, remove temporary files, and close database connections before exiting. SIGKILL is not a request — the kernel removes the process, giving it no chance to tidy up, which is how you end up with stale lock files and half-written output. So try plain <code>kill</code> first and only escalate to <code>-9</code> if the process ignores it (7.7).</li>
+
+    <li style="margin-bottom:14px;"><strong>Run <code>disown %1</code> to remove it from the shell's job table before closing</strong><br>
+    Closing the terminal makes the shell send <code>SIGHUP</code> to its jobs. <code>disown</code> takes the job out of that table, so the shell no longer signals it and the process survives. The difference from <code>nohup</code> is timing: <code>nohup</code> must be used when you <em>start</em> a command, whereas <code>disown</code> rescues one already running — which is why "it is too late" is wrong. One practical catch: <code>disown</code> does not redirect output, so anything the job still prints goes to a terminal that no longer exists. For long jobs, redirect the output to a file when you start them (7.7).</li>
+
+    <li style="margin-bottom:14px;"><strong>They give you back a full interactive session that you can detach and reattach</strong><br>
+    <code>nohup</code> keeps one command alive but hands you nothing to work in: you cannot see its progress, run a second command beside it, or change your mind. A multiplexer keeps a whole session — several panes, an editor left open mid-file, a running server — that you detach from and reattach to later, from the same machine or a different one. That is why it suits real work over SSH, where the connection is the fragile part. The remaining options are all false: <code>nohup</code> is independent of tmux, both work fine on remote machines, and neither replaces job control inside a single shell (7.8).</li>
+  </ol>
+</details>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

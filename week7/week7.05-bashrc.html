@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.5 — Building Your .bashrc — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-fun { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-fun strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.5 Building Your .bashrc: PATH, Aliases, Functions, and the Prompt</h2>
+
+<p>You now know which file your interactive shell reads — <code>~/.bashrc</code> — and what a dotfile is. This section is about what to put in it. A minimal but genuinely useful one is only three lines long:</p>
+
+<pre><code><span class="comment"># ~/.bashrc</span>
+<span class="cmd">export</span> <span class="arg">PATH="$HOME/bin:$PATH"</span>
+<span class="cmd">alias</span> <span class="arg">ll='ls -lah'</span>
+<span class="arg">PS1='\u@\h:\w\$ '</span></code></pre>
+
+<p>Those three lines happen to cover the three things people most often want from a shell: <em>find my own commands</em>, <em>type less</em>, and <em>show me something useful at the prompt</em>. The rest of this section takes them one at a time, in that order.</p>
+
+<h3>Line 1: making a PATH change permanent</h3>
+
+<p>This is the <code>export</code> from <a href="week7.04-path.html">section 7.4</a>, now made permanent. Typed at the prompt it lasted only for that shell; sitting in <code>~/.bashrc</code>, it runs afresh for every interactive shell you open, so <code>~/bin</code> is always on your search path and your own scripts are always runnable by name.</p>
+
+<p>That is the general pattern for everything else on this page: anything you can type at the prompt, you can put in <code>~/.bashrc</code> to have it apply automatically from then on.</p>
+
+<h3>Line 2: aliases, for typing less</h3>
+
+<p>Customisation earns its keep when it removes friction from things you do many times a day. The simplest tool for that is the <strong>alias</strong> — a short name that the shell expands into a longer command before running it. Aliases are created with the <code>alias</code> command and removed with <code>unalias</code>:</p>
+
+<pre><code><span class="cmd">alias</span> <span class="arg">ll='ls -lah'</span>       <span class="comment"># long listing, human sizes, including dotfiles</span>
+<span class="cmd">alias</span> <span class="arg">gs='git status'</span>    <span class="comment"># the command you run most in any repository</span></code></pre>
+
+<p>Typing <code>ll</code> now runs <code>ls -lah</code>. Note how well the first one pairs with <a href="week7.01-dotfiles.html">section 7.1</a>: <code>-a</code> is what makes your dotfiles visible, so <code>ll</code> shows them by default.</p>
+
+<p>Running <code>alias</code> with no arguments lists everything currently defined, which is a quick way to see what a shared machine or an inherited configuration has set up on your behalf.</p>
+
+<h3>When an alias is not enough: shell functions</h3>
+
+<p>Aliases have one firm limit: they are plain text substitution, so they cannot take arguments. Suppose you want <code>mkcd</code>, which should create a directory <em>and</em> move into it. As an alias there is nowhere for the directory name to go — the name you type would simply be appended to the end of the expansion, which is not what you mean. The Bash manual is explicit that shell <strong>functions</strong> are the right tool whenever arguments are involved:</p>
+
+<pre><code><span class="cmd">mkcd</span><span class="arg">() {</span>
+  <span class="cmd">mkdir</span> <span class="arg">-p "$1" &amp;&amp;</span> <span class="cmd">cd</span> <span class="arg">"$1"</span>
+<span class="arg">}</span></code></pre>
+
+<p>Now <code>mkcd project/notes</code> creates the directory and changes into it. The <code>"$1"</code> is the first argument, exactly as in the scripts from <a href="../week2/week2.09-scripting.html">Week 2</a> — and that is really all a function is: script code that lives in your shell instead of in a file, so it can be defined in <code>~/.bashrc</code> and is available in every terminal.</p>
+
+<p>A useful way to hold the distinction:</p>
+
+<table class="key-table">
+  <thead><tr><th>Use</th><th>When</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Alias</strong></td><td>A fixed shorthand for a longer command, with no arguments to place</td><td><code>alias gs='git status'</code></td></tr>
+    <tr><td><strong>Function</strong></td><td>You need arguments, a condition, or more than one command</td><td><code>mkcd() { … }</code></td></tr>
+    <tr><td><strong>Script</strong></td><td>The tool is big enough to deserve its own file, or other programs need to run it</td><td><code>~/bin/hello-fit2109</code></td></tr>
+  </tbody>
+</table>
+
+<p>Functions sit deliberately between the other two: more capable than an alias, less ceremony than a script. Note also where functions sit in the command-lookup order from <a href="week7.04-path.html">section 7.4</a>: after alias expansion, but ahead of both builtins and the <code>$PATH</code> search. So defining a function named <code>ls</code> would shadow the real <code>ls</code> everywhere. That is occasionally useful and occasionally a trap.</p>
+
+<h3>Line 3: the prompt</h3>
+
+<p>The third line sets <code>PS1</code>, which stands for Prompt String 1 and controls what you see before every command you type. It is the piece of your environment you look at most, so it is worth more than a moment's thought — treated well it is not decoration but an information display.</p>
+
+<p>Read <code>PS1='\u@\h:\w\$ '</code> as a template: <code>\u</code> is replaced by your username, <code>\h</code> by the hostname, <code>\w</code> by the working directory, and <code>\$</code> by <code>$</code> (or <code>#</code> if you are root). The <code>@</code>, the <code>:</code> and the trailing space are literal characters that appear as typed. So for user <code>alice</code> on machine <code>ubuntu</code> in <code>/home/alice/projects</code>:</p>
+
+<pre><code><span class="out">alice@ubuntu:~/projects$</span></code></pre>
+
+<p>You can make it carry more. This version adds the time and a count of background jobs:</p>
+
+<pre><code><span class="arg">PS1='[\A] \u@\h:\w jobs=\j\$ '</span></code></pre>
+
+<p>Here <code>\A</code> is the time and <code>\j</code> the number of jobs the shell is managing — background and suspended commands, the subject of <a href="week7.07-jobcontrol.html">section 7.7</a>. Seeing <code>jobs=1</code> sitting in your prompt is a useful reminder that something is still running. The escapes worth knowing:</p>
+
+<table class="key-table">
+  <thead><tr><th>Escape</th><th>Shows</th></tr></thead>
+  <tbody>
+    <tr><td><code>\u</code></td><td>Username</td></tr>
+    <tr><td><code>\h</code></td><td>Hostname, up to the first dot</td></tr>
+    <tr><td><code>\w</code></td><td>Working directory, with <code>~</code> for your home directory</td></tr>
+    <tr><td><code>\W</code></td><td>Just the final part of the working directory</td></tr>
+    <tr><td><code>\$</code></td><td><code>$</code> for a normal user, <code>#</code> for root</td></tr>
+    <tr><td><code>\j</code></td><td>Number of jobs the shell is managing</td></tr>
+    <tr><td><code>\A</code></td><td>Current time, 24-hour <code>HH:MM</code></td></tr>
+    <tr><td><code>\n</code></td><td>A newline, so a long prompt can wrap onto its own line</td></tr>
+  </tbody>
+</table>
+
+<p>Two pieces of advice. First, the prompt is redrawn before every single command, so anything slow you put in it makes the whole shell feel slow — these escapes are cheap, calling out to other programs is not. Second, resist the urge to show everything; a prompt crowded with information is one you stop reading.</p>
+
+<div class="callout callout-fun">
+  <strong>Fun fact</strong>
+  Hand-writing <code>PS1</code> strings is still common, but a growing number of developers now use a prompt tool such as <a href="https://starship.rs/" target="_blank">Starship</a> instead — one config file that renders a richer, git-aware prompt showing things like the current branch and whether you have uncommitted changes. It is still worth learning the raw <code>PS1</code> escapes first, the same way it is worth understanding recursion before reaching for a library that hides it.
+</div>
+
+<div class="callout callout-note">
+  <strong>Applying your changes</strong>
+  Edits to <code>~/.bashrc</code> affect shells started <em>afterwards</em>. To use them in the terminal you already have open, run <code>source ~/.bashrc</code> — the <code>source</code> command from <a href="week7.02-startup.html">section 7.2</a>.
+</div>
+
+<p>Three lines is a starting point, not a finished configuration. The next section adds the other setting most worth having in <code>~/.bashrc</code>: how much of your command history the shell keeps, and how you search it.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

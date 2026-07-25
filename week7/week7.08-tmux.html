@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7.8 — tmux and screen — FIT2109 Week 7</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-try strong { color: #00856a; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.82rem; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>7.8 Persistent Terminal Sessions with tmux and screen</h2>
+
+<p>Job control helps within a single shell, but it does not solve every problem. If your SSH connection drops, or you close your terminal window, ordinary shell jobs are interrupted. <code>nohup</code> and <code>disown</code> from <a href="week7.07-jobcontrol.html">the previous section</a> keep a single command alive, but they do not give you back a working shell to check on it, run more commands, or arrange several programs side by side. This is where <strong>terminal multiplexers</strong> become valuable.</p>
+
+<p>A terminal multiplexer is a program that runs inside your terminal and hosts several independent terminal programs within it. Its key feature is that the session it hosts belongs to the multiplexer, not to your terminal window. You can <strong>detach</strong> from a session — walk away, close the window, lose your connection — and the programs inside keep running on the machine. Later you <strong>reattach</strong> and find everything exactly as you left it.</p>
+
+<p>Two programs do this: <strong>tmux</strong> and the older <strong>GNU Screen</strong>. If you are choosing one to learn, learn <strong>tmux</strong> — it is what most guides, dotfile collections, and colleagues assume today, it is actively developed, and its handling of split panes is far nicer than Screen's. The rest of this section is about tmux; Screen gets a short section at the end, because you will still run into it and should recognise it when you do.</p>
+
+<h3>Sessions, windows, and panes</h3>
+<p>tmux organises your work in three nested levels:</p>
+
+<ul>
+  <li>A <strong>pane</strong> is a single rectangular area running one shell or program.</li>
+  <li>A <strong>window</strong> is a full screen of panes — like a tab in a browser, it fills the display and you switch between windows one at a time.</li>
+  <li>A <strong>session</strong> is a named collection of windows. This is the unit you detach from and reattach to.</li>
+</ul>
+
+<p>The terminal you are currently viewing a session through is called a <strong>client</strong>. A session with no client attached is simply detached — still running, with nobody watching. This model explains how a single SSH login can host an editor, a running server, and a log viewer at once, without opening three separate connections.</p>
+
+<div class="diagram">
+  <svg width="640" height="330" viewBox="0 0 640 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" role="img" aria-label="A tmux window divided into three panes: two side-by-side panes created by vertical splits across the top, and one full-width pane created by a horizontal split across the bottom.">
+    <rect width="640" height="330" rx="10" fill="#f8f9ff"/>
+
+    <!-- Session/window label -->
+    <text x="24" y="30" fill="#4361ee" font-size="12" font-weight="700">SESSION "work"</text>
+    <text x="24" y="48" fill="#888" font-size="11">→ window 0, split into three panes</text>
+
+    <!-- Terminal window frame -->
+    <rect x="24" y="60" width="592" height="212" rx="10" fill="#1e1e2e" stroke="#2a2a3d"/>
+    <!-- title bar -->
+    <rect x="24" y="60" width="592" height="24" rx="10" fill="#181826"/>
+    <rect x="24" y="76" width="592" height="8" fill="#181826"/>
+    <circle cx="42" cy="72" r="4.5" fill="#ff5f57"/>
+    <circle cx="58" cy="72" r="4.5" fill="#febc2e"/>
+    <circle cx="74" cy="72" r="4.5" fill="#28c840"/>
+
+    <!-- Pane 0 (top-left) -->
+    <rect x="34" y="94" width="282" height="98" rx="6" fill="#11111b" stroke="#45475a"/>
+    <text x="46" y="114" font-family="'SF Mono',Consolas,monospace" font-size="11" fill="#a6e3a1">pane 0</text>
+    <text x="46" y="134" font-family="'SF Mono',Consolas,monospace" font-size="10.5" fill="#cdd6f4">$ vim app.py</text>
+    <text x="46" y="152" font-family="'SF Mono',Consolas,monospace" font-size="10.5" fill="#6c7086">editing…</text>
+
+    <!-- Pane 1 (top-right) -->
+    <rect x="324" y="94" width="282" height="98" rx="6" fill="#11111b" stroke="#45475a"/>
+    <text x="336" y="114" font-family="'SF Mono',Consolas,monospace" font-size="11" fill="#a6e3a1">pane 1</text>
+    <text x="336" y="134" font-family="'SF Mono',Consolas,monospace" font-size="10.5" fill="#cdd6f4">$ pytest -x</text>
+    <text x="336" y="152" font-family="'SF Mono',Consolas,monospace" font-size="10.5" fill="#6c7086">running tests…</text>
+
+    <!-- Pane 2 (bottom, full width) -->
+    <rect x="34" y="200" width="572" height="62" rx="6" fill="#11111b" stroke="#45475a"/>
+    <text x="46" y="220" font-family="'SF Mono',Consolas,monospace" font-size="11" fill="#a6e3a1">pane 2</text>
+    <text x="46" y="240" font-family="'SF Mono',Consolas,monospace" font-size="10.5" fill="#cdd6f4">$ tail -f server.log</text>
+
+    <!-- Divider annotations -->
+    <!-- vertical divider marker -->
+    <line x1="320" y1="94" x2="320" y2="192" stroke="#f38ba8" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="320" y="88" text-anchor="middle" fill="#f38ba8" font-size="10.5" font-weight="700">Ctrl-b %</text>
+
+    <!-- horizontal divider marker -->
+    <line x1="34" y1="196" x2="606" y2="196" stroke="#89b4fa" stroke-width="2" stroke-dasharray="4 3"/>
+    <text x="612" y="193" text-anchor="end" fill="#89b4fa" font-size="10.5" font-weight="700">Ctrl-b "</text>
+
+    <!-- Legend -->
+    <rect x="24" y="286" width="14" height="3" fill="#f38ba8"/>
+    <text x="46" y="292" fill="#555" font-size="11.5">Ctrl-b % splits left/right (a vertical divider)</text>
+    <rect x="352" y="286" width="14" height="3" fill="#89b4fa"/>
+    <text x="374" y="292" fill="#555" font-size="11.5">Ctrl-b " splits top/bottom (a horizontal divider)</text>
+  </svg>
+  <figcaption>One tmux window holding three panes: two side by side, and one spanning the width below them. Here an editor sits in one pane, a test run in another, and a log file being watched live in the third — all inside a single session you can detach from and come back to.</figcaption>
+</div>
+
+<h3>Managing sessions from the shell</h3>
+<p>These commands are typed at a normal shell prompt, either before you start using tmux or after you have detached from it:</p>
+
+<table class="key-table">
+  <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>tmux</code></td><td>Start a new session with an automatic name (<code>0</code>, <code>1</code>, …).</td></tr>
+    <tr><td><code>tmux new -s work</code></td><td>Start a new session named <code>work</code>. Naming sessions is worth the extra typing.</td></tr>
+    <tr><td><code>tmux ls</code></td><td>List all sessions running on this machine, showing name, window count, and whether a client is attached.</td></tr>
+    <tr><td><code>tmux attach -t work</code></td><td>Reattach to the session named <code>work</code>. <code>tmux a -t work</code> is the short form.</td></tr>
+    <tr><td><code>tmux new -A -s work</code></td><td>Attach to <code>work</code> if it exists, otherwise create it. Useful in scripts and on remote machines, because it works either way.</td></tr>
+    <tr><td><code>tmux kill-session -t work</code></td><td>End the session named <code>work</code> and everything running inside it.</td></tr>
+    <tr><td><code>tmux kill-server</code></td><td>End every tmux session on the machine. Use with care.</td></tr>
+  </tbody>
+</table>
+
+<p>A typical first session looks like this:</p>
+
+<pre><code><span class="cmd">tmux</span> <span class="arg">new -s work</span>          <span class="comment"># create and enter the session</span>
+<span class="comment"># …work normally, then press Ctrl-b d to detach…</span>
+<span class="cmd">tmux</span> <span class="arg">ls</span>
+<span class="out">work: 2 windows (created Mon Aug 31 09:14:02 2026)</span>
+<span class="cmd">tmux</span> <span class="arg">attach -t work</span>      <span class="comment"># pick up exactly where you left off</span></code></pre>
+
+<h3>Key bindings inside tmux</h3>
+<p>Once you are inside tmux, commands are issued with a two-step key sequence: press the <strong>prefix</strong>, release it, then press one more key. The default prefix is <code>Ctrl-b</code>. So "<code>Ctrl-b c</code>" means hold Ctrl and press <code>b</code>, let go, then press <code>c</code>.</p>
+
+<table class="key-table">
+  <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td><code>Ctrl-b d</code></td><td>Detach from the session, leaving everything running.</td></tr>
+    <tr><td><code>Ctrl-b %</code></td><td>Split the current pane left/right.</td></tr>
+    <tr><td><code>Ctrl-b "</code></td><td>Split the current pane top/bottom.</td></tr>
+    <tr><td><code>Ctrl-b ← ↑ → ↓</code></td><td>Move between panes in that direction.</td></tr>
+    <tr><td><code>Ctrl-b z</code></td><td>Zoom the current pane to fill the window; press again to restore it.</td></tr>
+    <tr><td><code>Ctrl-b x</code></td><td>Close the current pane (asks for confirmation).</td></tr>
+    <tr><td><code>Ctrl-b c</code></td><td>Create a new window.</td></tr>
+    <tr><td><code>Ctrl-b n</code> / <code>Ctrl-b p</code></td><td>Go to the next / previous window.</td></tr>
+    <tr><td><code>Ctrl-b 0</code>–<code>9</code></td><td>Jump straight to a window by number.</td></tr>
+    <tr><td><code>Ctrl-b ,</code></td><td>Rename the current window.</td></tr>
+    <tr><td><code>Ctrl-b $</code></td><td>Rename the current session.</td></tr>
+    <tr><td><code>Ctrl-b s</code></td><td>Show an interactive list of sessions to switch between.</td></tr>
+    <tr><td><code>Ctrl-b ?</code></td><td>List every key binding — the built-in reminder when you forget one.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Run <code>tmux new -s practice</code>, then build the layout in the diagram above: <code>Ctrl-b %</code> to split left/right, move back to the left pane with <code>Ctrl-b ←</code>, then <code>Ctrl-b "</code> to split it top/bottom. Detach with <code>Ctrl-b d</code>, confirm it is still alive with <code>tmux ls</code>, and reattach with <code>tmux attach -t practice</code>.
+</div>
+
+<h3>GNU Screen: still around, and worth recognising</h3>
+<p>GNU Screen dates from the late 1980s and offers the same detach-and-reattach model with different key bindings: its default prefix is <code>Ctrl-a</code> rather than <code>Ctrl-b</code>. Almost nobody chooses Screen for a new setup now, but you still meet it mainly because it comes pre-installed on many systems where tmux does not, so it may be the only multiplexer available on a server you do not administer.</p>
+
+<p>A minimal Screen workflow, enough to survive an unfamiliar server:</p>
+
+<table class="key-table">
+  <thead><tr><th>Command or keys</th><th>What it does</th><th>tmux equivalent</th></tr></thead>
+  <tbody>
+    <tr><td><code>screen -S work</code></td><td>Start a new session named <code>work</code>.</td><td><code>tmux new -s work</code></td></tr>
+    <tr><td><code>Ctrl-a d</code></td><td>Detach from the session.</td><td><code>Ctrl-b d</code></td></tr>
+    <tr><td><code>screen -ls</code></td><td>List available sessions.</td><td><code>tmux ls</code></td></tr>
+    <tr><td><code>screen -r work</code></td><td>Resume the detached session named <code>work</code>.</td><td><code>tmux attach -t work</code></td></tr>
+  </tbody>
+</table>
+
+<p>If you find yourself using Screen regularly on a machine where you <em>can</em> install software, install tmux instead. If you cannot, these four commands will get your work to survive a dropped connection, which is the point.</p>
+
+<div class="callout callout-note">
+  <strong>Configuring them</strong>
+  tmux and screen are separate programs, not shell features, so their commands and key bindings do not change with whichever shell you run inside them. Each has its own configuration dotfile — <code>~/.tmux.conf</code> and <code>~/.screenrc</code>, as mentioned in <a href="week7.02-startup.html">section 7.2</a> — written in the tool's own syntax rather than as shell commands.
+</div>
+
+<h3>Putting it all together</h3>
+<p>The three tools from this week's last two sections form a ladder, and the right one depends on how much you need to survive:</p>
+
+<table class="key-table">
+  <thead><tr><th>You want to…</th><th>Use</th></tr></thead>
+  <tbody>
+    <tr><td>Free up your prompt while a command keeps running in this shell</td><td><code>&amp;</code>, <code>Ctrl-Z</code>, <code>bg</code>, <code>fg</code></td></tr>
+    <tr><td>Keep one command alive after this shell closes</td><td><code>nohup</code>, <code>disown</code></td></tr>
+    <tr><td>Keep a whole working session — several programs and panes — alive across a dropped connection</td><td><code>tmux</code> (or <code>screen</code>, if it is all you have)</td></tr>
+  </tbody>
+</table>
+
+<p>If you are running a long build, watching logs on a remote server, or editing and testing across several panes, tmux lets your work survive a lost connection and keeps related activities together in one place. Together with job control, these tools make the command line practical for real development and systems work.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 7 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
