@@ -139,7 +139,7 @@
       <li>File extensions and hidden files visible in your file manager.</li>
       <li>A working Linux shell you can type commands into.</li>
       <li>The Week 1 starter project unzipped at <code style="background:rgba(255,255,255,0.12);color:#a6e3a1;">~/fit2109/week1-rescue</code>.</li>
-      <li>A first checker score of <strong>1/10</strong> — your starting line.</li>
+      <li>A first checker score of <strong>1/3</strong> — your starting line.</li>
     </ol>
   </div>
 </div>
@@ -247,10 +247,10 @@
   <div class="os-card">
     <h3><span class="os-ic win">&#9638;</span> Windows</h3>
     <p><strong>Important:</strong> PowerShell and Command Prompt are <em>not</em> Linux shells and cannot run our
-      <code>bash</code> scripts. Use one of these instead:</p>
+      <code>bash</code> scripts. For Week 1, WSL is the easiest Windows option:</p>
     <ul>
-      <li><strong>Easiest — no install:</strong> use the <strong>Ed workspace terminal</strong> in your browser. Every “Try this in Ed” in the reading runs there.</li>
-      <li><strong>On your laptop:</strong> install <strong>WSL</strong> (Ubuntu). Open <strong>PowerShell as Administrator</strong>, run the command below, then restart and set a username and password.</li>
+      <li><strong>Easiest on Windows:</strong> install <strong>WSL</strong> (Ubuntu). Follow the <a href="https://learn.microsoft.com/en-us/windows/wsl/install">official Microsoft WSL install guide</a>: open <strong>PowerShell as Administrator</strong>, run the command below, then restart and set a username and password.</li>
+      <li><strong>Not recommended for Week 1:</strong> the <del><strong>Ed workspace terminal</strong></del> in your browser.</li>
     </ul>
     <div class="term" data-copy="wsl --install">
       <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">PowerShell (Administrator)</span><button class="copy-btn" type="button">Copy</button></div>
@@ -264,8 +264,9 @@
     <p>macOS already ships with a shell — you do not need to install anything.</p>
     <ul>
       <li>Press <code>&#8984; Space</code>, type <strong>Terminal</strong>, press <strong>Return</strong>.</li>
+      <li>Or open <strong>Finder → Applications → Utilities → Terminal</strong>.</li>
       <li>You will see a prompt ending in <code>%</code> or <code>$</code>. That is the shell.</li>
-      <li>Or use the <strong>Ed workspace terminal</strong> in your browser.</li>
+      <li>Avoid the <del><strong>Ed workspace terminal</strong></del> for Week 1; use your local Terminal for this setup.</li>
     </ul>
     <div class="term" data-copy="whoami">
       <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">Terminal — check it works</span><button class="copy-btn" type="button">Copy</button></div>
@@ -276,20 +277,19 @@
 </div>
 
 <h2>0.4 Get the starter project and run the first check</h2>
-<p>These steps are the <strong>same on Windows (WSL), macOS, and Ed</strong>. Download <code>week1-rescue.zip</code> from Ed first, then run:</p>
+<p>These steps are the <strong>same on Windows (WSL) and macOS</strong>. Download <code>week1-rescue.zip</code> from Ed first, then run:</p>
 
-<div class="term" data-copy="mkdir -p ~/fit2109&#10;cd ~/fit2109&#10;unzip week1-rescue.zip&#10;cd week1-rescue&#10;bash check_progress.sh">
-  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash — expect 1/10 the first time</span><button class="copy-btn" type="button">Copy</button></div>
-  <pre class="term-body"><span class="l"><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p ~/fit2109</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">~/fit2109</span></span><span class="l comment"># move week1-rescue.zip into this folder first, then:</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">unzip</span> <span class="arg">week1-rescue.zip</span></span><span class="l out">Archive:  week1-rescue.zip</span><span class="l out">   creating: week1-rescue/</span><span class="l out">  inflating: week1-rescue/check_progress.sh</span><span class="l out">  inflating: week1-rescue/project/logs/app.log</span><span class="l out">   ...</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">week1-rescue</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">check_progress.sh</span></span><span class="l ok">[PASS] starter project structure is present</span><span class="l bad">[FAIL] evidence/location.txt records the lab directory</span><span class="l out">   ... (8 more FAIL)</span><span class="l out">Score: 1/10 (10%)</span></pre>
+<div class="term" data-copy="mkdir -p ~/fit2109&#10;cd ~/fit2109&#10;unzip week1-rescue.zip&#10;cd week1-rescue&#10;./check_progress.sh">
+  <div class="term-bar"><span class="dots"><i></i><i></i><i></i></span><span class="term-title">bash — expect 1/3 the first time</span><button class="copy-btn" type="button">Copy</button></div>
+  <pre class="term-body"><span class="l"><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p ~/fit2109</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">~/fit2109</span></span><span class="l comment"># move week1-rescue.zip into this folder first, then:</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">unzip</span> <span class="arg">week1-rescue.zip</span></span><span class="l out">Archive:  week1-rescue.zip</span><span class="l out">   creating: week1-rescue/</span><span class="l out">  inflating: week1-rescue/README.md</span><span class="l out">  inflating: week1-rescue/project/notes/team-notes.txt</span><span class="l out">  inflating: week1-rescue/project/tmp/old-debug.txt</span><span class="l out">  inflating: week1-rescue/check_progress.sh</span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">week1-rescue</span></span><span class="l"><span class="prompt-sym">$</span> <span class="cmd">./check_progress.sh</span></span><span class="l out">FIT2109 Week 1 Basic Commands Check</span><span class="l ok">[PASS] starter project structure is present</span><span class="l bad">[FAIL] team notes were copied into project/archive</span><span class="l bad">[FAIL] old temporary debug note was renamed</span><span class="l out">Score: 1/3 (33%)</span></pre>
   <div class="term-foot"><span class="in-key">you type</span><span class="out-key">shell prints</span></div>
 </div>
 
 <div class="callout callout-note">
-  <strong>1/10 is the correct starting score</strong>
-  You are <em>meant</em> to fail the other nine checks right now. The applied class is about making them pass, one
-  task at a time. Notice also that <code>bash check_progress.sh</code> runs the script through the
-  <code>bash</code> interpreter — this works without the execute bit, which is why you do not need
-  <code>chmod</code> here. Running it as <code>./check_progress.sh</code> <em>would</em> need the execute bit.
+  <strong>1/3 is the correct starting score</strong>
+  You are <em>meant</em> to fail the other two checks right now. The applied class is about making them pass, one
+  task at a time. The starter zip already marks <code>check_progress.sh</code> as executable, so run it as
+  <code>./check_progress.sh</code>.
 </div>
 
 <h2>0.5 It is not working — HELP!</h2>
@@ -299,7 +299,7 @@
   <thead><tr><th>What you see</th><th>What it means and how to fix it</th></tr></thead>
   <tbody>
     <tr>
-      <td>bash: check_progress.sh:<br>No such file or directory</td>
+      <td>./check_progress.sh:<br>No such file or directory</td>
       <td><strong>You are in the wrong folder.</strong> Run <code>pwd</code> — it must end in <code>/week1-rescue</code>.
         If not, run <code>cd ~/fit2109/week1-rescue</code>. Then run <code>ls</code> and check you can see <code>check_progress.sh</code>.</td>
     </tr>
@@ -311,13 +311,12 @@
     <tr>
       <td>bash: command not found<br>(on Windows)</td>
       <td><strong>You are in PowerShell or Command Prompt, not Linux.</strong> Open <strong>Ubuntu (WSL)</strong>
-        from the Start menu, or use the Ed workspace terminal. Windows' own shells cannot run <code>bash</code> scripts.</td>
+        from the Start menu. Windows' own shells cannot run <code>bash</code> scripts.</td>
     </tr>
     <tr>
       <td>Permission denied</td>
-      <td>You do not need this for <code>check_progress.sh</code> (it runs via <code>bash file</code>).
-        For a script you run as <code>./script.sh</code>, add the execute bit first:
-        <code>chmod u+x script.sh</code> — Task 3 of the applied class covers exactly this.</td>
+      <td>The starter zip should preserve the execute bit. If your unzip tool dropped it, run
+        <code>chmod u+x check_progress.sh</code>, then try <code>./check_progress.sh</code> again.</td>
     </tr>
   </tbody>
 </table>
@@ -328,7 +327,7 @@
     <li><span class="box"></span> File name extensions and hidden files are visible.</li>
     <li><span class="box"></span> A Linux shell opens and <code>whoami</code> prints your username.</li>
     <li><span class="box"></span> The starter is unzipped at <code>~/fit2109/week1-rescue</code>.</li>
-    <li><span class="box"></span> <code>bash check_progress.sh</code> prints <strong>Score: 1/10</strong>.</li>
+    <li><span class="box"></span> <code>./check_progress.sh</code> prints <strong>Score: 1/3</strong>.</li>
   </ul>
   <p class="stop">Do not proceed until all four boxes are ticked.</p>
 </div>
