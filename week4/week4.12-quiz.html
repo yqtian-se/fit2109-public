@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.12 — Check Your Understanding — FIT2109 Week 4</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<h2>4.12 Check Your Understanding</h2>
+<span class="section-badge badge-quiz">Quiz — 10 questions</span>
+
+<p>These questions check concepts, not syntax recall. Think through each one before looking at the answer in class.</p>
+
+<div class="quiz-q">
+  <div class="qnum">Question 1</div>
+  <div class="qtext">Why does Git need <code>git config --global user.name</code> and <code>user.email</code> before you can commit?</div>
+  <div class="options">
+    <label><input type="radio" name="q1"> Because every commit records an author as part of its metadata.</label>
+    <label><input type="radio" name="q1"> Because Git charges different accounts for different users.</label>
+    <label><input type="radio" name="q1"> Because it sets your GitHub password.</label>
+    <label><input type="radio" name="q1"> It is optional and never actually required.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 2</div>
+  <div class="qtext">What does <code>git add</code> actually do?</div>
+  <div class="options">
+    <label><input type="radio" name="q2"> Permanently saves the file to disk.</label>
+    <label><input type="radio" name="q2"> Takes a snapshot of the file's current content and stages it for the next commit.</label>
+    <label><input type="radio" name="q2"> Uploads the file to a remote server.</label>
+    <label><input type="radio" name="q2"> Marks the file as ignored.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 3</div>
+  <div class="qtext">You edit a file after running <code>git add</code> on it, then run <code>git commit</code> without running <code>git add</code> again. What gets committed?</div>
+  <div class="options">
+    <label><input type="radio" name="q3"> The latest version currently in the working tree.</label>
+    <label><input type="radio" name="q3"> The version that was staged, not your latest edits.</label>
+    <label><input type="radio" name="q3"> Nothing — Git will refuse to commit.</label>
+    <label><input type="radio" name="q3"> Both versions, merged automatically.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 4</div>
+  <div class="qtext">You committed a file, then later added a rule for it in <code>.gitignore</code>. What happens?</div>
+  <div class="options">
+    <label><input type="radio" name="q4"> Git stops tracking the file automatically.</label>
+    <label><input type="radio" name="q4"> The file is deleted from disk.</label>
+    <label><input type="radio" name="q4"> Git keeps tracking it — .gitignore only affects files that are not already tracked.</label>
+    <label><input type="radio" name="q4"> Git raises an error on the next commit.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 5</div>
+  <div class="qtext">Why is Git's commit history described as a directed acyclic graph (DAG)?</div>
+  <div class="options">
+    <label><input type="radio" name="q5"> Because commits are stored in a random, unordered set.</label>
+    <label><input type="radio" name="q5"> Because pointers go from newer to older commits, and a commit can never become its own ancestor.</label>
+    <label><input type="radio" name="q5"> Because Git only supports one branch at a time.</label>
+    <label><input type="radio" name="q5"> Because it is a marketing term with no technical meaning.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 6</div>
+  <div class="qtext">What is the key difference between a branch and a tag?</div>
+  <div class="options">
+    <label><input type="radio" name="q6"> There is no difference — they are the same thing with different names.</label>
+    <label><input type="radio" name="q6"> A branch is a movable pointer that advances with new commits; a tag is a pointer to one fixed commit that does not move.</label>
+    <label><input type="radio" name="q6"> A tag can only exist on a remote, never locally.</label>
+    <label><input type="radio" name="q6"> A branch always requires an annotated message; a tag never does.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 7</div>
+  <div class="qtext">When is it safe to use <code>git commit --amend</code>?</div>
+  <div class="options">
+    <label><input type="radio" name="q7"> Any time, on any commit, regardless of whether it has been shared.</label>
+    <label><input type="radio" name="q7"> Only on the most recent commit, and only if it has not already been shared with or built on by others.</label>
+    <label><input type="radio" name="q7"> Only on commits older than a week.</label>
+    <label><input type="radio" name="q7"> Never — amending is always destructive.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 8</div>
+  <div class="qtext">Under what condition does a merge "fast-forward" instead of creating a merge commit?</div>
+  <div class="options">
+    <label><input type="radio" name="q8"> When the current branch head is an ancestor of the branch being merged, so there is no divergent work to reconcile.</label>
+    <label><input type="radio" name="q8"> Whenever you pass the <code>--fast</code> flag to <code>git merge</code>.</label>
+    <label><input type="radio" name="q8"> Only when merging into a tag.</label>
+    <label><input type="radio" name="q8"> Fast-forward merges do not exist in Git.</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 9</div>
+  <div class="qtext">You are in the middle of editing a file and need to switch branches right now, but you are not ready to commit. What is the appropriate tool?</div>
+  <div class="options">
+    <label><input type="radio" name="q9"> git commit -m "wip" just to save something</label>
+    <label><input type="radio" name="q9"> git stash</label>
+    <label><input type="radio" name="q9"> git branch -D</label>
+    <label><input type="radio" name="q9"> Delete the file and recreate it later</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 10</div>
+  <div class="qtext">Your local <code>feature-readme</code> branch has been merged into <code>main</code>. Which command safely deletes it locally, refusing if it turns out not to be fully merged?</div>
+  <div class="options">
+    <label><input type="radio" name="q10"> <code>git branch -D feature-readme</code></label>
+    <label><input type="radio" name="q10"> <code>git branch -d feature-readme</code></label>
+    <label><input type="radio" name="q10"> <code>git reset --hard feature-readme</code></label>
+    <label><input type="radio" name="q10"> <code>git rm feature-readme</code></label>
+  </div>
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University</p>
+</div>
+</body>
+</html>

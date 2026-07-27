@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 4 Pre-Reading: Version Control with Git — Foundations — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Week 4: Version Control with Git — Foundations</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol class="goals">
+      <li>Explain why version control exists and how Git's snapshot model differs from simply keeping copies of files.</li>
+      <li>Set up your identity in Git and describe the three places Git keeps track of a project's state.</li>
+      <li>Record changes in deliberate steps, and inspect what has changed before and after each one.</li>
+      <li>Keep files that don't belong in version control — like build output, dependencies, and secrets — out of your project's history.</li>
+      <li>Write a clean, reviewable history of changes, and correct your most recent mistake without adding clutter.</li>
+      <li>Create separate lines of work, bring them back together, resolve conflicts when they overlap, and set aside unfinished work temporarily.</li>
+    </ol>
+  </div>
+</div>
+
+<h3>A scenario</h3>
+<p>You are building a small app for a project, and it has been working fine for weeks. This afternoon you decide to rewrite the part that handles user logins, because the way you first built it was messy. The rewrite touches five different files. Two hours in, nothing works, and you cannot tell whether the problem is your rewrite, some other small edit you made along the way, or something else entirely. You want to compare your code exactly as it was this morning — the last point where everything worked — against what you have now. But you never explicitly marked that moment. You just kept editing the same files, the way most people do before they have a better system.</p>
+<p>This is one of the problems version control exists to solve, and Git is the tool almost the entire software industry has settled on for solving it. Every serious codebase you will touch — a startup's first commit, a solo side project, a large engineering team's monorepo — is under Git from day one, precisely so that "what did this look like before I broke it?" always has a real answer. Instead of you inventing an ad-hoc naming scheme to fake a history, Git records one for you automatically — every meaningful change, who made it, why, and how it relates to every other change — so you can always get back to a known-good state without guesswork. This week is about building a solid mental model of how Git actually works underneath the commands, so that later, more advanced Git behaviour never feels like magic.</p>
+<p>Recovering from your own mistakes is only part of the picture. The same recorded history is what lets two people edit the same project without silently overwriting each other's work, lets a reviewer see exactly what changed in a proposed update before approving it, and lets a team figure out — months later — exactly which change introduced a bug. Version control turns "who changed what, and why" from a question nobody can answer into one Git can answer automatically. This week focuses on the foundations you need before any of that: history, snapshots, and recovery on your own machine, working alone. Week 5 builds directly on top of these same ideas once a second person and a shared remote enter the picture.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  If you have never used Git before, think about how you currently keep old versions of a file "just in case." As you read, notice every place where Git replaces that habit with something more precise.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

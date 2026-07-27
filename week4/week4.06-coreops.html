@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.6 — Core Git Operations — FIT2109 Week 4</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Core commands</span>
+<h2>4.6 Core Git Operations</h2>
+
+<p>In Git, there is a small set of core commands. The first two are about getting a repository. <code>git init</code> creates an empty Git repository, essentially by creating a <code>.git</code> directory and an initial branch with no commits yet. <code>git clone</code> creates a full local copy of an existing repository, history and all, and remembers where that copy came from so you can stay in sync with it later — exactly how that syncing works is covered in Week 5. In practice, <code>git init</code> is what you use when starting a brand-new local project, while <code>git clone</code> is what you use when beginning from an existing repository.</p>
+
+<table class="key-table">
+  <thead><tr><th style="width:14rem;">Command</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>git init</code></td><td>Creates a new, empty repository in the current folder.</td></tr>
+    <tr><td><code>git clone &lt;url&gt;</code></td><td>Copies an existing repository, including its full history, to your machine.</td></tr>
+    <tr><td><code>git status</code></td><td>Shows what is staged, modified, and untracked right now.</td></tr>
+    <tr><td><code>git add &lt;file&gt;</code></td><td>Stages a snapshot of the file's current content for the next commit.</td></tr>
+    <tr><td><code>git commit -m "..."</code></td><td>Records the staged snapshot in the repository history.</td></tr>
+    <tr><td><code>git diff</code></td><td>Shows unstaged changes — what you have edited but not yet added.</td></tr>
+    <tr><td><code>git diff --staged</code></td><td>Shows what is already staged for the next commit.</td></tr>
+    <tr><td><code>git log</code></td><td>Shows commit history by following parent links.</td></tr>
+  </tbody>
+</table>
+
+<p>Once you have a repository, the next key command is <code>git status</code>. It shows the state of the working tree relative to the index and the current HEAD commit — what is staged, what is modified but unstaged, and what is untracked. This is why a good beginner habit is to run <code>git status</code> frequently, rather than guessing what Git thinks is happening. The short form <code>git status -s</code> is also useful once the long output becomes familiar.</p>
+
+<p><code>git add</code> is the command that stages content. It is used for both new and modified files, and in both cases it takes a snapshot of the specified content and stages it in the index for the next commit. If you change a file after running <code>git add</code>, the staging area still contains the earlier snapshot, so you need to run <code>git add</code> again if you want the latest version included in the next commit. Git stages content as it exists at the moment of <code>git add</code>, not as it might look later when you finally commit.</p>
+
+<p><code>git commit</code> records the staged snapshot in the repository history. This means <code>git commit</code> should be thought of as "record exactly the staged snapshot," not "save whatever currently exists in my folder." That distinction is the key to making reviewable history.</p>
+
+<p><code>git diff</code> and <code>git log</code> are the two most important inspection commands. <code>git diff</code> by itself shows changes between the working tree and the index, while <code>git diff --cached</code> or <code>git diff --staged</code> shows what has already been staged relative to the last commit. That means <code>git diff</code> answers "what have I changed but not staged yet?" and <code>git diff --staged</code> answers "what will go into the next commit if I commit now?"</p>
+
+<h3>Scenario 1: Starting a Brand-New Project</h3>
+<p>Say you are starting a small script for a unit assignment, and you want every step recorded from the very first line of code. Here is exactly what happens, command by command.</p>
+
+<p><strong>1. Create the repository.</strong> There is nothing to look at yet — no files, no commits, just a fresh <code>.git</code> directory:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git init</span>
+<span class="out">Initialized empty Git repository in /home/student/hello-app/.git/</span></code></pre>
+
+<p><strong>2. Create a file.</strong> This only touches the working tree — Git has not been told about <code>app.py</code> yet:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"print('Hello')" &gt; app.py</span></code></pre>
+
+<p><strong>3. Check status.</strong> Git confirms exactly that: the file exists, but it is untracked:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git status</span>
+<span class="out">On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add &lt;file&gt;..." to include in what will be committed)
+	app.py
+
+nothing added to commit but untracked files present (use "git add" to track)</span></code></pre>
+
+<p><strong>4. Stage it.</strong> No output on success — but running <code>git status</code> again now would show <code>app.py</code> under "Changes to be committed" instead of "Untracked files":</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">app.py</span></code></pre>
+
+<p><strong>5. Commit.</strong> The staged snapshot becomes a permanent part of the repository's history:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Add initial app script"</span>
+<span class="out">[main (root-commit) 3f8a2c1] Add initial app script
+ 1 file changed, 1 insertion(+)
+ create mode 100644 app.py</span></code></pre>
+
+<p><code>root-commit</code> is Git telling you this is the very first commit in the repository — it has no parent.</p>
+
+<p><strong>6. Confirm it landed:</strong></p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span>
+<span class="out">commit 3f8a2c1d9e6b4a7f2c5d8e1b6a9f4c7d2e5b8a1f (HEAD -&gt; main)
+Author: Ada Lovelace &lt;ada@example.com&gt;
+Date:   Mon Jun 10 09:00:00 2024 +0000
+
+    Add initial app script</span></code></pre>
+
+<p>One commit, matching exactly what was staged — nothing more, nothing less.</p>
+
+<h3>Scenario 2: Changing the Code</h3>
+<p>Continuing from Scenario 1: suppose you come back later and change <code>app.py</code> to greet a name instead of printing a fixed string:</p>
+
+<div class="tool-grid">
+  <figure style="margin:0;">
+    <figcaption style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:8px;">Before — app.py</figcaption>
+    <pre style="margin:0;"><code><span class="out">print('Hello')</span></code></pre>
+  </figure>
+  <figure style="margin:0;">
+    <figcaption style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#888;margin-bottom:8px;">After — app.py</figcaption>
+    <pre style="margin:0;"><code><span class="out">def greet(name):
+    print(f"Hello, {name}!")
+
+greet("world")</span></code></pre>
+  </figure>
+</div>
+
+<p><strong>1. Check status.</strong> This time Git recognizes <code>app.py</code> as modified, not new — it is already tracked:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git status</span>
+<span class="out">On branch main
+Changes not staged for commit:
+  (use "git add &lt;file&gt;..." to update what will be committed)
+  (use "git restore &lt;file&gt;..." to discard changes in working directory)
+	modified:   app.py
+
+no changes added to commit (use "git add" and/or "git commit -a")</span></code></pre>
+
+<p><strong>2. Stage the change:</strong></p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">app.py</span></code></pre>
+
+<p><strong>3. Review it:</strong></p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git diff</span> <span class="arg">--staged</span>
+<span class="out">diff --git a/app.py b/app.py
+index 3b18e51..8a4f2c9 100644
+--- a/app.py
++++ b/app.py
+@@ -1 +1,4 @@
+-print('Hello')
++def greet(name):
++    print(f"Hello, {name}!")
++
++greet("world")</span></code></pre>
+
+<p>Those <code>-</code> and <code>+</code> lines are the entire point of <code>diff</code>: a precise, line-by-line record of what changed — one line removed, four added.</p>
+
+<p><strong>4. Commit the change, and check the history:</strong></p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Make greeting configurable by name"</span>
+<span class="out">[main 9c7e2a4] Make greeting configurable by name
+ 1 file changed, 4 insertions(+), 1 deletion(-)</span>
+<span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">--oneline</span>
+<span class="out">9c7e2a4 (HEAD -&gt; main) Make greeting configurable by name
+3f8a2c1 Add initial app script</span></code></pre>
+
+<p>Two deliberate steps in the history, each reviewable on its own — not one undifferentiated blob of changes.</p>
+
+<h3>Scenario 3: Joining a Project That Already Exists</h3>
+<p>Now the opposite situation: your tutor has sent you a link to your group's assignment repository, and you need to get set up on your own machine for the first time.</p>
+
+<p><strong>1. Clone it.</strong> This downloads the entire history of the project, not just its current files — every commit anyone on the team has made so far:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git clone</span> <span class="arg">https://github.com/fit2109-group12/assignment.git</span>
+<span class="out">Cloning into 'assignment'...
+remote: Enumerating objects: 142, done.
+remote: Counting objects: 100% (142/142), done.
+remote: Compressing objects: 100% (98/98), done.
+Receiving objects: 100% (142/142), 48.21 KiB | 2.41 MiB/s, done.
+Resolving deltas: 100% (61/61), done.</span></code></pre>
+
+<p><strong>2. Move into the new folder.</strong> <code>git clone</code> creates it for you, named after the repository:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">assignment</span></code></pre>
+
+<p><strong>3. Check status.</strong> A fresh clone always starts perfectly in sync with where it came from:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git status</span>
+<span class="out">On branch main
+Your branch is up to date with 'origin/main'.
+
+nothing to commit, working tree clean</span></code></pre>
+
+<p><strong>4. Look at what came before you.</strong> Even though you have not written a line yet, the full history is already sitting on your machine:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">--oneline</span>
+<span class="out">9d4e7b0 (HEAD -&gt; main, origin/main) Add unit tests for parser
+5c1f6a8 Fix off-by-one error in tokenizer
+b2e9a3d Initial project skeleton</span></code></pre>
+
+<p>Three commits from your teammates, fully readable, before you have made a single change — this is exactly what "every developer has a complete local repository" (Section 4.1) means in practice.</p>
+
+<div class="callout callout-fun">
+  <strong>The basic Git cycle</strong>
+  Create or obtain a repository, inspect its state, make changes, stage selected content, review that staged content, commit it, and inspect history. That cycle is the heart of Git foundations.
+</div>
+
+<div class="callout callout-note">
+  <strong>Watch the workshop video</strong>
+  This week's workshop includes a short video from Educational Design, Innovation &amp; Quality (EDiQ) walking through these basic Git operations — find it linked from the unit's Git workshop page.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

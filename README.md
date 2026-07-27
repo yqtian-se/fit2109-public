@@ -10,6 +10,8 @@ Author: [Dr. Yongqiang Tian](https://yqtian.com) · [Unit handbook](https://hand
 |------|-------|-------|
 | [Week 1](week1/index.html) | Introduction to the Shell | 14 pre-reading slides |
 | [Week 2](week2/index.html) | Shell Evaluation, Scripting, and Remote Access | 14 pre-reading slides |
+| [Week 4](week4/index.html) | Version Control with Git: Foundations | 13 pre-reading slides |
+| [Week 5](week5/index.html) | Version Control with Git: Collaboration & History | 10 pre-reading slides |
 | [Week 6](week6/index.html) | Virtual Machines, Containers & Package Management | 13 pre-reading slides |
 | [Week 8](week8/index.html) | Debugging: Systematic Bug Hunting | 13 pre-reading slides |
 | [Week 9](week9/index.html) | Profiling & Performance | 10 pre-reading slides |
@@ -27,6 +29,14 @@ fit2109-public/
 │   ├── week1.01-*.html
 │   └── workshop.pdf
 ├── week2/ ...
+├── week4/
+│   ├── index.html
+│   ├── week4.00-overview.html
+│   ├── week4.01-*.html
+│   ├── images/          # published diagram/screenshot images
+│   ├── context/         # source content.md + raw reference images
+│   └── workshop.pdf
+├── week5/ ...
 └── week12/
     ├── index.html
     ├── week12.00-overview.html
