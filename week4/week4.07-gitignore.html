@@ -172,7 +172,7 @@
 <span class="out">.vscode/</span>
 <span class="out">.DS_Store</span></code></pre>
 
-<p>A trailing <code>/</code> matches a directory and everything inside it. A <code>*</code> is a wildcard that matches any run of characters, so a pattern like <code>*.pyc</code> matches by extension rather than by exact filename. A <code>#</code> starts a comment. You can also negate a pattern with <code>!</code> to re-include something a broader pattern would otherwise exclude, for example <code>!important.log</code> after a <code>*.log</code> rule.</p>
+<p>A trailing <code>/</code> matches a directory and everything inside it. A <code>*</code> is a wildcard that matches any run of characters within a single path segment (it does not cross <code>/</code>), so a pattern like <code>*.pyc</code> matches by extension rather than by exact filename. A <code>#</code> starts a comment. You can also negate a pattern with <code>!</code> to re-include something a broader pattern would otherwise exclude, for example <code>!important.log</code> after a <code>*.log</code> rule.</p>
 
 <h3>Two things that catch people out</h3>
 
@@ -180,7 +180,10 @@
 
 <pre><code><span class="prompt-sym">$</span> <span class="cmd">git rm</span> <span class="arg">--cached secrets.env</span>
 <span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"secrets.env" &gt;&gt; .gitignore</span>
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">.gitignore</span>
 <span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Stop tracking secrets.env"</span></code></pre>
+
+<p><code>git rm --cached</code> removes the file from the index only — it stays on disk — and staging <code>.gitignore</code> as well means the commit records both the removal and the new rule together. One warning for a file like <code>secrets.env</code>: stopping tracking does not erase it from earlier commits — the secret still exists in every snapshot made before the removal (habit 8 in <a href="week4.08-clean-history.html">4.8</a> comes back to this).</p>
 
 <p><strong>Second, .gitignore itself should be committed.</strong> It is project-specific configuration that every collaborator benefits from, so it belongs in the repository just like any source file. Personal preferences that have nothing to do with the project, such as your own editor's temporary files, are better placed in a global ignore file that applies across every repository on your machine:</p>
 

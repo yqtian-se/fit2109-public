@@ -154,10 +154,10 @@
 </head>
 <body>
 <div class="page">
-<h2>4.12 Check Your Understanding</h2>
 <span class="section-badge badge-quiz">Quiz — 10 questions</span>
+<h2>4.12 Check Your Understanding</h2>
 
-<p>These questions check concepts, not syntax recall. Think through each one before looking at the answer in class.</p>
+<p>These questions are mostly about concepts rather than syntax recall. Think through each one — and commit to an answer — before opening the answer key at the bottom.</p>
 
 <div class="quiz-q">
   <div class="qnum">Question 1</div>
@@ -251,9 +251,9 @@
   <div class="qnum">Question 9</div>
   <div class="qtext">You are in the middle of editing a file and need to switch branches right now, but you are not ready to commit. What is the appropriate tool?</div>
   <div class="options">
-    <label><input type="radio" name="q9"> git commit -m "wip" just to save something</label>
-    <label><input type="radio" name="q9"> git stash</label>
-    <label><input type="radio" name="q9"> git branch -D</label>
+    <label><input type="radio" name="q9"> <code>git commit -m "wip"</code> just to save something</label>
+    <label><input type="radio" name="q9"> <code>git stash</code></label>
+    <label><input type="radio" name="q9"> <code>git branch -D</code></label>
     <label><input type="radio" name="q9"> Delete the file and recreate it later</label>
   </div>
 </div>
@@ -269,8 +269,24 @@
   </div>
 </div>
 
+<details style="margin-top:32px;background:#fff;border:1px solid #e0e0f0;border-radius:8px;padding:16px 20px;">
+  <summary style="cursor:pointer;font-weight:700;color:#4361ee;">Answer key — open only after committing to your answers</summary>
+  <ol style="margin:14px 0 4px 24px;">
+    <li><strong>Every commit records an author as part of its metadata</strong> — the name and email go into the commit itself (4.2).</li>
+    <li><strong>It takes a snapshot of the file's current content and stages it</strong> — nothing is committed or uploaded yet (4.3, 4.6).</li>
+    <li><strong>The version that was staged</strong> — <code>git add</code> captured the file as it was at that moment; later edits stay unstaged until you <code>add</code> again (4.6).</li>
+    <li><strong>Git keeps tracking it</strong> — <code>.gitignore</code> only affects untracked files; use <code>git rm --cached</code> to stop tracking (4.7).</li>
+    <li><strong>Pointers go from newer to older commits, and no commit can be its own ancestor</strong> — directed, acyclic (4.4).</li>
+    <li><strong>A branch is a movable pointer; a tag points at one fixed commit</strong> (4.5, 4.9).</li>
+    <li><strong>Only the most recent commit, and only if it hasn't been shared</strong> — amending replaces the commit, which rewrites history others may depend on (4.8).</li>
+    <li><strong>When the current branch head is an ancestor of the branch being merged</strong> — nothing has diverged, so the pointer just moves forward (4.9).</li>
+    <li><strong><code>git stash</code></strong> — it shelves uncommitted work so you can switch branches and restore it later (4.11).</li>
+    <li><strong><code>git branch -d</code></strong> — lowercase <code>-d</code> refuses to delete an unmerged branch; uppercase <code>-D</code> deletes regardless (4.10).</li>
+  </ol>
+</details>
+
 <hr class="divider">
-<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University</p>
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
 </div>
 </body>
 </html>

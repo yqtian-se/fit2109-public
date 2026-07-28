@@ -185,7 +185,7 @@
 index 4a1f2e8..9c3d7b1 100644
 --- a/validators.py
 +++ b/validators.py
-@@ -12,6 +12,7 @@ def is_valid_email(email):
+@@ -12,2 +12,3 @@ def is_valid_email(email):
 -    pattern = r"^[\w.]+@[\w]+\.\w+$"
 +    pattern = r"^[\w.+-]+@[\w-]+\.\w+$"
 +    print("checking:", email)
@@ -230,13 +230,13 @@ the length explicitly.</span></code></pre>
 
 <p><strong>6. Committing early and often — but at meaningful checkpoints.</strong> Waiting until an entire feature is finished before committing anything is risky: if something goes wrong along the way, there is no intermediate state to compare against or fall back to. Committing after every single keystroke is just as unhelpful, producing a history of noise instead of a history of decisions. Aim for the middle — commit whenever you reach a point that is complete and explainable on its own, even if the feature as a whole is not finished yet: <code>"Add validators.py skeleton"</code>, then <code>"Implement email regex"</code>, then <code>"Wire validators into login route"</code>.</p>
 
-<p><strong>7. Keeping every commit in a working state.</strong> Where possible, each commit should leave the project able to run and pass its tests, not paused halfway through a change. This matters more than it might first seem: Section 5.7 covers <code>git bisect</code>, which searches history by checking out and testing individual commits one at a time. A commit that does not build or run cannot be tested, and breaks that search.</p>
+<p><strong>7. Keeping every commit in a working state.</strong> Where possible, each commit should leave the project able to run and pass its tests, not paused halfway through a change. This matters more than it might first seem: Week 5 covers <code>git bisect</code>, which searches history by checking out and testing individual commits one at a time. A commit that does not build or run cannot be tested, and breaks that search.</p>
 
 <p><strong>8. Never committing secrets or machine-specific files.</strong> API keys, passwords, and database credentials should never appear in a commit. Once a secret exists in history, deleting the file in a later commit does not remove it — the secret still exists in every snapshot before that deletion. Section 4.7 covers <code>.gitignore</code>, which is how you keep these files out of Git in the first place. If a secret is committed by accident, treat it as compromised and rotate it immediately, rather than trying to scrub it from history.</p>
 
 <div class="callout callout-fun">
   <strong>Good commit history is a craft</strong>
-  The repository model gives you the mechanics, but reviewable history depends on decisions: what belongs together, what should be left for a later commit, what the message should emphasize, and whether the staged snapshot truly matches the change you mean to record.
+  The repository model gives you the mechanics, but reviewable history depends on decisions: what belongs together, what should be left for a later commit, what the message should emphasise, and whether the staged snapshot truly matches the change you mean to record.
 </div>
 
 <hr class="divider">

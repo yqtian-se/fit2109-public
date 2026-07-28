@@ -174,8 +174,8 @@
 <p>When you merge, Git may perform a <strong>fast-forward</strong>. If the current branch head is an ancestor of the branch being merged, Git can simply move the branch pointer forward without creating a new merge commit. This is why some merges look almost like pointer updates rather than combination events.</p>
 
 <div class="fig">
-  <img src="images/week4-fast-forward-merge.png" alt="Before, during, and after a fast-forward merge: main and feature start diverged with feature ahead of main, then git merge feature simply moves the main pointer forward to feature's tip with no new commit created.">
-  <figcaption>No new commit is created — Git simply moves the main pointer forward to match feature.</figcaption>
+  <img src="images/week4-fast-forward-merge.png" alt="Before, during, and after a fast-forward merge: feature is ahead of main, with main's head an ancestor of feature's tip, then git merge feature simply moves the main pointer forward to feature's tip with no new commit created.">
+  <figcaption>No new commit is created — Git simply moves the main pointer forward to match feature. (The diagram's command box shows <code>git checkout main</code>, the older equivalent of the <code>git switch main</code> used throughout these slides.)</figcaption>
 </div>
 
 <h3>True (three-way) merges</h3>

@@ -160,7 +160,7 @@
 <p>A commit in Git is best understood as a <strong>snapshot plus metadata</strong>. When you make a commit, Git stores a commit object containing a pointer to the snapshot of the content you staged, along with metadata such as author name, email, message, and pointers to the commit or commits that came before it. For an initial commit there are zero parents, for a normal commit there is one parent, and for a <strong>merge commit</strong> there can be multiple parents — a merge commit is one that ties two lines of development back together, shown a little later in this section. Each commit is a node that points backward to earlier commits — this is the foundation of Git history.</p>
 
 <h3>Why "DAG"?</h3>
-<p>This is why it is useful to describe Git history as a <strong>directed acyclic graph (DAG)</strong>. That structure of commits is <em>directed</em> because the pointers go from newer commits to older parent commits, and it is <em>acyclic</em> because commits do not loop back around to become their own ancestors. Git history diagrams are always described in terms of lines of development diverging and reconverging — exactly the behavior a DAG is meant to represent.</p>
+<p>This is why it is useful to describe Git history as a <strong>directed acyclic graph (DAG)</strong>. That structure of commits is <em>directed</em> because the pointers go from newer commits to older parent commits, and it is <em>acyclic</em> because commits do not loop back around to become their own ancestors. Git history diagrams are always described in terms of lines of development diverging and reconverging — exactly the behaviour a DAG is meant to represent.</p>
 
 <p>A simple linear history might look like this:</p>
 <pre><code><span class="out">A -- B -- C</span></code></pre>
@@ -175,14 +175,14 @@
 <p>The <code>git log</code> command is one of the main tools for reading this graph. It lists commits that are reachable by following parent links from the given commit or commits, and can answer questions such as "commits reachable from one branch but not another." That is why <code>git log</code> is more than just a chronological journal — it is a graph traversal tool with different views into history.</p>
 
 <h3>Seeing git log in practice</h3>
-<p>Sticking with the diverge-and-merge example above: say <code>A</code>, <code>B</code>, and <code>C</code> are commits on <code>main</code>, and <code>D</code> is a commit on a branch called <code>feature-notes</code> that split off at <code>B</code>. In a real repository, each of these has its own hash rather than a bare letter — the examples below show the same five commits, A through E, using the short hashes Git would actually assign them. Before merging, you might want to check exactly what <code>feature-notes</code> adds that <code>main</code> does not have yet — this is the "commits reachable from one branch but not another" question from above, answered directly:</p>
+<p>Sticking with the diverge-and-merge example above: say <code>A</code>, <code>B</code>, and <code>C</code> are commits on <code>main</code>, and <code>D</code> is a commit on a branch called <code>feature-notes</code> that split off at <code>B</code>. In a real repository, each of these has its own hash rather than a bare letter — the examples below show the same five commits, A through E, using abbreviated forms of the full hashes Git would compute for them. Before merging, you might want to check exactly what <code>feature-notes</code> adds that <code>main</code> does not have yet — this is the "commits reachable from one branch but not another" question from above, answered directly:</p>
 
 <pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">main..feature-notes</span>
 <span class="out">6e2b9f4 Add release notes</span></code></pre>
 
 <p><code>main..feature-notes</code> means "commits reachable from feature-notes but not from main." Right now that is just commit D, hash <code>6e2b9f4</code>.</p>
 
-<p>Once <code>feature-notes</code> is merged into <code>main</code>, Git records the merge commit E (hash <code>8d4c7a1</code>) with both C and D as parents — exactly as in the diagram above. Run on its own, <code>git log</code> prints full detail for every reachable commit — full hash, author, date, and message:</p>
+<p>Once <code>feature-notes</code> is merged into <code>main</code>, Git records the merge commit E (hash <code>8d4c7a1</code>) with both C and D as parents — exactly as in the diagram above. Run on its own, <code>git log</code> prints full detail for every reachable commit — full hash, author, date, and message (only the three most recent are shown here; the output continues back to A):</p>
 
 <pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span>
 <span class="out">commit 8d4c7a1f9e6b3c2d5a8f1e4b7c0d9a2f5e8b1c4d (HEAD -> main)

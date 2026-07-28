@@ -33,9 +33,7 @@ fit2109-public/
 │   ├── index.html
 │   ├── week4.00-overview.html
 │   ├── week4.01-*.html
-│   ├── images/          # published diagram/screenshot images
-│   ├── context/         # source content.md + raw reference images
-│   └── workshop.pdf
+│   └── images/          # published diagram/screenshot images
 ├── week5/ ...
 └── week12/
     ├── index.html

@@ -157,12 +157,12 @@
 <span class="section-badge badge-tool">Setup — do this before your first commit</span>
 <h2>4.2 Setting Up Your Identity with <code>git config</code></h2>
 
-<p>Before you make your first commit, Git needs to know who you are. Every commit records an author name and email as part of its metadata, and that information is what shows up in <code>git log</code> and in blame annotations. Git will not invent this information for you — on most setups it will simply refuse to commit until you tell it who you are, and even on a system where it can guess an identity from your account, that guess is rarely the one you actually want recorded in your history. You set it once per machine using <code>git config</code>:</p>
+<p>Before you make your first commit, Git needs to know who you are. Every commit records an author name and email as part of its metadata, and that information is what shows up in <code>git log</code> and in blame annotations. Git will not invent this information sensibly — depending on the setup it will either refuse to commit until you tell it who you are, or fall back to guessing an identity from your account and machine name (something like <code>student@lab-pc-042</code>), which is rarely what you want permanently recorded in your history. You set it once per machine using <code>git config</code>:</p>
 
 <pre><code><span class="prompt-sym">$</span> <span class="cmd">git config</span> <span class="arg">--global user.name "Ada Lovelace"</span>
 <span class="prompt-sym">$</span> <span class="cmd">git config</span> <span class="arg">--global user.email "ada@example.com"</span></code></pre>
 
-<p>The <code>--global</code> flag stores these settings in a config file for your user account (<code>~/.gitconfig</code> on macOS/Linux), so you only need to run this once per machine, not once per repository. If you ever need a different identity for one specific project — a work email versus a personal one, for example — you can run the same commands without <code>--global</code> from inside that repository, and the local setting overrides the global one.</p>
+<p>The <code>--global</code> flag stores these settings in a config file for your user account (<code>~/.gitconfig</code> on macOS/Linux, <code>C:\Users\&lt;you&gt;\.gitconfig</code> on Windows), so you only need to run this once per machine, not once per repository. If you ever need a different identity for one specific project — a work email versus a personal one, for example — you can run the same commands without <code>--global</code> from inside that repository, and the local setting overrides the global one.</p>
 
 <h3>Checking what Git already knows</h3>
 <p>You can check what Git currently has recorded with:</p>
