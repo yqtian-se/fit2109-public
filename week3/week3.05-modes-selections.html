@@ -157,7 +157,7 @@
 <p>In VS Code the situation is less visibly modal, yet a similar idea still applies. The meaning of a keypress depends on whether focus is currently in the editor, the integrated terminal, the Command Palette, the search field, the Explorer, or a modal configuration overlay. So even in a largely non-modal GUI editor, you have to understand "where you are" in the interface. That awareness is part of editing fluency.</p>
 
 <h3>Selection: more than dragging with a mouse</h3>
-<p>The concept of <strong>selection</strong> is equally important, and it is not just dragging a mouse over text. VS Code emphasizes multiple selections and related editing features because repeated textual patterns are common in source code. A selection can represent a phrase to replace, a block to reindent, several repeated occurrences to edit simultaneously, or a region on which a refactoring action should operate. The editor is not just receiving characters — it is letting you define and transform structured regions of text efficiently. We come back to this directly in <a href="week3.12-multifile.html">3.12</a> with multi-cursor editing.</p>
+<p>The concept of <strong>selection</strong> is equally important, and it is not just dragging a mouse over text. VS Code emphasises multiple selections and related editing features because repeated textual patterns are common in source code. A selection can represent a phrase to replace, a block to reindent, several repeated occurrences to edit simultaneously, or a region on which a refactoring action should operate. The editor is not just receiving characters — it is letting you define and transform structured regions of text efficiently. We come back to this directly in <a href="week3.12-multifile.html">3.12</a> with multi-cursor editing.</p>
 
 <h3>Files, tabs, panes, and workspaces</h3>
 <p>It also helps to keep these four terms distinct:</p>
@@ -169,8 +169,8 @@
 </ul>
 <p>This is why side-by-side editing is about editor groups, not about duplicating the file itself — you are looking at two panes onto (possibly) two different files, not two copies of one file.</p>
 
-<h3>Language mode: text interpreted through a language model</h3>
-<p>Language support introduces a further layer. VS Code assigns files a <strong>language mode</strong>, often inferred from the filename extension, and lets you change it. This matters because language-aware features — symbol navigation, completion, formatting, refactoring — depend on language tooling. A file is not only text; it is text interpreted through some language model. That is why the same editor behaves differently with a plain text file, a Python file, or a JSON file: it is combining generic text editing with language-specific services (more in <a href="week3.09-tooling.html">3.9</a>).</p>
+<h3>Language mode: text interpreted through language-specific tooling</h3>
+<p>Language support introduces a further layer. VS Code assigns files a <strong>language mode</strong>, often inferred from the filename extension, and lets you change it. This matters because language-aware features — symbol navigation, completion, formatting, refactoring — depend on language tooling. A file is not only text; it is text interpreted through language-specific tooling. That is why the same editor behaves differently with a plain text file, a Python file, or a JSON file: it is combining generic text editing with language-specific services (more in <a href="week3.09-tooling.html">3.9</a>).</p>
 
 <div class="callout callout-note">
   <strong>Summary</strong>

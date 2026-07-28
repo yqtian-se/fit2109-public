@@ -162,7 +162,7 @@
   <tbody>
     <tr><td><strong>Question it answers</strong></td><td>"How should this code look?"</td><td>"Does anything about this code look suspicious?"</td></tr>
     <tr><td><strong>Concerned with</strong></td><td>Layout, spacing, indentation, wrapping, stylistic consistency</td><td>Unreachable code, unused imports, inconsistent names, risky-but-legal patterns</td></tr>
-    <tr><td><strong>Can it break silently?</strong></td><td>Can make code look clean while leaving logical problems untouched</td><td>Can find warnings without reformatting anything</td></tr>
+    <tr><td><strong>What it won't catch</strong></td><td>Can make code look clean while leaving logical problems untouched</td><td>Can find warnings without reformatting anything</td></tr>
   </tbody>
 </table>
 <p>In a healthy workflow, both roles are useful and complementary — a formatter and a linter are not competing tools, they answer different questions.</p>
@@ -170,7 +170,7 @@
 <h3>Where this support comes from</h3>
 <p>Language features often depend on extensions. Some capabilities ship out of the box for certain languages, but richer support usually comes from dedicated language extensions (for example, Java, Python, and C/C++ each have their own). A modern IDE-like workflow is often not a monolithic application doing everything by itself — it is an editor platform connected to a collection of language services and tools.</p>
 
-<p>VS Code's refactoring and code action system further connects tooling to code quality: Quick Fixes and refactorings are surfaced through <strong>Code Actions</strong>, and some actions can even run automatically on save. This means the editor can help you not only notice issues, but address certain categories of them in a disciplined way — organizing imports or applying a standard refactoring through the editor is usually less error-prone than manually editing several related places by hand. We look at this in more depth in <a href="week3.13-refactoring.html">3.13</a>.</p>
+<p>VS Code's refactoring and code action system further connects tooling to code quality: Quick Fixes and refactorings are surfaced through <strong>Code Actions</strong>, and some actions can even run automatically on save. This means the editor can help you not only notice issues, but address certain categories of them in a disciplined way — organising imports or applying a standard refactoring through the editor is usually less error-prone than manually editing several related places by hand. We look at this in more depth in <a href="week3.13-refactoring.html">3.13</a>.</p>
 
 <div class="callout callout-note">
   <strong>Why this matters for teams</strong>

@@ -167,15 +167,15 @@
 <p>There are two common ways to get a new file open for editing:</p>
 <ul>
   <li>In the Explorer, hover the project's root folder and click the <strong>New File</strong> icon (or right-click and choose <em>New File</em>), then type a name.</li>
-  <li>Press <span class="keycap">Ctrl</span>+<span class="keycap">N</span> for a new untitled editor, type into it, then save it — VS Code will ask where and what to name it the first time.</li>
+  <li>Press <span class="keycap">Ctrl</span>+<span class="keycap">N</span> (<span class="keycap">Cmd</span>+<span class="keycap">N</span> on macOS) for a new untitled editor, type into it, then save it — VS Code will ask where and what to name it the first time.</li>
 </ul>
 <p>To open a file that already exists, either click it in the Explorer, or use Quick Open (below) to jump to it by name instead of hunting through folders.</p>
 
 <h3>Editing is direct — there is no mode to switch</h3>
-<p>This is the biggest contrast with Vim. Click anywhere in the editor and start typing — there is no Normal/Insert distinction to think about. The trade-off is the one from <a href="week3.05-modes-selections.html">3.5</a>: VS Code's non-modal editing is more approachable at first, but the keyboard-driven precision Vim gets from combining operators and motions has to be replaced with mouse selection, multi-cursor, and menu commands instead.</p>
+<p>This is the biggest contrast with Vim. Click anywhere in the editor and start typing — there is no Normal/Insert distinction to think about. The trade-off is the one from <a href="week3.05-modes-selections.html">3.5</a>: VS Code's non-modal editing is more approachable at first, but the keyboard-driven precision Vim gets from combining operators and motions is provided differently — through keyboard shortcuts, multi-cursor editing, and Command Palette commands, covered below and in <a href="week3.11-structured-nav.html">3.11</a>.</p>
 
 <h3>Saving</h3>
-<p>Press <span class="keycap">Ctrl</span>+<span class="keycap">S</span> to save the current file. An unsaved file shows a filled dot on its tab instead of the usual close (×) icon — that dot is the same "buffer differs from file" idea from <a href="week3.04-buffers-files.html">3.4</a>, just rendered as a dot instead of an asterisk. If you'd rather not think about saving at all, <strong>File &gt; Auto Save</strong> writes changes to disk automatically after a short delay.</p>
+<p>Press <span class="keycap">Ctrl</span>+<span class="keycap">S</span> (<span class="keycap">Cmd</span>+<span class="keycap">S</span> on macOS) to save the current file. An unsaved file shows a filled dot on its tab instead of the usual close (×) icon — that dot is the "buffer differs from file" idea from <a href="week3.04-buffers-files.html">3.4</a>, made visible in the tab. If you'd rather not think about saving at all, <strong>File &gt; Auto Save</strong> writes changes to disk automatically after a short delay.</p>
 
 <h3>The Command Palette: your escape hatch</h3>
 <p>Press <span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">P</span> (<span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">P</span> on macOS, or <span class="keycap">F1</span> on either platform) to open the <strong>Command Palette</strong> and type what you want to do in plain words — "format," "toggle terminal," "organize imports." Every action in VS Code, whether or not it has a keyboard shortcut, is registered as a named command, and the Command Palette is the searchable list of all of them. You do not need to know the exact name either: it fuzzy-matches, so typing "org imp" still finds "Organize Imports."</p>
@@ -185,7 +185,7 @@
 <div class="callout callout-try">
   <strong>Try this — go find two real shortcuts</strong>
   <ol>
-    <li>Open the Command Palette and type <code>side bar</code>. Find <strong>View: Toggle Sidebar Visibility</strong> and read off the shortcut shown beside it (it should be <span class="keycap">Ctrl</span>+<span class="keycap">B</span> / <span class="keycap">Cmd</span>+<span class="keycap">B</span>) — that's the fast way to hide the Explorer and get your code full-width.</li>
+    <li>Open the Command Palette and type <code>side bar</code>. Find <strong>View: Toggle Primary Side Bar Visibility</strong> and read off the shortcut shown beside it (it should be <span class="keycap">Ctrl</span>+<span class="keycap">B</span> / <span class="keycap">Cmd</span>+<span class="keycap">B</span>) — that's the fast way to hide the Explorer and get your code full-width.</li>
     <li>Open it again and type <code>git</code>. Scroll through the list of Git commands (Commit, Push, Pull, Stage Changes, and so on) and notice how few of them have a shortcut listed at all. That gap is exactly why the Command Palette matters: for the long tail of commands nobody bothered to bind to a key, it's the <em>only</em> fast way in.</li>
   </ol>
   Your own list may differ slightly depending on your VS Code version and installed extensions — that's the point of searching it yourself rather than memorising a fixed list.

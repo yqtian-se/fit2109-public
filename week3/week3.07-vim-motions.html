@@ -170,7 +170,7 @@
   <thead><tr><th>Key</th><th>Moves to</th></tr></thead>
   <tbody>
     <tr><td><span class="keycap">w</span></td><td>the start of the next word</td></tr>
-    <tr><td><span class="keycap">b</span></td><td>the start of the previous word</td></tr>
+    <tr><td><span class="keycap">b</span></td><td>the start of the current word (or the previous word, if already at a word's start)</td></tr>
     <tr><td><span class="keycap">e</span></td><td>the end of the current or next word</td></tr>
     <tr><td><span class="keycap">0</span></td><td>the beginning of the line</td></tr>
     <tr><td><span class="keycap">^</span></td><td>the first non-blank character</td></tr>
@@ -189,7 +189,7 @@
     <tr><td><span class="keycap">x</span></td><td>Delete the character under the cursor</td></tr>
     <tr><td><span class="keycap">dd</span></td><td>Delete the whole line</td></tr>
     <tr><td><span class="keycap">yy</span></td><td>Copy ("yank") the whole line</td></tr>
-    <tr><td><span class="keycap">p</span></td><td>Paste</td></tr>
+    <tr><td><span class="keycap">p</span></td><td>Paste <em>after</em> the cursor (a yanked line is pasted on the line <em>below</em>)</td></tr>
     <tr><td><span class="keycap">u</span></td><td>Undo</td></tr>
     <tr><td><span class="keycap">Ctrl</span>+<span class="keycap">r</span></td><td>Redo</td></tr>
   </tbody>
@@ -202,6 +202,9 @@
   <li><code>d$</code> means "delete from the cursor to the end of the line"</li>
 </ul>
 <p>Many editing actions in Vim are built from <em>what to do</em> plus <em>how far to move</em> — once that idea clicks, you can compose commands you were never explicitly taught.</p>
+
+<h3>Searching within the file</h3>
+<p>Scrolling to find a name is exactly the habit this week is trying to replace. In Normal mode, type <span class="keycap">/</span> followed by the text you are looking for and press <span class="keycap">Enter</span> — the cursor jumps to the next match. Press <span class="keycap">n</span> to repeat the search forward, and <span class="keycap">N</span> to repeat it backwards. Search is itself a motion, so it composes with operators just like <code>w</code> or <code>$</code> do.</p>
 
 <h3>Minimum survival set</h3>
 <p>This is the reference to keep nearby the first few times you have to edit a file in a terminal:</p>
@@ -216,8 +219,8 @@ By words:            w b e
 Line start/end:      0   $
 Delete:              x   dd   dw
 Copy and paste:      yy   p
-Undo / Redo:         u   Ctrl-r
-Search:              /pattern   n
+Undo / Redo:         u   Ctrl+r
+Search:              /pattern   n   N
 Save / quit:         :w   :q   :wq   :q!</code></pre>
 
 <div class="callout callout-try">

@@ -165,43 +165,52 @@ By words:            w b e
 Line start/end:      0   $
 Delete:              x   dd   dw
 Copy and paste:      yy   p
-Undo / Redo:         u   Ctrl-r
-Search:              /pattern   n
+Undo / Redo:         u   Ctrl+r
+Search:              /pattern   n   N
 Save / quit:         :w   :q   :wq   :q!</code></pre>
 
 <h3>VS Code: the shortcuts you'll use constantly</h3>
+<p style="font-size:0.88rem;color:#666;">Shortcuts are shown as Windows/Linux · macOS.</p>
 <div class="tool-grid">
   <div class="tool-card">
     <div class="name">Quick Open</div>
+    <div class="desc"><span class="keycap">Ctrl</span>+<span class="keycap">P</span> · <span class="keycap">Cmd</span>+<span class="keycap">P</span></div>
     <div class="desc">Jump to any file by typing its name, instead of clicking through the Explorer. The fastest way to move around a large project.</div>
   </div>
   <div class="tool-card">
     <div class="name">Command Palette</div>
+    <div class="desc"><span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">P</span> · <span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">P</span></div>
     <div class="desc">Search for and run any editor command by name — "Format Document," "Organize Imports," "Toggle Terminal" — without memorising a shortcut for each one.</div>
   </div>
   <div class="tool-card">
     <div class="name">Go to Definition</div>
-    <div class="desc">Jump from a function call straight to where it's defined. Depends on language support being installed (3.9).</div>
+    <div class="desc"><span class="keycap">F12</span> (both platforms)</div>
+    <div class="desc">Jump from a function call straight to where it's defined. Depends on language support being installed (<a href="week3.09-tooling.html">3.9</a>).</div>
   </div>
   <div class="tool-card">
     <div class="name">Find in Files</div>
-    <div class="desc">Search a whole workspace, not just the open file. Often the fastest way to start understanding an unfamiliar codebase (3.10, 3.16).</div>
+    <div class="desc"><span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">F</span> · <span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">F</span></div>
+    <div class="desc">Search a whole workspace, not just the open file. Often the fastest way to start understanding an unfamiliar codebase (<a href="week3.10-navigation.html">3.10</a>, <a href="week3.16-unfamiliar-codebase.html">3.16</a>).</div>
   </div>
   <div class="tool-card">
     <div class="name">Split Editor</div>
-    <div class="desc">Open a second file beside the first. Use it to compare a definition against a call site, or a test against the code it tests (3.12).</div>
+    <div class="desc"><span class="keycap">Ctrl</span>+<span class="keycap">\</span> · <span class="keycap">Cmd</span>+<span class="keycap">\</span></div>
+    <div class="desc">Open a second file beside the first. Use it to compare a definition against a call site, or a test against the code it tests (<a href="week3.12-multifile.html">3.12</a>).</div>
   </div>
   <div class="tool-card">
     <div class="name">Multi-cursor / Select All Occurrences</div>
-    <div class="desc">Place a cursor on every occurrence of a word in view, then edit them all at once — with every affected location visible before you type (3.12).</div>
+    <div class="desc"><span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">L</span> · <span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">L</span></div>
+    <div class="desc">Place a cursor on every occurrence of a word in view, then edit them all at once — with every affected location visible before you type (<a href="week3.12-multifile.html">3.12</a>).</div>
   </div>
   <div class="tool-card">
     <div class="name">Rename Symbol</div>
-    <div class="desc">A language-aware rename that updates every reference, not just text matches. Safer than search-and-replace for renaming a function or variable (3.13).</div>
+    <div class="desc"><span class="keycap">F2</span> (both platforms)</div>
+    <div class="desc">A language-aware rename that updates every reference, not just text matches. Safer than search-and-replace for renaming a function or variable (<a href="week3.13-refactoring.html">3.13</a>).</div>
   </div>
   <div class="tool-card">
     <div class="name">Toggle Breakpoint</div>
-    <div class="desc">Click the gutter next to a line number to pause execution there when running under the debugger (3.14).</div>
+    <div class="desc"><span class="keycap">F9</span> (both platforms)</div>
+    <div class="desc">Click the gutter next to a line number — or press <span class="keycap">F9</span> on the line — to pause execution there when running under the debugger (<a href="week3.14-debugging.html">3.14</a>).</div>
   </div>
 </div>
 
