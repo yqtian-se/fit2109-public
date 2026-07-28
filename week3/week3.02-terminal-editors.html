@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.2 — Terminal Editors: nano, Vim, and Emacs — FIT2109 Week 3</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 20px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>3.2 Terminal Editors: nano, Vim, and Emacs</h2>
+
+<p>Three terminal editors show up constantly on Unix-like systems, and each represents a different philosophy about what editing should feel like.</p>
+
+<h3>nano — small and friendly</h3>
+<p><a href="https://www.redhat.com/en/blog/getting-started-nano" target="_blank">GNU nano</a> is a small, beginner-friendly text editor. It highlights features such as undo/redo, interactive search-and-replace, auto-indentation, line numbers, word completion, file locking, backup files, and internationalisation support. That combination explains why nano is often recommended to beginners: it is preinstalled on many Unix-like systems (including macOS), it shows common shortcut hints on screen, and it does not require you to learn a deeply modal interaction model before you can edit a file successfully.</p>
+<p>In a terminal or remote session, you can type <code>nano shell.sh</code> and begin editing almost immediately, while still encountering important editor ideas such as cursor movement, search, save, and exit.</p>
+
+<figure class="fig">
+  <img src="images/week3-nano.png" alt="GNU nano editing shell.sh in a terminal, with a row of Ctrl-key shortcuts (Write Out, Read File, Where Is, Cut, Paste, Execute, Location) shown along the bottom">
+  <figcaption>nano keeps its shortcut hints on screen — you never have to memorise a command before you can use it.</figcaption>
+</figure>
+
+<h3>Vim — modal editing</h3>
+<p><a href="https://opensource.com/article/19/3/getting-started-vim" target="_blank">Vim</a> is a <strong>modal</strong> editor: text entry and command execution are separated into different modes. In Normal mode, keys are interpreted as commands. In Insert mode, keys are inserted as text. This can feel unusual at first, but it teaches an important lesson — efficient editing is not just about typing faster, it is about navigating, selecting, repeating, and transforming text with intent.</p>
+<p>Even if you never adopt Vim as your main editor, it is worth knowing enough of it to make small edits in a terminal or remote session. In this unit you are not expected to master Vim, but you should be able to open a file, switch modes, move around, make small edits, save, and quit — that is covered in <a href="week3.06-vim-basics.html">3.6</a> and <a href="week3.07-vim-motions.html">3.7</a>.</p>
+
+<h3>Emacs — an extensible environment</h3>
+<p>Emacs represents yet another philosophy. The GNU Emacs manual describes Emacs as advanced, extensible, customizable, and self-documenting, noting that it can control subprocesses, indent programs automatically, show multiple files at once, and edit remote files as though they were local. Emacs illustrates a broader point: some editors are not merely file editors but extensible working environments.</p>
+
+<figure class="fig">
+  <img src="images/week3-emacs.png" alt="Emacs editing shell.sh with a full menu bar (File, Edit, Options, Buffers, Tools, Sh-Script, Help) and its characteristic status line reading -UU-:--- shell.sh All L10 (Shell-script[bash])">
+  <figcaption>Emacs, showing its menu bar and mode line — this is what "an extensible working environment" looks like in practice, not just a file editor.</figcaption>
+</figure>
+
+<div class="ext-links">
+  <a class="ext-link" href="https://www.redhat.com/en/blog/getting-started-nano" target="_blank">Getting started with nano</a>
+  <a class="ext-link" href="https://opensource.com/article/19/3/getting-started-vim" target="_blank">Getting started with Vim</a>
+</div>
+
+<p>Terminal editing culture on Unix-like systems includes several different traditions: lightweight and beginner-friendly tools such as nano, highly efficient modal editors such as Vim, and large extensible environments such as Emacs. Understanding this landscape helps you interpret why different developers have such different editing habits — nobody is "wrong," they are optimising for different things.</p>
+
+<div class="callout callout-fun">
+  <strong>Editors and strong opinions</strong>
+  You will meet developers with genuinely strong feelings about which editor is "correct." Treat that as a sign that editor choice is part of professional identity, not evidence that one tool is objectively best for every task.
+</div>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 3 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
