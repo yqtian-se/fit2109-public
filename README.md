@@ -10,6 +10,7 @@ Author: [Dr. Yongqiang Tian](https://yqtian.com) · [Unit handbook](https://hand
 |------|-------|-------|
 | [Week 1](week1/index.html) | Introduction to the Shell | 14 pre-reading slides |
 | [Week 2](week2/index.html) | Shell Evaluation, Scripting, and Remote Access | 14 pre-reading slides |
+| [Week 3](week3/index.html) | Editor / Modern IDE | 18 pre-reading slides |
 | [Week 4](week4/index.html) | Version Control with Git: Foundations | 13 pre-reading slides |
 | [Week 5](week5/index.html) | Version Control with Git: Collaboration & History | 10 pre-reading slides |
 | [Week 6](week6/index.html) | Virtual Machines, Containers & Package Management | 13 pre-reading slides |

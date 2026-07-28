@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 3 Pre-Reading: Editor / Modern IDE — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Week 3: Editor / Modern IDE</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol>
+      <li>Explain what an editor actually manages underneath the interface: files, buffers, modes, and selections.</li>
+      <li>Open a file in Vim or VS Code, make a small edit, save, and quit — without panicking.</li>
+      <li>Navigate an unfamiliar project by name, symbol, and text search rather than by scrolling.</li>
+      <li>Choose the right tool for a repeated change: direct edit, multi-cursor, search-and-replace, or a language-aware refactor.</li>
+      <li>Explain why editors support remote development, and use that to start reading a codebase you did not write.</li>
+    </ol>
+  </div>
+</div>
+
+<h3>A scenario</h3>
+<p>You've just been added to a group project repository. Forty-odd files, no README worth trusting, and a bug report that just says "crashes sometimes." You did not write any of it. Where do you even start?</p>
+<p>The instinct is to open a random file and start reading top to bottom, hoping understanding will arrive eventually. It rarely does. What actually works is treating the editor as more than a typing surface — as a set of tools for finding the likely entry point, searching for a name from the error message, comparing a call site against its definition side by side, and stepping through the program to watch it fail instead of guessing why.</p>
+<p>That is what this week is really about. Not "how do I type code faster," but "how do I use an editor to understand and change code I didn't write, safely and efficiently." We will use Vim as the terminal example and VS Code as the GUI/IDE example, but the underlying ideas — buffers, modes, navigation, refactoring, debugging — show up in some form in almost every serious editor you will ever use.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  When you save a file in an editor, what exactly changes — and what was different a moment before you pressed save? Keep this question in mind for <a href="week3.04-buffers-files.html">3.4 — Buffers vs Files</a>.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 3 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3.14 — Debugging in the Editor — FIT2109 Week 3</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Core material</span>
+<h2>3.14 Debugging in the Editor</h2>
+
+<p>Up to this point, "understanding what a program does" has meant reading it — navigating definitions, searching for names, tracing structure. But an editor connected to language tooling can also let you <em>watch</em> a program while it runs, one step at a time, instead of only reading it standing still. Many students' first debugging tool is a <code>print</code> statement sprinkled through the code and removed again afterwards. A modern editor's built-in debugger replaces most of that guesswork with a direct view of the program's live state — one of the clearest ways a plain text editor differs from an IDE.</p>
+
+<h3>Breakpoints: pausing a running program</h3>
+<p>The central idea is the <strong>breakpoint</strong>: a marked line where, if execution reaches it, the program should pause instead of continuing. In VS Code you set one by clicking in the gutter next to a line number, then start the file under the debugger from the Run and Debug view rather than running it normally. When the paused line is reached, the editor highlights it, and the running program is frozen at exactly that point — every variable still holding whatever value it had at that moment.</p>
+
+<div class="diagram">
+  <svg width="640" height="230" viewBox="0 0 640 230" xmlns="http://www.w3.org/2000/svg" font-family="'SF Mono','Fira Code',Consolas,monospace">
+    <rect width="640" height="230" rx="10" fill="#1e1e2e"/>
+    <!-- Code with breakpoint -->
+    <rect x="20" y="16" width="330" height="198" rx="6" fill="#11111b"/>
+    <text x="30" y="34" fill="#8a8aa8" font-size="10">app.py — paused</text>
+    <text x="34" y="56" fill="#cdd6f4" font-size="11">def total(items):</text>
+    <circle cx="38" cy="70" r="5" fill="#f38ba8"/>
+    <text x="34" y="76" fill="#f9e2af" font-size="11">    s = 0</text>
+    <rect x="30" y="82" width="310" height="16" fill="#313244"/>
+    <text x="34" y="94" fill="#a6e3a1" font-size="11">→   for x in items:</text>
+    <text x="34" y="112" fill="#cdd6f4" font-size="11">        s += x</text>
+    <text x="34" y="130" fill="#cdd6f4" font-size="11">    return s</text>
+    <text x="34" y="152" fill="#6c7086" font-size="10">● = breakpoint    → = execution paused here</text>
+    <!-- Debug panels -->
+    <rect x="366" y="16" width="254" height="60" rx="6" fill="#11111b"/>
+    <text x="376" y="32" fill="#89dceb" font-size="10" font-weight="bold">VARIABLES</text>
+    <text x="376" y="48" fill="#cdd6f4" font-size="10">items = [4, 7, 2]</text>
+    <text x="376" y="62" fill="#cdd6f4" font-size="10">s = 0</text>
+    <rect x="366" y="84" width="254" height="60" rx="6" fill="#11111b"/>
+    <text x="376" y="100" fill="#f9e2af" font-size="10" font-weight="bold">CALL STACK</text>
+    <text x="376" y="116" fill="#cdd6f4" font-size="10">total(items)</text>
+    <text x="376" y="130" fill="#6c7086" font-size="10">main()</text>
+    <rect x="366" y="152" width="254" height="60" rx="6" fill="#11111b"/>
+    <text x="376" y="168" fill="#c586c0" font-size="10" font-weight="bold">WATCH</text>
+    <text x="376" y="184" fill="#cdd6f4" font-size="10">s == 0 : true</text>
+  </svg>
+  <figcaption>A paused breakpoint: the Variables, Call Stack, and Watch panes all describe the same frozen moment</figcaption>
+</div>
+
+<h3>Reading a paused program</h3>
+<p>Once paused, three panes do most of the work:</p>
+<ul>
+  <li>The <strong>Variables</strong> pane shows the names and values in the current scope, so you can check whether a value is what you expected rather than guessing from a printed line.</li>
+  <li>The <strong>Call Stack</strong> pane shows the chain of function calls that led to where execution stopped — answering not just "what is this value," but "how did we get here."</li>
+  <li>The <strong>Watch</strong> pane lets you add your own expressions, so a value you care about stays visible as you continue stepping, instead of re-inspecting it manually each time.</li>
+</ul>
+
+<h3>Stepping through execution</h3>
+<table class="key-table">
+  <thead><tr><th>Control</th><th>Shortcut (all platforms)</th><th>Effect</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Continue</strong></td><td><span class="keycap">F5</span></td><td>Run until the next breakpoint</td></tr>
+    <tr><td><strong>Step Over</strong></td><td><span class="keycap">F10</span></td><td>Run the current line without descending into any function it calls</td></tr>
+    <tr><td><strong>Step Into</strong></td><td><span class="keycap">F11</span></td><td>Follow execution into a called function to see what happens inside it</td></tr>
+    <tr><td><strong>Step Out</strong></td><td><span class="keycap">Shift</span>+<span class="keycap">F11</span></td><td>Finish the current function and return to wherever it was called from</td></tr>
+  </tbody>
+</table>
+<p>Choosing between them is itself a skill: stepping into every function call quickly becomes overwhelming, so knowing when to step over versus step into is part of debugging efficiently rather than exhaustively.</p>
+
+<h3>Conditional breakpoints and logpoints</h3>
+<p>Two refinements make breakpoints more practical than an all-or-nothing pause. A <strong>conditional breakpoint</strong> only pauses when an expression you supply evaluates to true — useful when a bug only appears on, say, the hundredth iteration of a loop rather than the first. A <strong>logpoint</strong> prints a message to the console when hit, without pausing execution and without needing a <code>print</code> statement added to (and later removed from) the source itself. Both exist because pausing on every single pass through a loop is rarely what you actually want.</p>
+
+<p>While paused, the <strong>Debug Console</strong> also acts as a small REPL scoped to the current stopped state: you can type an expression and see its value immediately, which is often faster than adding a watch or restarting the whole program to check one thing. Getting a debugger to start at all usually depends on a launch configuration and, for most languages, a language-specific debugger extension — the same way linting and formatting in <a href="week3.09-tooling.html">3.9</a> depend on installed language tooling rather than existing generically in every editor.</p>
+
+<div class="callout callout-note">
+  <strong>This vs. Week 8</strong>
+  This page is about the mechanics of the tool: how to set a breakpoint, read the paused state, and step through code. <a href="../week8/index.html">Week 8</a> is about the mindset of debugging: how to form a hypothesis about a bug, reduce it to a minimal reproducible example, and reason systematically instead of randomly. The debugger is what lets you observe a program's state directly; knowing what to do with that observation is a separate, and arguably harder, skill that Week 8 builds on top of it.
+</div>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 3 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
