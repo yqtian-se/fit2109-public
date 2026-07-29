@@ -121,6 +121,23 @@
 
 <p>This pattern is common when running tools that read their configuration from environment variables — for example, setting <code>PYTHONPATH</code> or <code>FLASK_ENV</code> for a single test run without permanently changing your shell environment.</p>
 
+<h3>Command substitution</h3>
+<p>A variable does not have to be typed by hand — <code>$(command)</code> runs a command and substitutes its output into the line. This is how scripts capture a command's result for later use.</p>
+
+<pre><code><span class="comment"># Capture a command's output in a variable</span>
+<span class="prompt-sym">$</span> <span class="cmd">today</span>=<span class="arg">$(date +%F)</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"Backup name: logs-$today.tar"</span>
+<span class="out">Backup name: logs-2026-07-29.tar</span>
+
+<span class="comment"># Or substitute directly inside another command</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"This folder has $(ls | wc -l) entries"</span>
+<span class="out">This folder has 7 entries</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Quote it like any other expansion</strong>
+  The output of <code>$(...)</code> word-splits exactly like an unquoted variable does. Write <code>"$(command)"</code> when the output could contain spaces — the same habit as <code>"$file"</code>.
+</div>
+
 <h3>Important built-in environment variables</h3>
 
 <table class="key-table">
