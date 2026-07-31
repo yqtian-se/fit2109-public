@@ -84,13 +84,13 @@
     <tr>
       <td>5</td>
       <td><strong>Word splitting</strong></td>
-      <td>Any unquoted result from the above expansions is split on whitespace (or <code>$IFS</code> characters). This is how a variable holding spaces can silently break a command.</td>
-      <td><code>dir="my files"</code>; <code>ls $dir</code> → splits into <code>ls my</code> and <code>files</code>.</td>
+      <td>After an unquoted expansion, the shell may divide the resulting text into separate arguments. By default it splits at spaces, tabs, and newlines. These separators are stored in <code>$IFS</code>, the <strong>Internal Field Separator</strong>.</td>
+      <td><code>dir="my files"</code>; <code>ls $dir</code> → <code>ls</code> receives two arguments: <code>my</code> and <code>files</code>.</td>
     </tr>
     <tr>
       <td>6</td>
       <td><strong>Filename (glob) expansion</strong></td>
-      <td>Unquoted patterns containing <code>*</code>, <code>?</code>, or <code>[...]</code> are replaced with matching filenames.</td>
+      <td>A <strong>glob</strong> is a filename pattern that uses wildcard characters such as <code>*</code>, <code>?</code>, or <code>[...]</code>. The shell replaces an unquoted glob with the matching filenames.</td>
       <td><code>ls *.txt</code> → <code>ls notes.txt summary.txt</code></td>
     </tr>
     <tr>
@@ -107,17 +107,22 @@
   Word splitting (stage 5) happens <em>after</em> variable expansion (stage 2). This means a variable that contains spaces will be split into multiple arguments — unless you quote it. <code>ls $dir</code> and <code>ls "$dir"</code> can produce completely different results when <code>dir</code> contains a space.
 </div>
 
-<h3>Seeing each stage in action</h3>
-<p>The following example traces through these evaluation stages for a single command:</p>
+<h3>Seeing word splitting clearly</h3>
+<p>An <strong>argument</strong> is one separate input value passed to a command. <code>printf 'argument: &lt;%s&gt;\n'</code> prints one line for every argument it receives, and the angle brackets make each argument's boundary visible:</p>
 
-<pre><code><span class="comment"># Setup</span>
-<span class="prompt-sym">$</span> <span class="cmd">dir</span>=<span class="arg">"Week 2 Materials"</span>
-<span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p "$dir"</span>
-<span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">"$dir/notes.txt" "$dir/errors log.txt"</span>
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">label</span>=<span class="arg">"Week 2 Materials"</span>
 
-<span class="comment"># What does the shell actually pass to ls?</span>
-<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">$dir</span>          <span class="comment"># split: ls sees "Week" and "2 Materials" — two arguments</span>
-<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">"$dir"</span>        <span class="comment"># quoted: ls sees one argument "Week 2 Materials"</span></code></pre>
+<span class="comment"># Unquoted: the expanded value is split into three arguments</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'argument: &lt;%s&gt;\n'</span> <span class="arg">$label</span>
+<span class="out">argument: &lt;Week&gt;
+argument: &lt;2&gt;
+argument: &lt;Materials&gt;</span>
+
+<span class="comment"># Quoted: the expanded value remains one argument</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'argument: &lt;%s&gt;\n'</span> <span class="arg">"$label"</span>
+<span class="out">argument: &lt;Week 2 Materials&gt;</span></code></pre>
+
+<p>You rarely need to change <code>$IFS</code>. The important rule is that an unquoted expansion can be split at its separators, whereas double quotes preserve the expanded value as one argument.</p>
 
 <h3>Arithmetic expansion</h3>
 <p>Arithmetic expansion evaluates an integer expression and substitutes the result. It is useful for counters, offsets, and simple calculations directly in the shell — no external tool needed.</p>
@@ -133,8 +138,11 @@
 <span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"Next: $((count + 1))"</span>
 <span class="out">Next: 5</span>
 
-<span class="comment"># Increment a counter in a script</span>
-<span class="cmd">errors</span>=<span class="arg">$((errors + 1))</span></code></pre>
+<span class="comment"># Increment a counter in a script and show the new value</span>
+<span class="prompt-sym">$</span> <span class="cmd">errors</span>=<span class="arg">0</span>
+<span class="prompt-sym">$</span> <span class="cmd">errors</span>=<span class="arg">$((errors + 1))</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$errors"</span>
+<span class="out">1</span></code></pre>
 
 <h3>Command substitution</h3>
 <p>Command substitution runs a command and inserts its output into the command line. The result is subject to word splitting unless quoted.</p>
