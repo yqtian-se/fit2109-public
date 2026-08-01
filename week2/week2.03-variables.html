@@ -47,27 +47,57 @@
 <span class="section-badge badge-concept">Core material</span>
 <h2>2.3 Variables and the Environment</h2>
 
-<p>The shell distinguishes between two kinds of variables: <strong>shell variables</strong>, which exist only in the current shell session, and <strong>environment variables</strong>, which are passed on to every child process the shell launches. Understanding the difference explains why tools like Python, make, or other scripts can or cannot see values you set at the command line.</p>
+<p>The shell stores variables for its own use. A <strong>shell variable</strong> remains inside the current shell. When you mark that variable with <code>export</code>, the shell also includes it in the <strong>environment</strong> copied to each child process it launches. Understanding this distinction explains why tools like Python, make, or other scripts can or cannot see values you set at the command line.</p>
 
 <h3>Shell variables vs environment variables</h3>
 
-<pre><code><span class="comment"># Shell variable: only visible in this shell</span>
-<span class="prompt-sym">$</span> <span class="cmd">course</span>=<span class="arg">FIT2109</span>
-<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$course"</span>
+<p>The difference is determined by <code>export</code>, not by whether the name uses uppercase or lowercase letters. Each row below assumes that <code>COURSE</code> was not already set:</p>
+
+<table class="key-table">
+  <thead><tr><th>Pattern</th><th>Current shell afterward</th><th>Child processes</th><th>Lifetime</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>COURSE=FIT2109</code></td>
+      <td>Can use <code>$COURSE</code>.</td>
+      <td>Do not receive it.</td>
+      <td>Until it is unset or the shell exits.</td>
+    </tr>
+    <tr>
+      <td><code>export COURSE=FIT2109</code></td>
+      <td>Can use <code>$COURSE</code>.</td>
+      <td>Receive a copy of it.</td>
+      <td>Until it is unset or the shell exits.</td>
+    </tr>
+    <tr>
+      <td><code>COURSE=FIT2109 env</code></td>
+      <td><code>COURSE</code> is not kept.</td>
+      <td>Only <code>env</code>, and any process it starts, receives it.</td>
+      <td>For this one command.</td>
+    </tr>
+  </tbody>
+</table>
+
+<pre><code><span class="comment"># Start with COURSE unset</span>
+<span class="prompt-sym">$</span> <span class="cmd">unset</span> <span class="arg">COURSE</span>
+
+<span class="comment"># Shell variable: visible in this shell</span>
+<span class="prompt-sym">$</span> <span class="cmd">COURSE</span>=<span class="arg">FIT2109</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$COURSE"</span>
 <span class="out">FIT2109</span>
 
 <span class="comment"># Child process does NOT inherit it yet</span>
-<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $course"'</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $COURSE"'</span>
 <span class="out">Child sees: </span>
 
-<span class="comment"># export promotes it to the environment</span>
-<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">course</span>
-<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $course"'</span>
+<span class="comment"># export marks the same variable for child processes</span>
+<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">COURSE</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $COURSE"'</span>
 <span class="out">Child sees: FIT2109</span></code></pre>
 
 <div class="callout callout-note">
   <strong>Why does the child start out empty?</strong>
   When a shell launches a child process, it copies its <em>environment</em> — the set of exported variables — into the child. Shell-local variables are never copied. The child has its own separate memory and cannot see anything the parent did not explicitly export.
+  Uppercase names such as <code>PATH</code> and <code>COURSE</code> are only a convention for commonly exported variables; capitalization does not make a variable an environment variable.
 </div>
 
 <h3>Useful ways to work with variables</h3>
@@ -112,12 +142,13 @@
 <p>You can set an environment variable for a single command by placing <code>NAME=value</code> before the command name. The variable is visible to that command and its children — but not to your shell, and not to the next command you run.</p>
 
 <pre><code><span class="comment"># Set COURSE only for this one invocation of env</span>
+<span class="prompt-sym">$</span> <span class="cmd">unset</span> <span class="arg">COURSE</span>       <span class="comment"># start clean after the earlier example</span>
 <span class="prompt-sym">$</span> <span class="cmd">COURSE</span>=<span class="arg">FIT2109</span> <span class="cmd">env</span> <span class="arg">| grep '^COURSE='</span>
 <span class="out">COURSE=FIT2109</span>
 
 <span class="comment"># Back in the parent shell: COURSE is not set</span>
-<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$COURSE"</span>
-<span class="out">             </span><span class="comment"># empty</span></code></pre>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'Parent sees: &lt;%s&gt;\n' "$COURSE"</span>
+<span class="out">Parent sees: &lt;&gt;</span></code></pre>
 
 <p>This pattern is common when running tools that read their configuration from environment variables — for example, setting <code>PYTHONPATH</code> or <code>FLASK_ENV</code> for a single test run without permanently changing your shell environment.</p>
 
@@ -138,17 +169,17 @@
   The output of <code>$(...)</code> word-splits exactly like an unquoted variable does. Write <code>"$(command)"</code> when the output could contain spaces — the same habit as <code>"$file"</code>.
 </div>
 
-<h3>Important built-in environment variables</h3>
+<h3>Common environment variables and shell values</h3>
 
 <table class="key-table">
-  <thead><tr><th>Variable</th><th>What it holds</th></tr></thead>
+  <thead><tr><th>Variable</th><th>Kind</th><th>What it holds</th></tr></thead>
   <tbody>
-    <tr><td><code>$HOME</code></td><td>Your home directory path (<code>/home/student</code>).</td></tr>
-    <tr><td><code>$PATH</code></td><td>Colon-separated list of directories the shell searches for commands.</td></tr>
-    <tr><td><code>$USER</code></td><td>Your username.</td></tr>
-    <tr><td><code>$PWD</code></td><td>The current working directory (same as <code>pwd</code> output).</td></tr>
-    <tr><td><code>$SHELL</code></td><td>The path to your login shell (<code>/bin/bash</code>, <code>/bin/zsh</code>, etc.).</td></tr>
-    <tr><td><code>$?</code></td><td>Exit status of the last command (covered in section 2.4).</td></tr>
+    <tr><td><code>$HOME</code></td><td>Environment variable</td><td>Your home directory path (<code>/home/student</code>).</td></tr>
+    <tr><td><code>$PATH</code></td><td>Environment variable</td><td>Colon-separated list of directories the shell searches for commands.</td></tr>
+    <tr><td><code>$USER</code></td><td>Environment variable</td><td>Your username.</td></tr>
+    <tr><td><code>$PWD</code></td><td>Environment variable maintained by the shell</td><td>The current working directory (same as <code>pwd</code> output).</td></tr>
+    <tr><td><code>$SHELL</code></td><td>Environment variable</td><td>The path to your login shell (<code>/bin/bash</code>, <code>/bin/zsh</code>, etc.).</td></tr>
+    <tr><td><code>$?</code></td><td>Special shell parameter</td><td>Exit status of the last command (covered in section 2.4). It is not exported and does not appear in <code>env</code>.</td></tr>
   </tbody>
 </table>
 
