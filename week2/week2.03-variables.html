@@ -51,53 +51,50 @@
 
 <h3>Shell variables vs environment variables</h3>
 
-<p>The difference is determined by <code>export</code>, not by whether the name uses uppercase or lowercase letters. Each row below assumes that <code>COURSE</code> was not already set:</p>
+<p>The difference is determined by <code>export</code>, not by whether the name uses uppercase or lowercase letters. The examples use a different name for each case, so you can run them in order without one example affecting another:</p>
 
 <table class="key-table">
   <thead><tr><th>Pattern</th><th>Current shell afterward</th><th>Child processes</th><th>Lifetime</th></tr></thead>
   <tbody>
     <tr>
-      <td><code>COURSE=FIT2109</code></td>
-      <td>Can use <code>$COURSE</code>.</td>
+      <td><code>LOCAL_COURSE=FIT2109</code></td>
+      <td>Can use <code>$LOCAL_COURSE</code>.</td>
       <td>Do not receive it.</td>
       <td>Until it is unset or the shell exits.</td>
     </tr>
     <tr>
-      <td><code>export COURSE=FIT2109</code></td>
-      <td>Can use <code>$COURSE</code>.</td>
+      <td><code>export SHARED_COURSE=FIT2109</code></td>
+      <td>Can use <code>$SHARED_COURSE</code>.</td>
       <td>Receive a copy of it.</td>
       <td>Until it is unset or the shell exits.</td>
     </tr>
     <tr>
-      <td><code>COURSE=FIT2109 env</code></td>
-      <td><code>COURSE</code> is not kept.</td>
+      <td><code>TEMP_COURSE=FIT2109 env</code></td>
+      <td><code>TEMP_COURSE</code> is not kept.</td>
       <td>Only <code>env</code>, and any process it starts, receives it.</td>
       <td>For this one command.</td>
     </tr>
   </tbody>
 </table>
 
-<pre><code><span class="comment"># Start with COURSE unset</span>
-<span class="prompt-sym">$</span> <span class="cmd">unset</span> <span class="arg">COURSE</span>
-
-<span class="comment"># Shell variable: visible in this shell</span>
-<span class="prompt-sym">$</span> <span class="cmd">COURSE</span>=<span class="arg">FIT2109</span>
-<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$COURSE"</span>
+<pre><code><span class="comment"># Shell variable: visible in this shell</span>
+<span class="prompt-sym">$</span> <span class="cmd">LOCAL_COURSE</span>=<span class="arg">FIT2109</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$LOCAL_COURSE"</span>
 <span class="out">FIT2109</span>
 
-<span class="comment"># Child process does NOT inherit it yet</span>
-<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $COURSE"'</span>
+<span class="comment"># Child process does NOT inherit this Shell-only variable</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $LOCAL_COURSE"'</span>
 <span class="out">Child sees: </span>
 
-<span class="comment"># export marks the same variable for child processes</span>
-<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">COURSE</span>
-<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $COURSE"'</span>
+<span class="comment"># A separate exported variable is visible to child processes</span>
+<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">SHARED_COURSE=FIT2109</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo "Child sees: $SHARED_COURSE"'</span>
 <span class="out">Child sees: FIT2109</span></code></pre>
 
 <div class="callout callout-note">
   <strong>Why does the child start out empty?</strong>
   When a shell launches a child process, it copies its <em>environment</em> — the set of exported variables — into the child. Shell-local variables are never copied. The child has its own separate memory and cannot see anything the parent did not explicitly export.
-  Uppercase names such as <code>PATH</code> and <code>COURSE</code> are only a convention for commonly exported variables; capitalization does not make a variable an environment variable.
+  Uppercase names such as <code>PATH</code> and <code>SHARED_COURSE</code> are only a convention for commonly exported variables; capitalization does not make a variable an environment variable.
 </div>
 
 <h3>Useful ways to work with variables</h3>
@@ -141,13 +138,12 @@
 <h3>Per-command variable prefix</h3>
 <p>You can set an environment variable for a single command by placing <code>NAME=value</code> before the command name. The variable is visible to that command and its children — but not to your shell, and not to the next command you run.</p>
 
-<pre><code><span class="comment"># Set COURSE only for this one invocation of env</span>
-<span class="prompt-sym">$</span> <span class="cmd">unset</span> <span class="arg">COURSE</span>       <span class="comment"># start clean after the earlier example</span>
-<span class="prompt-sym">$</span> <span class="cmd">COURSE</span>=<span class="arg">FIT2109</span> <span class="cmd">env</span> <span class="arg">| grep '^COURSE='</span>
-<span class="out">COURSE=FIT2109</span>
+<pre><code><span class="comment"># Set TEMP_COURSE only for this one invocation of env</span>
+<span class="prompt-sym">$</span> <span class="cmd">TEMP_COURSE</span>=<span class="arg">FIT2109</span> <span class="cmd">env</span> <span class="arg">| grep '^TEMP_COURSE='</span>
+<span class="out">TEMP_COURSE=FIT2109</span>
 
-<span class="comment"># Back in the parent shell: COURSE is not set</span>
-<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'Parent sees: &lt;%s&gt;\n' "$COURSE"</span>
+<span class="comment"># Back in the parent shell: TEMP_COURSE is not set</span>
+<span class="prompt-sym">$</span> <span class="cmd">printf</span> <span class="arg">'Parent sees: &lt;%s&gt;\n' "$TEMP_COURSE"</span>
 <span class="out">Parent sees: &lt;&gt;</span></code></pre>
 
 <p>This pattern is common when running tools that read their configuration from environment variables — for example, setting <code>PYTHONPATH</code> or <code>FLASK_ENV</code> for a single test run without permanently changing your shell environment.</p>
@@ -190,10 +186,10 @@
 
 <div class="callout callout-try">
   <strong>Try this</strong>
-  <pre><code><span class="prompt-sym">$</span> <span class="cmd">GREETING</span>=<span class="arg">hello</span> <span class="cmd">bash</span> <span class="arg">-c 'echo $GREETING'</span>
-<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$GREETING"</span>          <span class="comment"># still empty in this shell</span>
-<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">GREETING=hello</span>
-<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo $GREETING'</span>  <span class="comment"># now visible</span></code></pre>
+  <pre><code><span class="prompt-sym">$</span> <span class="cmd">ONE_TIME_GREETING</span>=<span class="arg">hello</span> <span class="cmd">bash</span> <span class="arg">-c 'echo $ONE_TIME_GREETING'</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"$ONE_TIME_GREETING"</span>          <span class="comment"># empty in this shell</span>
+<span class="prompt-sym">$</span> <span class="cmd">export</span> <span class="arg">SHARED_GREETING=hello</span>
+<span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">-c 'echo $SHARED_GREETING'</span>       <span class="comment"># visible to the child</span></code></pre>
   What is the difference between the first and last <code>bash -c</code> calls?
 </div>
 
