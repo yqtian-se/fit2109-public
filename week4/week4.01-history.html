@@ -188,8 +188,8 @@
 
 <p><strong>3. It supports coordination</strong> — multiple people can work on the same project while preserving a detailed record of how their changes relate to each other. Even in an individual project, Git is valuable because it helps you break work into meaningful, reviewable steps instead of treating the project as a single undifferentiated blob of files.</p>
 <div class="fig">
-  <img src="images/week4-coordination-diagram.png" alt="Two collaborators, Alice and Bob, each committing on their own line of work alongside the main line, with both lines of work later merged back into it.">
-  <figcaption>Two people can work on separate lines of development that later rejoin — each keeping their own history along the way.</figcaption>
+  <img src="images/week4-coordination-diagram.png" alt="Two collaborators, Alice and Bob, each committing on their own branch off main. Bob's branch merges back into main first, creating one merge commit with two parents; Alice's branch merges in afterwards, creating a second, separate two-parent merge commit.">
+  <figcaption>Two people can work on separate lines of development that later rejoin — each merge is its own commit with exactly two parents, one at a time.</figcaption>
 </div>
 
 <h3>Snapshots, not diffs</h3>
