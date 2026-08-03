@@ -52,7 +52,7 @@
 </div>
 
 <h3>A scenario</h3>
-<p>It is 11 pm. You wrote a script to back up files from a project folder called <code>Week 2 Materials</code>. The script ran without errors — or so you thought. You check the backup directory: it is empty. You run the script again with some extra <code>echo</code> calls and realise the problem: your variable <code>dir</code> holds the value <code>Week 2 Materials</code>, but because you wrote <code>ls $dir</code> instead of <code>ls "$dir"</code>, the shell split it into two separate arguments — <code>ls Week</code> and <code>2</code> — neither of which matched anything. The backup command never saw the right path.</p>
+<p>It is 11 pm. You wrote a script to back up files from a project folder called <code>Week 2 Materials</code>. The script ran without errors — or so you thought. You check the backup directory: it is empty. You run the script again with some extra <code>echo</code> calls and realise the problem: your variable <code>dir</code> holds the value <code>Week 2 Materials</code>, but because you wrote <code>ls $dir</code> instead of <code>ls "$dir"</code>, the shell split it into three separate arguments — <code>Week</code>, <code>2</code>, and <code>Materials</code> — none of which matched anything. The backup command never saw the right path.</p>
 <p>One missing pair of quotes. Three hours of confusion. This is what Week 2 is about: understanding exactly how the shell reads and rewrites your commands before running them, so that surprises like this become predictable rather than mysterious. By the end of this pre-reading you will be able to look at any shell command and trace through what the shell will actually execute.</p>
 
 
