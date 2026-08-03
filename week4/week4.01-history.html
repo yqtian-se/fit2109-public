@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.1 — Version Control and Git — FIT2109 Week 4</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>4.1 Version Control and Git</h2>
+
+<p>Version control is a system for recording changes to files over time so that you can recall earlier versions, compare revisions, identify what changed, and understand who changed it. In practice, version control helps with both individual work and collaboration. Without it, you often end up relying on duplicate folders, renamed copies, or manual backups.</p>
+<p>Take a file called <code>FIT2109_Assignment_1.doc</code>. To keep an old version before making risky edits, you might duplicate it and rename the copy <code>FIT2109_Assignment_1_v2.doc</code>, then keep adding new content into it. This works for a while, but it gives you no clear history, no easy way to review what changed between versions, and no disciplined way to recover from a mistake — you are left guessing which file has which version of which change.</p>
+
+<h3>A brief history</h3>
+<p>Version control lets you record changes so that specific versions can be recalled later. These systems evolved as software projects became larger and more collaborative. Early tools such as <strong>RCS</strong> (Revision Control System) focused on managing multiple revisions of individual files, making it easier to store, retrieve, log, and merge changes over time. <strong>CVS</strong> (Concurrent Versions System) extended that idea to team-based development, keeping version history on a central server so multiple developers could work on the same codebase. <strong>Subversion (SVN)</strong> followed as a more robust centralised system, explicitly designed as a successor to CVS with better reliability and usability for larger projects.</p>
+<p>As collaboration became more distributed, systems such as <strong>BitKeeper</strong> and <strong>Mercurial</strong> emphasised local repositories, offline work, and easier branching and merging — shifting the model away from a single central server. This transition, from file-level revision tracking, to centralised team workflows, to fully distributed development, explains why modern software engineering places so much emphasis on branching, merging, and local history. The history of version control is not just a sequence of tools; it is a progression in how developers think about collaboration, change, and project history — and it sets the stage for Git.</p>
+<p>Git itself arrived in 2005. The Linux kernel community had been using BitKeeper, but lost free access to it when its licence terms changed — so <strong>Linus Torvalds</strong> wrote a replacement, taking the distributed model and making it fast enough for one of the largest collaborative codebases in the world. Git spread far beyond the kernel, and today it is the version control system almost the entire software industry has settled on.</p>
+
+<div class="ext-links">
+  <a class="ext-link" href="https://en.wikipedia.org/wiki/Revision_Control_System" target="_blank">Wikipedia: RCS</a>
+  <a class="ext-link" href="https://en.wikipedia.org/wiki/Concurrent_Versions_System" target="_blank">Wikipedia: CVS</a>
+  <a class="ext-link" href="https://en.wikipedia.org/wiki/Apache_Subversion" target="_blank">Wikipedia: Subversion</a>
+</div>
+
+<h3>What Git gives you</h3>
+<p>Git is a free and open-source <strong>distributed</strong> version control system: every collaborator holds a full copy of the project's history, not just its latest snapshot. It supports three broad needs at once.</p>
+
+<p><strong>1. It supports history</strong> — you can inspect how a project evolved rather than only seeing its latest state. Each saved point in that history is called a <strong>commit</strong>: a labelled snapshot of your project at one moment in time, kept permanently so you can come back to it later.</p>
+<div class="fig">
+  <img src="images/week4-history-diagram.png" alt="A row of commits over time, from an initial project commit through to the current HEAD on main, each labelled with its hash and message. A v1.0 marker points at the very first commit.">
+  <figcaption>Every commit is a labelled point in the project's history — including markers like <code>v1.0</code> that pin one exact point permanently (more on these later this week).</figcaption>
+</div>
+
+<p><strong>2. It supports recovery</strong> — if a change turns out to be mistaken, Git gives you structured ways to compare and revert rather than forcing you to guess what the project looked like before.</p>
+<div class="fig">
+  <img src="images/week4-recovery-diagram.png" alt="A line of commits c1 to c4 where c3 introduces a mistake; arrows show going back to an earlier commit and comparing it against later commits.">
+  <figcaption>When a commit breaks something, you can go back to before it happened and compare — instead of guessing.</figcaption>
+</div>
+
+<p><strong>3. It supports coordination</strong> — multiple people can work on the same project while preserving a detailed record of how their changes relate to each other. Even in an individual project, Git is valuable because it helps you break work into meaningful, reviewable steps instead of treating the project as a single undifferentiated blob of files.</p>
+<div class="fig">
+  <img src="images/week4-coordination-diagram.png" alt="Two collaborators, Alice and Bob, each committing on their own branch off main. Bob's branch merges back into main first, creating one merge commit with two parents; Alice's branch merges in afterwards, creating a second, separate two-parent merge commit.">
+  <figcaption>Two people can work on separate lines of development that later rejoin — each merge is its own commit with exactly two parents, one at a time.</figcaption>
+</div>
+
+<h3>Snapshots, not diffs</h3>
+<p>Git is different from many older version control systems in an important conceptual way. Rather than treating history as a simple sequence of file differences, Git treats project history as a series of <strong>snapshots</strong>. Every time you commit — that is, confirm the changes to a set of files — Git effectively takes a picture of what all your files look like at that moment and stores a reference to that snapshot. If a file has not changed, Git does not need to store it again; it reuses the earlier stored object. This "snapshot" idea affects almost everything else in Git, including how commits, branches, and merges work. It is one of the reasons Git's model can feel unusual at first, but also one of the reasons branching and merging are so powerful.</p>
+
+<h3>Distributed, not centralised</h3>
+<p>Another major feature is that Git is distributed. In a centralised model, the server is the only complete copy of the history, and users essentially work as clients of that centre. In Git, every clone contains the full Git directory and object database for the project, so each developer has a complete local repository rather than only a partial checkout. That design makes local operations such as branching, committing, and inspecting history fast, and it also means collaboration does not depend on constant network access. You can still use a shared remote repository as a focal point — that is the subject of Week 5 — but Git does not require a purely centralised mindset.</p>
+
+<div class="callout callout-fun">
+  <strong>Not just a backup tool</strong>
+  Git is a way of structuring work. A good Git workflow encourages you to make deliberate changes, inspect them, stage only what belongs together, commit them with a clear purpose, and use branches to develop ideas without destabilising the main line of work. A commit is both a technical snapshot and an explanation of intent. A branch is both a line of development and a way to keep experimental work separate from stable work.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

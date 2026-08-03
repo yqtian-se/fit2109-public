@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.4 — Commits, Snapshots, and Git History as a DAG — FIT2109 Week 4</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>4.4 Commits, Snapshots, and Git History as a DAG</h2>
+
+<p>A commit in Git is best understood as a <strong>snapshot plus metadata</strong>. When you make a commit, Git stores a commit object containing a pointer to the snapshot of the content you staged, along with metadata such as author name, email, message, and pointers to the commit or commits that came before it. For an initial commit there are zero parents, for a normal commit there is one parent, and for a <strong>merge commit</strong> there can be multiple parents — a merge commit is one that ties two lines of development back together, shown a little later in this section. Each commit is a node that points backward to earlier commits — this is the foundation of Git history.</p>
+
+<h3>Why "DAG"?</h3>
+<p>This is why it is useful to describe Git history as a <strong>directed acyclic graph (DAG)</strong>. That structure of commits is <em>directed</em> because the pointers go from newer commits to older parent commits, and it is <em>acyclic</em> because commits do not loop back around to become their own ancestors. Git history diagrams are always described in terms of lines of development diverging and reconverging — exactly the behaviour a DAG is meant to represent.</p>
+
+<p>A simple linear history might look like this:</p>
+<pre><code><span class="out">A -- B -- C</span></code></pre>
+<p>Here, commit C points to parent B, and B points to parent A. A branch name such as <code>main</code> is not the history itself — it is just a label pointing to one particular commit in that history. When you make another commit, the branch label moves forward to the new commit. A branch is a lightweight movable pointer to one of the commits.</p>
+
+<p>A more interesting history with branching and merging might look like this:</p>
+<pre><code><span class="out">A -- B -- C ------ E
+       \          /
+        D --------</span></code></pre>
+<p>In this example, work diverged after B. One line of work continued to C; another created D; then the two were merged into E. When two lines of development reconverge, the merge commit has more than one parent — this means E can point to both C and D. That single fact explains why Git history is not just a list; it is a graph of relationships between snapshots.</p>
+
+<p>The <code>git log</code> command is one of the main tools for reading this graph. It lists commits that are reachable by following parent links from the given commit or commits, and can answer questions such as "commits reachable from one branch but not another." That is why <code>git log</code> is more than just a chronological journal — it is a graph traversal tool with different views into history.</p>
+
+<h3>Seeing git log in practice</h3>
+<p>Sticking with the diverge-and-merge example above: say <code>A</code>, <code>B</code>, and <code>C</code> are commits on <code>main</code>, and <code>D</code> is a commit on a branch called <code>feature-notes</code> that split off at <code>B</code>. In a real repository, each of these has its own hash rather than a bare letter — the examples below show the same five commits, A through E, using abbreviated forms of the full hashes Git would compute for them. Before merging, you might want to check exactly what <code>feature-notes</code> adds that <code>main</code> does not have yet — this is the "commits reachable from one branch but not another" question from above, answered directly:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">main..feature-notes</span>
+<span class="out">6e2b9f4 Add release notes</span></code></pre>
+
+<p><code>main..feature-notes</code> means "commits reachable from feature-notes but not from main." Right now that is just commit D, hash <code>6e2b9f4</code>.</p>
+
+<p>Once <code>feature-notes</code> is merged into <code>main</code>, Git records the merge commit E (hash <code>8d4c7a1</code>) with both C and D as parents — exactly as in the diagram above. Run on its own, <code>git log</code> prints full detail for every reachable commit — full hash, author, date, and message (only the three most recent are shown here; the output continues back to A):</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span>
+<span class="out">commit 8d4c7a1f9e6b3c2d5a8f1e4b7c0d9a2f5e8b1c4d (HEAD -> main)
+Merge: 1c8f5a3 6e2b9f4
+Author: Ada Lovelace &lt;ada@example.com&gt;
+Date:   Thu May 16 12:00:00 2024 +0000
+
+    Merge branch 'feature-notes'
+
+commit 6e2b9f4a3d7c1e8b5f2a9d4c7e1b8f5a2d9c6e3b (feature-notes)
+Author: Ada Lovelace &lt;ada@example.com&gt;
+Date:   Wed May 15 16:40:00 2024 +0000
+
+    Add release notes
+
+commit 1c8f5a3e7b4d9c2f6a1e8d5b3c7f4a9e2d6b8c1f
+Author: Ada Lovelace &lt;ada@example.com&gt;
+Date:   Wed May 15 15:00:00 2024 +0000
+
+    Update README</span></code></pre>
+
+<p>That much detail per commit is often more than you need. <code>--oneline</code> condenses each commit to its abbreviated hash and message, and adding <code>--graph --decorate --all</code> draws the branch and merge structure with ASCII art — this is about as close as you can get to literally seeing the DAG on screen:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">--oneline --graph --decorate --all</span>
+<span class="out">*   8d4c7a1 (HEAD -> main) Merge branch 'feature-notes'
+|\
+| * 6e2b9f4 (feature-notes) Add release notes
+* | 1c8f5a3 Update README
+|/
+* 4b7e2d8 Add shared setup
+* 9f3a1c2 Initial commit</span></code></pre>
+
+<p>Notice the shape: every commit is marked with a <code>*</code>, while the <code>|</code>, <code>\</code>, and <code>/</code> characters are just connecting lines. Matched against the diagram above, <code>9f3a1c2</code> is A, <code>4b7e2d8</code> is B, <code>1c8f5a3</code> is C, <code>6e2b9f4</code> is D, and <code>8d4c7a1</code> is E — the graph splits after B, runs down two parallel lines through C and D, and the merge commit E at the top ties them back together, exactly the "diverge, then reconverge" pattern from the plain-text diagram earlier in this section.</p>
+
+<table class="key-table">
+  <thead><tr><th style="width:21rem;">Command</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>git log</code></td><td>Full detail for every reachable commit: hash, author, date, message.</td></tr>
+    <tr><td><code>git log --oneline</code></td><td>One line per commit — short hash and message, easy to scan.</td></tr>
+    <tr><td><code>git log --oneline --graph --decorate --all</code></td><td>ASCII graph of branching and merging across every branch, not just the current one.</td></tr>
+    <tr><td><code>git log -5</code></td><td>Only the 5 most recent commits (replace 5 with any count).</td></tr>
+    <tr><td><code>git log --author="name"</code></td><td>Only commits written by a specific author.</td></tr>
+    <tr><td><code>git log branchA..branchB</code></td><td>Commits reachable from branchB but not from branchA.</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-fun">
+  <strong>Reframing history as a DAG, not a list</strong>
+  Once you see history this way, three things you already know look different. A commit is not merely "the 14th save" — it is a node in a graph of development decisions. A branch is not a separate copy of the project — it is a name pointing into that graph. A merge commit is not just "combine changes" — it is a commit whose parent structure records that two lines of work were brought together.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

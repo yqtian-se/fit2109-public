@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4.3 — The Git Repository Model — FIT2109 Week 4</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>4.3 The Git Repository Model</h2>
+
+<p>One of the most important ideas in Git is that your project is not just "a folder of files." Git distinguishes between the <strong>working tree</strong>, the <strong>staging area</strong> (also called the index), and the <strong>Git directory</strong>. The working tree is the actual files on disk for whichever version of the project you currently have open, the staging area is where Git stores information about what will go into the next commit, and the Git directory is where Git stores the project's metadata and object database.</p>
+
+<div class="fig">
+  <img src="images/week4-three-areas.png" alt="Diagram of the three main areas in Git: the Working Tree (files on your computer), the Staging Area / Index (what will go into the next commit), and the Git Directory (.git) where commits, branches, tags, config, and objects are stored. git add moves changes into the staging area; git commit records a snapshot into the Git directory; git restore and git reset move changes back.">
+  <figcaption>git add moves changes forward into the staging area; git commit records a snapshot into the Git directory. git restore and git reset move changes back the other way.</figcaption>
+</div>
+
+<h3>Three states: modified, staged, committed</h3>
+<p>Git also describes files in terms of three states. <strong>Modified</strong> means you have changed the file in the working tree but have not yet prepared that version for the next commit. <strong>Staged</strong> means you have marked the current version of that file to be included in the next commit snapshot. <strong>Committed</strong> means the data is safely stored in the local database. These are not just abstract labels — they describe where a change sits in the workflow and what Git will do with it if you commit right now.</p>
+
+<h3>Seeing the model with git status</h3>
+<p>A helpful way to see this model is with <code>git status</code>. It displays paths that differ between the index and the current <strong>HEAD</strong> commit, paths that differ between the working tree and the index, and paths in the working tree that are not tracked by Git. (HEAD is simply Git's name for whichever commit you currently have checked out, normally the tip of your current branch.) In other words, <code>git status</code> is effectively answering three questions: what is already staged for commit, what has changed but is not yet staged, and what new files are not yet tracked.</p>
+
+<div class="fig">
+  <img src="images/week4-git-status.png" alt="Annotated example output of git status, showing branch information, changes staged for commit, changes not staged for commit, and untracked files.">
+  <figcaption>git status answers three questions at once: what's staged, what's modified but unstaged, and what's untracked.</figcaption>
+</div>
+
+<h3>Why staging matters</h3>
+<p>The staging area is especially important because it allows selective commit construction. <code>git add</code> does not merely mean "start tracking this file." More precisely, it takes a snapshot of the specified content and stages that content in the index, ready for inclusion in the next commit. <code>git add</code> is better thought of as "add precisely this content to the next commit" rather than "add this file to the project." This is a major conceptual advantage over simpler models where committing means "save everything right now" — Git lets you decide what belongs together before you commit.</p>
+
+<p>A simple workflow might look like this:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git init</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"# FIT2109" &gt; README.md</span>
+<span class="prompt-sym">$</span> <span class="cmd">git status</span>
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">README.md</span>
+<span class="prompt-sym">$</span> <span class="cmd">git status</span>
+<span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Add initial README"</span></code></pre>
+
+<p>Here, <code>git init</code> creates an empty Git repository — essentially a <code>.git</code> directory with subdirectories for objects and references, plus an initial branch without commits. After you create README.md, Git sees it as untracked. After <code>git add README.md</code>, the file is staged. After <code>git commit</code>, that staged snapshot becomes part of the repository history.</p>
+
+<p>One setting is worth configuring up front: the name Git gives that first branch. Different installations of Git can default to different names for it. Since version 2.28, Git lets you fix that name explicitly, so every new repository you create starts with the same branch name regardless of machine:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git config</span> <span class="arg">--global init.defaultBranch main</span></code></pre>
+
+<p>This matches the convention used by GitHub, GitLab, and the rest of this unit's material, where the primary branch is always called <code>main</code>.</p>
+
+<div class="callout callout-fun">
+  <strong>Git's two-step save model</strong>
+  First you decide what belongs in the next snapshot by staging it. Then you actually record that snapshot with a commit. This may feel more complex than a simple "save all changes" model, but it is exactly what allows Git users to create clean, intentional history. Pause before committing and ask: what do I want the next snapshot to represent? A newly added function? A fixed bug? The answer usually determines what should be staged.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
