@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIT2109 Workshop Slides — Week 3: Editor / Modern IDE</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink2: #16213e;
+    --deep-blue: #0f3460;
+    --accent: #4361ee;
+    --blue-bar: #2e5fa3;
+    --blue-bg: #dce9f7;
+    --red-bar: #a6081a;
+    --red-bg: #fbe1e3;
+    --green-bar: #2e7d32;
+    --green-bg: #e3f2e3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #4b4b58; font-family: "Helvetica Neue", Arial, sans-serif; }
+
+  .viewport { min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 24px; }
+  .stage { transform: scale(1); transform-origin: center center; }
+
+  .slide {
+    width: 16cm; height: 9cm; background: #fff; position: relative;
+    display: none; flex-direction: column; overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+  }
+  .slide.active { display: flex; }
+
+  .slide-head { background: var(--deep-blue); color: #fff; padding: 0.3cm 0.55cm; flex-shrink: 0; }
+  .slide-head h2 { margin: 0; font-size: 19px; font-weight: 500; }
+
+  .slide-body {
+    flex: 1; padding: 0.32cm 0.6cm; display: flex; flex-direction: column;
+    justify-content: center; gap: 0.2cm; overflow: hidden;
+    font-size: 15px; color: #1a1a1a; line-height: 1.32;
+  }
+  .slide-body p { margin: 0 0 4px; }
+  .slide-body ul, .slide-body ol { margin: 2px 0 2px 18px; padding: 0; }
+  .slide-body li { margin-bottom: 3px; }
+  .tight ul { margin: 1px 0 1px 18px; }
+  .tight li { margin-bottom: 1px; font-size: 13.5px; line-height: 1.24; }
+  .legend { font-size: 12px; color: #555; margin: 0; }
+  code, .mono { font-family: "SF Mono", Consolas, "Courier New", monospace; font-size: 0.92em; }
+
+  .slide-foot { display: flex; flex-shrink: 0; height: 0.48cm; font-size: 8.5px; color: #fff; }
+  .foot-name { background: var(--ink); width: 32%; display: flex; align-items: center; padding-left: 0.4cm; }
+  .foot-course { background: var(--ink2); width: 53%; display: flex; align-items: center; justify-content: center; }
+  .foot-page { background: var(--accent); width: 15%; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.4cm; }
+
+  .block { border-radius: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.18); overflow: hidden; margin: 1px 0; }
+  .block-bar { padding: 4px 10px; font-weight: 700; font-size: 14px; color: #fff; }
+  .block-body { padding: 6px 10px; font-size: 14px; }
+  .block-blue .block-bar { background: var(--blue-bar); }
+  .block-blue .block-body { background: var(--blue-bg); }
+  .block-red .block-bar { background: var(--red-bar); }
+  .block-red .block-body { background: var(--red-bg); }
+  .block-green .block-bar { background: var(--green-bar); }
+  .block-green .block-body { background: var(--green-bg); }
+
+  .cols { display: flex; gap: 0.3cm; align-items: stretch; }
+  .cols3 { display: flex; gap: 0.24cm; align-items: stretch; }
+  .col { flex: 1; min-width: 0; }
+  .col.block { display: flex; flex-direction: column; }
+  .col.block .block-body { flex: 1; }
+
+  .center-box { text-align: center; }
+
+  .slide-title { justify-content: center; align-items: center; padding: 0.7cm 1cm; gap: 0.5cm; }
+  .title-banner {
+    background: var(--deep-blue); color: #fff; border-radius: 10px;
+    padding: 0.45cm 0.7cm; box-shadow: 0 4px 14px rgba(0,0,0,0.3); text-align: center;
+  }
+  .title-banner .t1 { font-size: 26px; margin-bottom: 4px; }
+  .title-banner .t2 { font-size: 18px; opacity: 0.92; }
+  .title-meta { text-align: center; font-size: 15px; color: #222; }
+  .title-meta .presenter { font-size: 17px; margin-bottom: 6px; }
+  .title-meta .org { font-size: 13px; color: #444; line-height: 1.5; }
+
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 2px solid #aaa; border-radius: 4px;
+    padding: 0 5px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  table.mini { width: 100%; border-collapse: collapse; font-size: 9.3px; }
+  table.mini th { background: var(--deep-blue); color: #fff; padding: 3.5px 8px; text-align: left; }
+  table.mini td { padding: 3px 8px; border-bottom: 1px solid #ddd; }
+  table.mini tr:nth-child(even) td { background: #f4f6fb; }
+
+  .qr-row { display: flex; align-items: center; gap: 0.5cm; }
+  .qr-row img { width: 2.6cm; height: 2.6cm; }
+  .qr-row .qr-cap { text-align: center; font-size: 9px; color: #444; margin-top: 4px; font-family: monospace; }
+  .qr-row .qr-col { display: flex; flex-direction: column; align-items: center; }
+  .qr-row .side { flex: 1; display: flex; flex-direction: column; gap: 0.14cm; }
+
+  .nav-ui {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.9);
+    padding: 8px 18px; border-radius: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.25);
+    font-family: -apple-system, sans-serif; z-index: 999;
+  }
+  .nav-ui button { border: none; background: var(--deep-blue); color: #fff; width: 30px; height: 30px; border-radius: 50%; font-size: 14px; cursor: pointer; }
+  .nav-ui button:hover { background: var(--accent); }
+  .nav-ui .count { font-size: 12px; color: #333; min-width: 50px; text-align: center; }
+
+  @media print {
+    html, body { background: #fff; }
+    .nav-ui { display: none !important; }
+    .viewport { min-height: 0; padding: 0; display: block; }
+    .stage { transform: none !important; }
+    .slide { display: flex !important; page-break-after: always; box-shadow: none; }
+    @page { size: 16cm 9cm; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="viewport">
+  <div class="stage" id="stage">
+
+    <!-- 1 -->
+    <section class="slide slide-title active">
+      <div class="title-banner">
+        <div class="t1">FIT2109 Computer Science Workshop</div>
+        <div class="t2">Week 3: Editor / Modern IDE</div>
+      </div>
+      <div class="title-meta">
+        <div class="presenter">Zahra Mirzamomen</div>
+        <div class="org">Department of Software Systems and Cybersecurity<br>Faculty of IT, Monash University</div>
+      </div>
+      <div class="slide-foot" style="position:absolute;bottom:0;left:0;right:0;width:100%;">
+        <div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">1/28</div>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Acknowledgement</h2></div>
+      <div class="slide-body center-box">
+        <p>I wish to acknowledge the people of the Kulin Nations, on whose land we are gathered today. I pay my respects to their Elders, past and present.</p>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">2/28</div></div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Why this workshop matters</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">This week's reading gave us the concepts</div>
+          <div class="block-body">Buffers, modes, navigation, refactoring, debugging, remote editing — as ideas you can explain.</div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">This workshop is about doing it</div>
+          <div class="block-body">Today is keystrokes, not definitions: buffers &amp; modes → editors → tooling → navigation → multi-file editing → debugging → remote.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">3/28</div></div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Learning goals</h2></div>
+      <div class="slide-body">
+        <p>By the end of this workshop, you should be able to:</p>
+        <ol>
+          <li>Explain what an editor manages: files, buffers, modes, and selections.</li>
+          <li>Understand how to work efficiently in Vim and VS Code.</li>
+          <li>Navigate an unfamiliar project by name, symbol, and text search.</li>
+          <li>Choose the right tool for a repeated change: direct edit, multi-cursor, search-and-replace, or refactor.</li>
+          <li>Explain why editors support remote development, and find an entry point in code you didn't write.</li>
+        </ol>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">4/28</div></div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Recap: editor concepts</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">The big idea from the pre-reading</div>
+          <div class="block-body">An editor is the interface between your intentions and a program's source: what you're changing lives in memory first, and only becomes real when you save. Every editor — however it looks — is built around that same idea.</div>
+        </div>
+        <div class="block block-green">
+          <div class="block-bar">Why it matters in the job</div>
+          <div class="block-body">Professionals spend far more time reading and modifying existing code than writing new code from a blank file. Fluency with your editor isn't a nice-to-have — it's what lets you spend your attention on the problem instead of on the tool.</div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">Today's goal</div>
+          <div class="block-body">Turn what you can already explain into something your hands do without thinking.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">5/28</div></div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Two families of editors</h2></div>
+      <div class="slide-body">
+        <div class="cols">
+          <div class="col block block-blue">
+            <div class="block-bar">Terminal-based</div>
+            <div class="block-body">Runs inside a terminal, no mouse required.<br><strong>Popular names:</strong> Vim, Nano, Emacs.</div>
+          </div>
+          <div class="col block block-blue">
+            <div class="block-bar">GUI-based</div>
+            <div class="block-body">A full graphical application with panels, mouse, and extensions.<br><strong>Popular names:</strong> VS Code, JetBrains IDEs.</div>
+          </div>
+        </div>
+        <p>Today we go deep on two of these: Vim, for when a GUI isn't available, and VS Code, the GUI editor you'll likely use day to day.</p>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">6/28</div></div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide">
+      <div class="slide-head"><h2>You won't always have VS Code</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Terminal editors matter because...</div>
+          <div class="block-body tight">
+            <ul>
+              <li>🖥️ <strong>Remote servers</strong> — SSH into headless Linux machines.</li>
+              <li>🐳 <strong>Containers &amp; cloud</strong> — minimal images often ship only <span class="mono">vi</span>/<span class="mono">vim</span>.</li>
+              <li>🚨 <strong>Production support</strong> — a fast fix when a service is down.</li>
+              <li>⚡ <strong>Reliable over slow networks</strong> — no heavy GUI to drag over SSH.</li>
+              <li>💼 <strong>A real professional skill</strong> — common in SWE, DevOps, sysadmin, and cybersecurity.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="block block-green">
+          <div class="block-bar">Goal</div>
+          <div class="block-body">You don't need to master Vim — you need to be able to confidently make small edits when it's the only editor available.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">7/28</div></div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Choosing a terminal editor: why Vim</h2></div>
+      <div class="slide-body">
+        <div class="cols3">
+          <div class="col block block-blue"><div class="block-bar">nano</div><div class="block-body">Easiest to start — shortcuts shown on screen. Fine for a one-line edit, but limited beyond that.</div></div>
+          <div class="col block block-blue"><div class="block-bar">Vim</div><div class="block-body">Modal editing takes practice, but it's fast, scriptable, and installed almost everywhere.</div></div>
+          <div class="col block block-blue"><div class="block-bar">Emacs</div><div class="block-body">Extremely powerful and extensible, but a much bigger investment to learn.</div></div>
+        </div>
+        <div class="block block-green">
+          <div class="block-bar">Why Vim, specifically</div>
+          <div class="block-body">It (or its ancestor <span class="mono">vi</span>) ships by default on almost every Unix-like system. Unlike nano's convenience or Emacs's depth, Vim's real advantage is that it's <em>always there</em> when you need it.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">8/28</div></div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Vim survival skills</h2></div>
+      <div class="slide-body">
+        <p>By the end of today, you should be able to:</p>
+        <div class="cols">
+          <div class="col">
+            <ul>
+              <li>✓ Open a file</li>
+              <li>✓ Understand Normal vs Insert mode</li>
+              <li>✓ Navigate efficiently through a file</li>
+              <li>✓ Search for text</li>
+            </ul>
+          </div>
+          <div class="col">
+            <ul>
+              <li>✓ Edit text (insert, delete, replace)</li>
+              <li>✓ Copy and paste (yank &amp; put)</li>
+              <li>✓ Undo and redo changes</li>
+              <li>✓ Save changes</li>
+              <li>✓ Exit Vim (with or without saving)</li>
+            </ul>
+          </div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">That's it</div>
+          <div class="block-body">If you can do these tasks, you can comfortably survive in Vim.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">9/28</div></div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Vim basics</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body">
+            <ul>
+              <li><span class="mono">vim notes.txt</span> opens the file.</li>
+              <li><span class="keycap">i</span> for Insert, <span class="keycap">Esc</span> back to Normal.</li>
+              <li><span class="mono">:w</span> saves, <span class="mono">:wq</span> saves and quits, <span class="mono">:q!</span> quits without saving changes.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">10/28</div></div>
+    </section>
+
+    <!-- 11 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Handout Activity 1: Getting comfortable in Vim (10 minutes)</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Now work on Activity 1 in the handout</div>
+          <div class="block-body">Create a new file: <span class="mono">vim newfile.txt</span>. Write a few lines, then save and quit (<span class="mono">:wq</span>). Reopen the same file, add more to it, and save and quit again.</div>
+        </div>
+        <div class="block block-green">
+          <div class="block-bar">Play around</div>
+          <div class="block-body">Keep it simple: open a file, make a basic edit, then either save and exit (<span class="mono">:wq</span>) or quit without saving (<span class="mono">:q!</span>). That's the whole loop for this activity — we'll build on it from here.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">11/28</div></div>
+    </section>
+
+    <!-- 12 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Live demo: Vim survival (continue)</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body">
+            <ul>
+              <li>Navigating through a file.</li>
+              <li><span class="mono">/word</span> + Enter searches; <span class="keycap">n</span> repeats it.</li>
+              <li>Copy and paste a line/block.</li>
+              <li>Motions combine with operators to move and edit precisely.</li>
+              <li><span class="keycap">u</span> undoes, <span class="keycap">Ctrl</span>+<span class="keycap">r</span> redoes.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">Note</div>
+          <div class="block-body">You're ready for Handout Activity 2.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">12/28</div></div>
+    </section>
+
+    <!-- 13 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Handout Activity 2: Vim survival (20 minutes)</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Now work on Activity 2 in the handout</div>
+          <div class="block-body">Open <span class="mono">vim-mission-sysinfo.sh</span> <strong>in Vim</strong>. Work down through the numbered missions in the file's comments, in order — after each one, save, exit, and run the script to see the effect, then make a backup, reopen the script again for the next mission.</div>
+        </div>
+        <div class="block block-green">
+          <div class="block-bar">Compare notes around the table</div>
+          <div class="block-body">Work through the missions individually, on your own machine. Then compare with the people at your table — how did you do each one, and who found a more efficient way?</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">13/28</div></div>
+    </section>
+
+    <!-- 14 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Why VS Code fluency matters</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Vim gets you unstuck — VS Code is where you'll live</div>
+          <div class="block-body">Most day-to-day development happens in a full GUI editor, not a bare terminal. The efficiency habits you build from here on are the ones you'll use every single day.</div>
+        </div>
+        <div class="block block-green">
+          <div class="block-bar">Why it matters</div>
+          <div class="block-body">Professionals spend far more time navigating, searching, and modifying existing code than typing new code from scratch — a slow editor workflow costs real time, every day, for years.</div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">From here</div>
+          <div class="block-body">We go deep on VS Code in two parts: navigating a project and reading unfamiliar code, then choosing the right tool to refactor it.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">14/28</div></div>
+    </section>
+
+    <!-- 15 -->
+    <section class="slide">
+      <div class="slide-head"><h2>VS Code: Basics</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Key idea</div>
+          <div class="block-body">
+            <ul>
+              <li><strong>Open a folder</strong> (<em>File &gt; Open Folder</em>, or <span class="mono">code .</span>) — not just a single file.</li>
+              <li><strong>Tabs &amp; editor groups</strong> — every open file is a tab; groups let you split the window into panes.</li>
+              <li><strong>Direct editing</strong> — no mode to switch between typing and commands, unlike Vim.</li>
+              <li><strong>Integrated terminal</strong> — a full shell built into the same window.</li>
+              <li><strong>Command Palette</strong> (<span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">P</span> on Windows/Linux, <span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">P</span> on Mac, or <span class="keycap">F1</span> on either) — every action is a named, searchable command.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="legend">Shortcuts in this deck: Windows/Linux first, Mac second — <span class="keycap">Ctrl</span> ↔ <span class="keycap">Cmd</span>, <span class="keycap">Alt</span> ↔ <span class="keycap">Option</span>.</p>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">15/28</div></div>
+    </section>
+
+    <!-- 16 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Live demo: VS Code basics</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body">Getting started in VS Code — opening a folder, creating a file, editing it, and saving.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">16/28</div></div>
+    </section>
+
+    <!-- 17 -->
+    <section class="slide">
+      <div class="slide-head"><h2>VS Code: Tooling</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Key idea</div>
+          <div class="block-body tight">
+            <ul>
+              <li>VS Code is an editor connected to <strong>language tooling</strong> — some ships built in, richer support comes from an extension.</li>
+              <li><strong>Built in:</strong> JavaScript, TypeScript, JSON, HTML, CSS.</li>
+              <li><strong>Needs an extension:</strong> Python, Java, C/C++, and most other languages.</li>
+              <li>Hints range from squiggly <strong>diagnostics</strong> to <strong>Quick Fixes</strong> (Code Actions) that fix things for you — like organizing imports automatically on save.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="cols">
+          <div class="col block block-blue"><div class="block-bar">Formatting</div><div class="block-body">"How should this look?" Layout, spacing, indentation — style only.</div></div>
+          <div class="col block block-blue"><div class="block-bar">Linting</div><div class="block-body">"Does this look suspicious?" Unused imports, unreachable code — logic hints.</div></div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">17/28</div></div>
+    </section>
+
+    <!-- 18 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Live demo: tooling</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body">Call a function with the wrong number of arguments — watch the squiggle appear. Introduce an unused variable, then format the file with <span class="mono">Format Document</span>.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">18/28</div></div>
+    </section>
+
+    <!-- 19 -->
+    <section class="slide">
+      <div class="slide-head"><h2>VS Code: Navigating a project</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Key idea</div>
+          <div class="block-body">
+            <ul>
+              <li>The <strong>Explorer</strong> shows your project's real folder structure.</li>
+              <li>Quick Open (<span class="keycap">Ctrl</span>+<span class="keycap">P</span> / <span class="keycap">Cmd</span>+<span class="keycap">P</span>) jumps to a file by name.</li>
+              <li>Find in Files searches a whole workspace.</li>
+              <li><strong>Go to Definition</strong> and breadcrumbs navigate by meaning, not just by file path.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">19/28</div></div>
+    </section>
+
+    <!-- 20 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Live demo: navigate &amp; search</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body"><span class="keycap">Ctrl</span>+<span class="keycap">P</span> (<span class="keycap">Cmd</span>+<span class="keycap">P</span>), type a partial filename, press Enter — that's Quick Open. <span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">F</span> (<span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">F</span>) searches a term across every file. Then follow a breadcrumb, or <span class="mono">Go to Definition</span>, to trace where something is called from.</div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">Note</div>
+          <div class="block-body">Search is often the first tool you reach for in a codebase you didn't write.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">20/28</div></div>
+    </section>
+
+    <!-- 21 -->
+    <section class="slide">
+      <div class="slide-head"><h2>VS Code: Multi-File editing</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Split editor</div>
+          <div class="block-body">Compare files side by side. <span class="keycap">Ctrl</span>+<span class="keycap">\</span> (<span class="keycap">Cmd</span>+<span class="keycap">\</span> on Mac), or drag a tab to an edge.</div>
+        </div>
+        <div class="block block-blue">
+          <div class="block-bar">Multi-cursor</div>
+          <div class="block-body tight">
+            <ul>
+              <li><span class="keycap">Alt</span>+Click (<span class="keycap">Option</span>+Click on Mac) — add a cursor where you click.</li>
+              <li><span class="keycap">Ctrl</span>+<span class="keycap">D</span> (<span class="keycap">Cmd</span>+<span class="keycap">D</span> on Mac) — select the next matching word too.</li>
+              <li><span class="keycap">Ctrl</span>+<span class="keycap">Shift</span>+<span class="keycap">L</span> (<span class="keycap">Cmd</span>+<span class="keycap">Shift</span>+<span class="keycap">L</span> on Mac) — select every match at once.</li>
+              <li><span class="keycap">Ctrl</span>+<span class="keycap">Alt</span>+<span class="keycap">↓</span>/<span class="keycap">↑</span> (<span class="keycap">Cmd</span>+<span class="keycap">Option</span>+<span class="keycap">↓</span>/<span class="keycap">↑</span> on Mac) — add a cursor on the line below/above.</li>
+              <li><span class="keycap">Shift</span>+<span class="keycap">Alt</span>+drag (<span class="keycap">Shift</span>+<span class="keycap">Option</span>+drag on Mac) — column (box) selection.</li>
+              <li><span class="keycap">Esc</span> — back to a single cursor.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">21/28</div></div>
+    </section>
+
+    <!-- 22 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Live demo: split &amp; multi-cursor</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body">Split the editor (<span class="keycap">Ctrl</span>+<span class="keycap">\</span> / <span class="keycap">Cmd</span>+<span class="keycap">\</span>) to see a function beside its test. <span class="keycap">Alt</span>+Click (<span class="keycap">Option</span>+Click on Mac) to drop an extra cursor, or select a repeated variable and press <span class="keycap">Ctrl</span>+<span class="keycap">D</span> (<span class="keycap">Cmd</span>+<span class="keycap">D</span> on Mac) twice before typing a replacement.</div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">Note</div>
+          <div class="block-body">You can see every place that's about to change before you type — that's the whole point.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">22/28</div></div>
+    </section>
+
+    <!-- 23 -->
+    <section class="slide">
+      <div class="slide-head"><h2>VS Code: Refactoring the code</h2></div>
+      <div class="slide-body">
+        <div class="cols">
+          <div class="col block block-blue">
+            <div class="block-bar">Search &amp; Replace</div>
+            <div class="block-body">Edits raw text — blind to comments and strings. A workspace-wide replace can catch a false match inside a comment or test fixture, so always preview first.</div>
+          </div>
+          <div class="col block block-blue">
+            <div class="block-bar">Rename Symbol (<span class="keycap">F2</span>)</div>
+            <div class="block-body">Understands the program's structure and only changes real references. Needs the language's extension installed — without it, Rename Symbol isn't available.</div>
+          </div>
+        </div>
+        <p><strong>Rule of thumb:</strong> reach for Rename Symbol first when renaming a code identifier; use Search &amp; Replace for everything else.</p>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">23/28</div></div>
+    </section>
+
+    <!-- 24 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Live demo: Rename Symbol</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body">Try a workspace-wide search-and-replace first — notice it can catch a match inside a comment. Undo it, then use <span class="keycap">F2</span> (Rename Symbol) on the same identifier instead.</div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">Note</div>
+          <div class="block-body">Same goal, different guarantees — Rename Symbol only touches real references.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">24/28</div></div>
+    </section>
+
+    <!-- 25 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Handout Activity 3: Navigating and Refactoring an Unfamiliar Codebase</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Now work on Activity 3 in the handout</div>
+          <div class="block-body">Explore a real Python project you've never seen — find the entry point, trace a bug report, compare files in a split view, fix a repeated value with multi-cursor, and refactor safely with Rename Symbol.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">25/28</div></div>
+    </section>
+
+    <!-- 26 -->
+    <section class="slide">
+      <div class="slide-head"><h2>VS Code: Remote editing</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Key idea</div>
+          <div class="block-body">Remote-SSH, Containers, and WSL keep the editor interface local while the filesystem, terminal, and extensions run on the remote machine.</div>
+        </div>
+        <div class="block block-green">
+          <div class="block-bar">Not just convenience</div>
+          <div class="block-body">This mirrors how real software gets built and debugged — on servers, in containers, in the cloud — not just on your own laptop.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">26/28</div></div>
+    </section>
+
+    <!-- 27 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Live demo: connecting to a remote host</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Watch</div>
+          <div class="block-body">Open the Command Palette → <span class="mono">Remote-SSH: Connect to Host</span>. A new window opens with the same interface, but the status bar shows you're now editing on the remote machine.</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">27/28</div></div>
+    </section>
+
+    <!-- 28 -->
+    <section class="slide">
+      <div class="slide-head"><h2>Exit ticket</h2></div>
+      <div class="slide-body">
+        <div class="block block-blue">
+          <div class="block-bar">Before next time</div>
+          <div class="block-body">Keep practising both Vim and VS Code — the more these skills become automatic, the more attention you have left for the actual problem.</div>
+        </div>
+        <div class="block block-red">
+          <div class="block-bar">Exit ticket</div>
+          <div class="block-body">Wrap up with the PollEv activity — we'd love to hear how today went for you!</div>
+        </div>
+      </div>
+      <div class="slide-foot"><div class="foot-name">Zahra Mirzamomen</div><div class="foot-course">FIT2109 Week 3</div><div class="foot-page">28/28</div></div>
+    </section>
+
+  </div>
+</div>
+
+<div class="nav-ui">
+  <button id="prevBtn" aria-label="Previous slide">&#8592;</button>
+  <span class="count"><span id="cur">1</span> / <span id="total">25</span></span>
+  <button id="nextBtn" aria-label="Next slide">&#8594;</button>
+</div>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+    var total = slides.length;
+    var idx = 0;
+    document.getElementById('total').textContent = total;
+    var stage = document.getElementById('stage');
+    var SLIDE_W_PX = 16 * 37.795275591;
+    var SLIDE_H_PX = 9 * 37.795275591;
+
+    function fitStage() {
+      var availW = window.innerWidth - 40;
+      var availH = window.innerHeight - 100;
+      var scale = Math.min(availW / SLIDE_W_PX, availH / SLIDE_H_PX);
+      stage.style.transform = 'scale(' + scale + ')';
+    }
+    window.addEventListener('resize', fitStage);
+
+    function show(n) {
+      idx = Math.max(0, Math.min(total - 1, n));
+      slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+      document.getElementById('cur').textContent = idx + 1;
+    }
+    document.getElementById('prevBtn').addEventListener('click', function () { show(idx - 1); });
+    document.getElementById('nextBtn').addEventListener('click', function () { show(idx + 1); });
+    window.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { show(idx + 1); e.preventDefault(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { show(idx - 1); e.preventDefault(); }
+      else if (e.key === 'Home') { show(0); }
+      else if (e.key === 'End') { show(total - 1); }
+    });
+    fitStage();
+    show(0);
+  })();
+</script>
+
+</body>
+</html>
