@@ -70,6 +70,11 @@ echo "Hello from a script"</code></pre>
   On macOS, <code>/bin/bash</code> is an old Bash 3.x kept for compatibility. Homebrew installs a modern Bash elsewhere. Using <code>#!/usr/bin/env bash</code> finds whichever <code>bash</code> is first on your <code>$PATH</code>, so scripts work consistently on macOS and Linux without hardcoding a path.
 </div>
 
+<div class="callout callout-warn">
+  <strong>Script files only — never type this at the prompt</strong>
+  The shebang belongs on line 1 of a <code>.sh</code> file and nowhere else. Your terminal is already running a shell, so typing <code>#!/usr/bin/env bash</code> interactively does nothing useful — in Bash it is silently ignored as a comment, and in Zsh (the macOS default) it prints an error. The line only has meaning when the OS opens a script file to decide which interpreter should run it.
+</div>
+
 <h3>Positional arguments</h3>
 <p>Arguments passed when running a script are available as numbered variables:</p>
 

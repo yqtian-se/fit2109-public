@@ -177,6 +177,18 @@
   It is the general-purpose way to change how Git behaves on your machine. Later sections and workshops may ask you to set other options the same way. For now, the two identity lines above are the only ones you need before <code>git commit</code> will work cleanly.
 </div>
 
+<h3>One more setting: line endings (CRLF vs LF)</h3>
+<p>Text files mark the end of each line with an invisible character sequence, and the two conventions differ by platform: Windows ends lines with a carriage return plus a line feed (<strong>CRLF</strong>, <code>\r\n</code>), while Linux and macOS use just the line feed (<strong>LF</strong>, <code>\n</code>). Git can silently convert between the two when you commit and check out files, controlled by the <code>core.autocrlf</code> setting — and the wrong setting can quietly corrupt files that must keep LF endings. The classic victim is a shell script: if Git checks it out with CRLF endings, Linux reads the first line as <code>#!/usr/bin/env bash\r</code> and fails with the baffling error <code>env: 'bash\r': No such file or directory</code> (you met this problem in Week 2).</p>
+
+<p>The Git for Windows installer defaults to <code>core.autocrlf=true</code>, which converts files to CRLF on checkout. For this unit, where your scripts run in WSL or on Linux servers, set it to <code>input</code> instead — commits are normalised to LF and checkouts are left untouched:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git config</span> <span class="arg">--global core.autocrlf input</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Windows users</strong>
+  Set this once before cloning any repository with shell scripts in it. If a script that worked for everyone else fails only on your machine, check its line endings with <code>head -1 script.sh | cat -A</code> — a line ending in <code>^M$</code> has CRLF endings, and <code>dos2unix script.sh</code> fixes it. Also set your editor to save new files with LF: in VS Code, click <code>CRLF</code> in the bottom-right status bar and switch it to <code>LF</code>.
+</div>
+
 <hr class="divider">
 <p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 4 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
 </div>
