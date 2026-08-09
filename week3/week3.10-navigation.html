@@ -152,16 +152,29 @@
 <span class="section-badge badge-tool">Core material</span>
 <h2>3.10 Navigating a Project: Explorer, Quick Open, and Search</h2>
 
-<p>Navigation is one of the biggest differences between novice and experienced editor use. A novice often scrolls visually until the right place appears. An experienced user instead asks which navigation tool best matches the task: file name search, symbol navigation, text search, structural breadcrumbs, outline views, editor splits, or command-based jumps. VS Code presents itself not just as an editor area, but as a collection of navigation aids.</p>
+<p>Navigation is one of the biggest differences between novice and experienced editor use. A novice often scrolls visually until the right place appears. An experienced user instead asks which navigation tool best matches the task. VS Code presents itself not just as an editor area, but as a collection of navigation aids. This page covers the three you will reach for most often — browsing the project's shape, jumping by file name, and searching by text. The language-aware tools that build on them come next in <a href="week3.11-structured-nav.html">3.11</a>, and the multi-file ones in <a href="week3.12-multifile.html">3.12</a>.</p>
+
+<p>Shortcuts below are written Windows/Linux first, then macOS.</p>
+
+<div class="callout callout-note">
+  <strong>Which one should I use?</strong>
+  The three tools answer three different questions, and choosing quickly between them is most of the skill:
+  <ul>
+    <li>You know the <em>file's name</em> → Quick Open (<code>Ctrl+P</code> / <code>Cmd+P</code>).</li>
+    <li>You know some <em>text that appears in it</em> → Search (<code>Ctrl+Shift+F</code> / <code>Cmd+Shift+F</code>).</li>
+    <li>You know <em>neither</em>, and want to see how the project is arranged → the Explorer (<code>Ctrl+Shift+E</code> / <code>Cmd+Shift+E</code>).</li>
+  </ul>
+  If you find yourself scrolling through a folder tree hunting for something whose name you already know, that is the signal to reach for Quick Open instead.
+</div>
 
 <h3>The Explorer: a project-shaped view</h3>
-<p>The Explorer gives you a project-shaped view of the filesystem: directories, files, open editors, and operations such as create, rename, move, or delete. This sounds basic, but it matters enormously because it links the editor to the project as a whole. When you read a repository, you are not simply asking "what is inside this one file?" You should ask, "how is this project organised?" When paired with editor groups, it also supports a common workflow: open one file from the Explorer, split the editor, then open a related file beside it to compare definitions, imports, tests, or configuration.</p>
+<p>The Explorer (<code>Ctrl+Shift+E</code> / <code>Cmd+Shift+E</code>, or the top icon in the Activity Bar) gives you a project-shaped view of the filesystem: directories, files, open editors, and operations such as create, rename, move, or delete. This sounds basic, but it matters enormously because it links the editor to the project as a whole. When you read a repository, you are not simply asking "what is inside this one file?" You should ask, "how is this project organised?" When paired with editor groups, it also supports a common workflow: open one file from the Explorer, split the editor, then open a related file beside it to compare definitions, imports, tests, or configuration.</p>
 
 <h3>Quick Open: navigate by name, not by clicking</h3>
-<p>VS Code's Quick Open lets you jump to a file quickly by typing its name. Once a project contains dozens or hundreds of files, moving by clicking through nested folders becomes too slow. Quick Open lets you think in terms of likely targets: "I want the settings file," "I want the main entry point," "I want the test with this class name." Learning to navigate by likely intent rather than by visual hunting is part of what makes a modern editor feel powerful.</p>
+<p>VS Code's Quick Open (<code>Ctrl+P</code> / <code>Cmd+P</code>) lets you jump to a file quickly by typing its name — you do not need the whole name, or even consecutive letters, as it matches fuzzily. Once a project contains dozens or hundreds of files, moving by clicking through nested folders becomes too slow. Quick Open lets you think in terms of likely targets: "I want the settings file," "I want the main entry point," "I want the test with this class name." Learning to navigate by likely intent rather than by visual hunting is part of what makes a modern editor feel powerful.</p>
 
 <h3>Find and Search: not just a rescue feature</h3>
-<p>Inside a file, Find and Search are equally central. VS Code treats search as part of editing rather than as a separate utility, which is the right mental model. Searching within a file helps you locate repeated words, function names, comments, or configuration keys. Searching across a workspace helps you identify where concepts are used project-wide. This is often the first tool you reach for when reading unfamiliar code: search for <code>main</code>, <code>TODO</code>, <code>config</code>, a class name from an error message, or a route string that appears in the UI. Search supports both editing and comprehension — it is not merely for when text is "lost."</p>
+<p>Inside a file, Find and Search are equally central. VS Code treats search as part of editing rather than as a separate utility, which is the right mental model. Searching <em>within</em> a file (Find, <code>Ctrl+F</code> / <code>Cmd+F</code>) helps you locate repeated words, function names, comments, or configuration keys. Searching <em>across</em> the whole project (Search, <code>Ctrl+Shift+F</code> / <code>Cmd+Shift+F</code>) helps you identify where concepts are used project-wide. The two are worth keeping distinct in your head: one answers "where is this in the file I am looking at?", the other answers "where is this anywhere in the project?" This is often the first tool you reach for when reading unfamiliar code: search for <code>main</code>, <code>TODO</code>, <code>config</code>, a class name from an error message, or a route string that appears in the UI. Search supports both editing and comprehension — it is not merely for when text is "lost."</p>
 
 <div class="callout callout-try">
   <strong>Try this</strong>
