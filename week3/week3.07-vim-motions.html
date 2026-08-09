@@ -227,6 +227,25 @@ Save / quit:         :w   :q   :wq   :q!</code></pre>
   <strong>Try this</strong>
   Open a file with a few lines of text. Use <code>w</code> and <code>b</code> to jump between words, <code>dd</code> to delete a line, <code>u</code> to undo it, then <code>dw</code> to delete just the next word. Notice how the operator (<code>d</code>) stays the same while the motion changes what it acts on.
 </div>
+
+<h3>If you want to learn Vim properly</h3>
+<p>These two pages are deliberately a survival kit, not a syllabus — enough to get in, edit, and get out again. Plenty of people stop there and are perfectly productive. But Vim rewards practice more than most tools, and if you want to get genuinely fast with it, the one thing that matters is that you learn by <em>editing</em> rather than by reading key lists. Reading about <code>ciw</code> teaches you nothing; using it fifty times makes it automatic.</p>
+
+<p>The most direct starting point is already on your machine. Run this in your terminal:</p>
+<pre><code>vimtutor</code></pre>
+<p>It opens a practice file and walks you through the basics over about half an hour, with you making every edit as you go. It ships with Vim, so there is nothing to install, and it is still the single best half hour you can spend on the editor.</p>
+
+<p>After that, a few options depending on how you like to learn:</p>
+<ul>
+  <li><a href="https://openvim.com/" target="_blank">openvim.com</a> — an interactive tutorial that runs in your browser, so you can practise without leaving a tab.</li>
+  <li><a href="https://vim-adventures.com/" target="_blank">VIM Adventures</a> — a puzzle game where the movement keys <em>are</em> Vim motions. The first few levels are free and are a genuinely good way to make <code>hjkl</code> and <code>w</code>/<code>b</code> stop feeling awkward.</li>
+  <li><code>:help</code> inside Vim itself — comprehensive and surprisingly readable once the basics have stopped getting in the way. <code>:help motion.txt</code> is the relevant chapter for this page.</li>
+</ul>
+
+<div class="callout callout-note">
+  <strong>A reasonable goal</strong>
+  You do not need to abandon VS Code for Vim, and most developers do not. The realistic payoff is being unbothered when you land on a server with no graphical editor — and, if you like the model, VS Code has a Vim extension that gives you these same motions inside the editor you already use.
+</div>
 <hr class="divider">
 <p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 3 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
 </div>
