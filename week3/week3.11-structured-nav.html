@@ -173,6 +173,19 @@
 <h3>Semantic navigation, when language support exists</h3>
 <p>When language support is available, navigation becomes more semantic. The combination of language services with smart code navigation is part of what gives an editor "the power of an IDE" — suggestions, parameter hints, and symbol-aware navigation become available. You can move from a function call to its definition, inspect references, jump to symbols, and use language structure rather than raw text as the basis for movement. This is particularly useful when you encounter an unfamiliar codebase: when tracing an execution flow, you should not have to rely only on plain text search if language-aware navigation is available.</p>
 
+<p>These are the three you will use constantly (Windows/Linux first, then macOS):</p>
+<table class="key-table">
+  <thead><tr><th>Action</th><th>Shortcut</th><th>Answers</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Go to Definition</strong></td><td><code>F12</code> (both platforms)</td><td>"where is this thing defined?"</td></tr>
+    <tr><td><strong>Find All References</strong></td><td><code>Shift+Alt+F12</code> / <code>Shift+Option+F12</code></td><td>"where is this thing used?"</td></tr>
+    <tr><td><strong>Go to Symbol in File</strong></td><td><code>Ctrl+Shift+O</code> / <code>Cmd+Shift+O</code></td><td>"what is in this file, and take me to one"</td></tr>
+  </tbody>
+</table>
+<p>Put the cursor on the name first — all three act on whatever the cursor is inside. The <strong>Outline</strong> view in the side bar is the same information as Go to Symbol, shown as a permanent list rather than a pop-up. On a Mac laptop you may need to hold <code>fn</code> for the F-keys unless you have set the top row to act as function keys.</p>
+
+<p>The difference between Find All References and a workspace text search (<a href="week3.10-navigation.html">3.10</a>) is worth being clear about: searching for <code>load_lines</code> as text also finds it in comments, in strings, and inside longer names that merely contain it. Find All References returns only the places the language service considers genuine uses of that symbol. That distinction is the same one that makes Rename Symbol safer than replace-all, in <a href="week3.13-refactoring.html">3.13</a>.</p>
+
 <h3>Keeping your hands on the keyboard</h3>
 <p>Structured editing also benefits from keyboard-centred habits. Card et al. (1980) modelled expert computer use as a sequence of timed operators, and explicitly included <em>H</em> (homing) for moving the hand between the keyboard and another device. The implication is not that mouse use is forbidden, but that reducing keyboard–mouse switching can measurably improve task efficiency. In practice, that means many editor operations become smoother when accessed through consistent shortcuts and commands: search, quick open, split editor, multi-cursor, formatting, and command palette actions are all faster once they become part of muscle memory.</p>
 

@@ -170,6 +170,15 @@
 <h3>Where this support comes from</h3>
 <p>Language features often depend on extensions. Some capabilities ship out of the box for certain languages, but richer support usually comes from dedicated language extensions (for example, Java, Python, and C/C++ each have their own). A modern IDE-like workflow is often not a monolithic application doing everything by itself — it is an editor platform connected to a collection of language services and tools.</p>
 
+<p>Python is a good illustration, and it is what you will install in the applied class. None of it is built in — four separate pieces do the four jobs described above:</p>
+<ul>
+  <li><strong>Python</strong> — the base language support, and what lets the editor find and run an interpreter.</li>
+  <li><strong>Pylance</strong> — the language service behind completion, type information, and the symbol-aware navigation in <a href="week3.11-structured-nav.html">3.11</a>.</li>
+  <li><strong>Black Formatter</strong> — the formatter.</li>
+  <li><strong>Pylint</strong> — the linter.</li>
+</ul>
+<p>Two consequences follow from this being a stack of separate tools rather than one feature. First, the same issue can be reported twice in different words, because the formatter, the language service and the linter each have their own opinions — an unused import, for example, is described differently by Pylance and by Pylint. Second, and more practically: all of it depends on the editor having found a Python interpreter to point at. If completion, diagnostics and formatting all appear to be silently broken at once, that is usually the reason rather than four coincidental failures.</p>
+
 <p>VS Code's refactoring and code action system further connects tooling to code quality: Quick Fixes and refactorings are surfaced through <strong>Code Actions</strong>, and some actions can even run automatically on save. This means the editor can help you not only notice issues, but address certain categories of them in a disciplined way — organising imports or applying a standard refactoring through the editor is usually less error-prone than manually editing several related places by hand. We look at this in more depth in <a href="week3.13-refactoring.html">3.13</a>.</p>
 
 <div class="callout callout-note">

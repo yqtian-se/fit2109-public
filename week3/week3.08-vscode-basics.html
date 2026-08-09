@@ -159,7 +159,12 @@
 <p><a href="week3.06-vim-basics.html">3.6</a> gave you the minimum set of Vim commands to survive. This page is the same idea for VS Code: before we get into tooling, navigation, refactoring, and debugging, you should be able to open a project, create and edit a file, and save your work without hunting through menus.</p>
 
 <h3>Opening a folder, not just a file</h3>
-<p>VS Code is project-oriented, so the normal starting point is opening a <strong>folder</strong>, not a single file — that is what makes the Explorer, search, and navigation features in the rest of this week possible. Use <strong>File &gt; Open Folder…</strong> and pick the project's top-level directory. If you're already in a terminal inside that directory, <code>code .</code> does the same thing and opens VS Code pointed at the current folder.</p>
+<p>VS Code is project-oriented, so the normal starting point is opening a <strong>folder</strong>, not a single file — that is what makes the Explorer, search, and navigation features in the rest of this week possible. Use <strong>File &gt; Open Folder…</strong> and pick the project's top-level directory. If you're already in a terminal inside that directory, <code>code .</code> does the same thing and opens VS Code pointed at the current folder. On macOS you may first need to run <strong>Shell Command: Install 'code' command in PATH</strong> from the Command Palette to make <code>code</code> available.</p>
+
+<div class="callout callout-warn">
+  <strong>Windows: open the folder from your Ubuntu terminal</strong>
+  Which terminal you run <code>code .</code> in decides which machine VS Code ends up looking at. Run it from your <em>Ubuntu</em> terminal and VS Code opens inside Ubuntu, where your files and tools actually live — you will see <code>WSL: Ubuntu</code> in the bottom-left corner. Open the same project from the Windows side instead (through PowerShell, or by browsing to it in File Explorer) and you get an editor sitting on Windows: the integrated terminal is PowerShell, <code>python3</code> is not found, and the formatter and linter attach to the wrong interpreter or to none. Nothing announces this — it just behaves oddly later. Check that corner before you start work. This needs the <em>WSL</em> extension; see <a href="week3.15-remote.html">3.15</a>.
+</div>
 
 <p>Once a folder is open, VS Code remembers it (and how you had things arranged) the next time you launch it there — this is the "workspace state" idea from <a href="week3.04-buffers-files.html">3.4</a>.</p>
 

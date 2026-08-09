@@ -167,6 +167,8 @@
   <li><strong>Search-and-replace edits raw text.</strong> It doesn't know or care what a match "means" in the program.</li>
   <li><strong>Refactoring tools operate on program structure</strong>, when the language service understands that structure — a rename, for instance, correctly updates every reference to a symbol and nothing else.</li>
 </ul>
+
+<p>The one to know by name is <strong>Rename Symbol</strong>: put the cursor on the name and press <code>F2</code> (the same key on Windows, Linux and macOS; on a Mac laptop you may need <code>fn+F2</code>). Type the new name and every genuine reference to that symbol updates across the project — and only those. A workspace replace-all of the same string would also hit the comment that mentions it, the docstring, and any longer identifier that happens to contain it.</p>
 <p>So when the task is semantic — rename a symbol, extract a method, organize imports — refactoring tools are often safer and more appropriate than generic text operations.</p>
 
 <p>VS Code also supports Code Actions on save, such as organising imports automatically. Some editing workflows can be partially automated once you trust the tooling and understand what it does — that is useful not only for convenience but also for consistency. A team that lets tooling handle import organisation or routine code actions reduces the chance that different contributors perform those steps differently.</p>
@@ -178,8 +180,8 @@
   <tbody>
     <tr><td>The change is tiny and local</td><td>Edit directly</td></tr>
     <tr><td>Several nearby places need the same obvious modification</td><td>Multi-cursor (<a href="week3.12-multifile.html">3.12</a>)</td></tr>
-    <tr><td>Many plain-text occurrences need updating</td><td>Search-and-replace, with careful preview</td></tr>
-    <tr><td>The change is structural and language tooling understands it</td><td>A refactoring command or code action</td></tr>
+    <tr><td>Many plain-text occurrences need updating</td><td>Search-and-replace (<code>Ctrl+Shift+F</code> / <code>Cmd+Shift+F</code>), with careful preview</td></tr>
+    <tr><td>The change is structural and language tooling understands it</td><td>A refactoring command or code action — Rename Symbol is <code>F2</code></td></tr>
   </tbody>
 </table>
 <p>Editing is also about managing change safely across relationships: between repeated lines, between files, between symbols, and between your intention and the program's actual structure. Once multi-file layouts, repeated edits, previewed replacements, and language-aware refactorings feel like parts of one continuum rather than unrelated tricks, you are far more likely to edit code accurately and confidently.</p>
