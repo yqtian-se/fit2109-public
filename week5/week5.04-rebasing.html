@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.4 — Rebasing — FIT2109 Week 5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>5.4 Rebasing</h2>
+
+<p>Rebase is Git's second way of integrating one branch into another, alongside merge. Where a merge joins two lines of history with a new commit, a rebase moves one of them: it takes your commits and re-applies them, one at a time, on top of a different starting point.</p>
+
+<h3>The command, precisely</h3>
+<p>In its standard form, rebase takes the commits on <strong>the branch you are currently on</strong> and applies them to the tip of the branch you name:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git rebase</span> <span class="arg">&lt;base&gt;</span></code></pre>
+
+<p>Two details in that sentence do most of the work:</p>
+
+<ul>
+  <li><strong>The branch that moves is the one you are on.</strong> <code>git rebase</code> never modifies the branch you pass to it — <code>&lt;base&gt;</code> is only the destination, and it is left exactly where it was.</li>
+  <li><strong><code>&lt;base&gt;</code> need not be a branch.</strong> It can be any commit reference: a local branch, a remote-tracking branch such as <code>origin/main</code>, a tag, or a raw commit hash.</li>
+</ul>
+
+<p>The first point is the one people routinely get backwards, so it is worth committing a rule to memory:</p>
+
+<div class="callout callout-note">
+  <strong>Which branch goes where</strong>
+  <code>git switch &lt;the branch I want to move&gt;</code><br>
+  <code>git rebase &lt;the branch I want to put it on top of&gt;</code>
+</div>
+
+<p>For the ordinary feature-branch case — your branch was created from <code>main</code>, but <code>main</code> has moved ahead while you were working — that rule reads:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">feature</span>      <span class="comment"># the branch I want to move</span>
+<span class="prompt-sym">$</span> <span class="cmd">git rebase</span> <span class="arg">main</span>        <span class="comment"># the branch I want to put it on top of</span></code></pre>
+
+<p>Git takes the commits that exist only on <code>feature</code>, sets them aside, fast-forwards <code>feature</code> to the tip of <code>main</code>, and then re-applies each of those commits in their original order. The result is a <code>feature</code> branch that looks as though it had been created from the latest <code>main</code> all along — a linear history, which many teams find easier to read than one broken up by small merge commits.</p>
+
+<h3>Merge vs. rebase</h3>
+<p>This is the main conceptual difference between the two. A merge preserves the fact that two branches diverged and were later combined, usually by creating a merge commit. A rebase, by contrast, changes the base of your branch by replaying its commits elsewhere, so the branch history appears linear.</p>
+
+<div class="diagram">
+<svg viewBox="0 0 620 412" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three-panel comparison of merge and rebase. Panel one, the starting point: main is a line of commits A, B, D, E, and a feature branch splits off after B with commits C1 and C2. Panel two, after running git merge main on feature: a new merge commit M is created whose two parents are C2 and E, so the fork stays visible in the history. Panel three, after running git rebase main on feature: C1 and C2 are replaced by brand-new commits C1-prime and C2-prime replayed on top of E, producing a single straight line with no fork and no merge commit.">
+  <style>
+    .cm    { stroke-width: 2; }
+    .mainc { fill: #e8edff; stroke: #4361ee; }
+    .featc { fill: #e6f7f1; stroke: #00856a; }
+    .newc  { fill: #e6f7f1; stroke: #00856a; stroke-dasharray: 4 2.5; }
+    .mrgc  { fill: #efecff; stroke: #5846d4; }
+    .edge  { stroke: #9aa3b8; stroke-width: 2; fill: none; }
+    .cid   { font: 600 10.5px "SF Mono", Consolas, monospace; fill: #1a1a2e; text-anchor: middle; }
+    .tagm  { font: 700 11px "SF Mono", Consolas, monospace; fill: #4361ee; text-anchor: middle; }
+    .tagf  { font: 700 11px "SF Mono", Consolas, monospace; fill: #00856a; text-anchor: middle; }
+    .ttl   { font: 700 12.5px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #0f0f23; }
+    .sub   { font: 11.5px -apple-system, "Segoe UI", Roboto, sans-serif; fill: #666; }
+  </style>
+
+  <!-- ── Panel 1: starting point ── -->
+  <text class="ttl" x="0" y="14">1 · Starting point — feature branched off at B, then main moved on</text>
+  <path class="edge" d="M110 104 H344"/>
+  <path class="edge" d="M188 104 L266 60"/>
+  <path class="edge" d="M266 60 H344"/>
+  <circle class="cm mainc" cx="110" cy="104" r="15"/><text class="cid" x="110" y="108">A</text>
+  <circle class="cm mainc" cx="188" cy="104" r="15"/><text class="cid" x="188" y="108">B</text>
+  <circle class="cm mainc" cx="266" cy="104" r="15"/><text class="cid" x="266" y="108">D</text>
+  <circle class="cm mainc" cx="344" cy="104" r="15"/><text class="cid" x="344" y="108">E</text>
+  <circle class="cm featc" cx="266" cy="60"  r="15"/><text class="cid" x="266" y="64">C1</text>
+  <circle class="cm featc" cx="344" cy="60"  r="15"/><text class="cid" x="344" y="64">C2</text>
+  <text class="tagm" x="344" y="136">main</text>
+  <text class="tagf" x="344" y="34">feature</text>
+
+  <!-- ── Panel 2: after merge ── -->
+  <text class="ttl" x="0" y="182">2 · <tspan style="font-family:'SF Mono',Consolas,monospace">git merge main</tspan> — the fork is preserved</text>
+  <path class="edge" d="M110 272 H344"/>
+  <path class="edge" d="M188 272 L266 228"/>
+  <path class="edge" d="M266 228 H422"/>
+  <path class="edge" d="M344 272 L422 228"/>
+  <circle class="cm mainc" cx="110" cy="272" r="15"/><text class="cid" x="110" y="276">A</text>
+  <circle class="cm mainc" cx="188" cy="272" r="15"/><text class="cid" x="188" y="276">B</text>
+  <circle class="cm mainc" cx="266" cy="272" r="15"/><text class="cid" x="266" y="276">D</text>
+  <circle class="cm mainc" cx="344" cy="272" r="15"/><text class="cid" x="344" y="276">E</text>
+  <circle class="cm featc" cx="266" cy="228" r="15"/><text class="cid" x="266" y="232">C1</text>
+  <circle class="cm featc" cx="344" cy="228" r="15"/><text class="cid" x="344" y="232">C2</text>
+  <circle class="cm mrgc"  cx="422" cy="228" r="15"/><text class="cid" x="422" y="232">M</text>
+  <text class="tagm" x="344" y="304">main</text>
+  <text class="tagf" x="422" y="202">feature</text>
+  <text class="sub"  x="450" y="233">two parents: C2 and E</text>
+
+  <!-- ── Panel 3: after rebase ── -->
+  <text class="ttl" x="0" y="330">3 · <tspan style="font-family:'SF Mono',Consolas,monospace">git rebase main</tspan> — one straight line, new commit identities</text>
+  <path class="edge" d="M110 366 H500"/>
+  <circle class="cm mainc" cx="110" cy="366" r="15"/><text class="cid" x="110" y="370">A</text>
+  <circle class="cm mainc" cx="188" cy="366" r="15"/><text class="cid" x="188" y="370">B</text>
+  <circle class="cm mainc" cx="266" cy="366" r="15"/><text class="cid" x="266" y="370">D</text>
+  <circle class="cm mainc" cx="344" cy="366" r="15"/><text class="cid" x="344" y="370">E</text>
+  <circle class="cm newc"  cx="422" cy="366" r="15"/><text class="cid" x="422" y="370">C1′</text>
+  <circle class="cm newc"  cx="500" cy="366" r="15"/><text class="cid" x="500" y="370">C2′</text>
+  <text class="tagm" x="344" y="398">main</text>
+  <text class="tagf" x="500" y="340">feature</text>
+</svg>
+<figcaption>The same starting point integrated two ways. Merge adds commit M and keeps the fork in the history; rebase replays C1 and C2 as <em>new</em> commits C1′ and C2′ (dashed) on top of E, leaving a linear history — and no trace that the branch ever diverged.</figcaption>
+</div>
+
+<h3>Where rebase is actually used</h3>
+<p>Two situations account for most day-to-day rebasing, and they are worth telling apart.</p>
+
+<p><strong>1. Updating your feature branch before it is merged.</strong> This is the case in the diagram above, and the alternative to the "merge <code>main</code> into your branch" habit from Section 5.2. Instead of recording a merge, you move your branch on top of the newer <code>main</code>, so the eventual pull request contains only your commits and shows a clean diff:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">main</span>
+<span class="prompt-sym">$</span> <span class="cmd">git pull</span>                    <span class="comment"># get main's newest commits</span>
+<span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">feature</span>
+<span class="prompt-sym">$</span> <span class="cmd">git rebase</span> <span class="arg">main</span></code></pre>
+
+<p>You can skip the round trip through <code>main</code> by rebasing onto the remote-tracking branch directly, which is possible precisely because <code>&lt;base&gt;</code> accepts any commit reference:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git fetch</span> <span class="arg">origin</span>
+<span class="prompt-sym">$</span> <span class="cmd">git rebase</span> <span class="arg">origin/main</span></code></pre>
+
+<p><strong>2. Pulling without creating a merge commit.</strong> When you and a teammate have both committed to the same branch, an ordinary <code>git pull</code> merges their work into yours and records a merge commit for it — often with a message like "Merge branch 'main' of …". A history full of these says nothing useful. <code>git pull --rebase</code> integrates by replaying your commits on top of theirs instead, leaving a straight line:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git pull</span> <span class="arg">--rebase</span></code></pre>
+
+<p>This is the "second way of integrating" that Section 5.1 mentioned when introducing <code>git pull</code>. Many developers prefer it often enough to make it the default for every repository on their machine:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git config</span> <span class="arg">--global pull.rebase true</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Rebase rewrites commit history</strong>
+  After a rebase, the rebased commits are not literally the same old commits moved somewhere else — Git creates new commits with new identities because their parent relationships have changed. Rebasing is usually appropriate for local, unpublished work, but dangerous for already shared history: rewriting commits you have already pushed can confuse other developers by creating alternate versions of the same change.
+</div>
+
+<h3>Resolving conflicts during a rebase</h3>
+<p>Rebase can conflict for the same reason merge can: a commit being re-applied touches lines that have changed underneath it. The markers in the file look exactly as they did in Section 5.3, and you edit them the same way. What differs is the shape of the process. A merge stops <em>once</em>, with everything on the table. A rebase re-applies your commits one at a time, so it stops at the <em>first</em> commit that conflicts, waits for you, then carries on to the next — and can stop again. A rebase of four commits may pause anywhere from zero to four times.</p>
+
+<h4 style="font-size:1rem;font-weight:600;margin:28px 0 10px;">The normal path: resolve and continue</h4>
+
+<ol>
+  <li><strong>See what stopped it.</strong> <code>git status</code> names the conflicted files, and also tells you which commit is being applied — useful, because the conflict belongs to that one commit rather than to the branch as a whole.</li>
+  <li><strong>Edit the conflicted files</strong> into the version you want and delete the markers, exactly as in Section 5.3.</li>
+  <li><strong>Stage what you fixed</strong> with <code>git add &lt;file&gt;</code>.</li>
+  <li><strong>Carry on</strong> with <code>git rebase --continue</code>. Git finishes applying that commit and moves to the next one. <em>If it stops again, repeat these same four steps</em> — that is the loop, not a sign that something has gone wrong.</li>
+</ol>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git rebase</span> <span class="arg">main</span>
+<span class="comment"># Git stops on the first conflicting commit</span>
+<span class="prompt-sym">$</span> <span class="cmd">git status</span>                    <span class="comment"># which files, and which commit</span>
+<span class="comment"># edit the files, delete the markers</span>
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">conflicted-file.py</span>
+<span class="prompt-sym">$</span> <span class="cmd">git rebase</span> <span class="arg">--continue</span>        <span class="comment"># repeat if it pauses again</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Do not finish a rebase with git commit</strong>
+  This is the habit to unlearn from merge conflicts. Resolving a <em>merge</em> ends with <code>git commit</code> (or <code>git merge --continue</code>), but a rebase is not building one new commit — it is re-applying yours in sequence. Running <code>git commit</code> mid-rebase creates a stray extra commit and leaves the rebase still in progress. Always finish each pause with <code>git rebase --continue</code>.
+</div>
+
+<h4 style="font-size:1rem;font-weight:600;margin:28px 0 10px;">The other path: back out entirely</h4>
+
+<p>If the conflicts turn out to be more than you want to take on right now, you can stop the whole operation rather than fighting through it commit by commit:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git rebase</span> <span class="arg">--abort</span></code></pre>
+
+<p>This returns your branch to exactly where it stood before the rebase began — the original commits, with their original identities, on their original base. Any conflict resolution you had already done during this attempt is discarded along with it, which is the trade: aborting is completely safe for your existing history, but you do lose the work of the attempt itself. Aborting and merging <code>main</code> in instead is a perfectly reasonable response to a rebase that turns out badly.</p>
+
+<div class="callout callout-fun">
+  <strong>In short</strong>
+  Rebase is a history-shaping tool: useful for moving your work onto a newer base, keeping local branch history linear, and cleaning up unpublished commits before sharing them. If merge emphasizes preserving the exact branching history, rebase emphasizes rewriting your branch so its history is cleaner and more linear.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 5 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

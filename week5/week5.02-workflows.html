@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.2 — Collaborative Git Workflows — FIT2109 Week 5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>5.2 Collaborative Git Workflows</h2>
+
+<p>Once you understand remotes and upstream tracking, the next step is to see how teams actually organise their work from day to day.</p>
+
+<h3>The basic remote workflow</h3>
+<p>Before layering branches or any review process on top, it is worth being fluent in the plain mechanics: getting a copy of a shared project, sending your work up to it, and taking other people's work down. Everything later in this section is a refinement of the two sequences below.</p>
+
+<p><strong>The simplest case: clone, commit, push.</strong> Imagine you and one teammate share a small project and both work straight on <code>main</code>.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git clone</span> <span class="arg">&lt;repo-url&gt;</span>
+<span class="prompt-sym">$</span> <span class="cmd">cd</span> <span class="arg">&lt;repo-name&gt;</span>
+<span class="comment"># edit files, stage, and commit locally — exactly as in Week 4</span>
+<span class="prompt-sym">$</span> <span class="cmd">git push</span>                <span class="comment"># publish those commits</span></code></pre>
+
+<p>Line by line, paying attention to <em>where</em> things exist at each step:</p>
+
+<ul>
+  <li>You already met <code>git clone</code> in Week 4, but notice how much it configures on your behalf: a remote named <code>origin</code> pointing at that URL, a local branch <code>main</code>, and the remote-tracking branch <code>origin/main</code> beside it.</li>
+  <li>Editing, staging and committing are entirely unchanged from Week 4 — and entirely local. This is the part that surprises people coming from tools that save to a server automatically: Git never sends anything on its own, so committing and publishing are two separate decisions.</li>
+  <li><code>git push</code> needs no arguments here because <code>clone</code> already set <code>origin/main</code> as the upstream of your <code>main</code>. Git therefore knows which remote and which branch you mean.</li>
+</ul>
+
+<p><strong>Taking in your teammate's work: the pull–work–push loop.</strong></p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git pull</span>                <span class="comment"># take in what your teammates pushed</span>
+<span class="comment"># edit, stage, and commit as usual</span>
+<span class="prompt-sym">$</span> <span class="cmd">git push</span>                <span class="comment"># send your commits up</span></code></pre>
+
+<ul>
+  <li><strong>Start with <code>pull</code>.</strong> Git will force the issue eventually — as the third point below explains, it refuses a push while the remote holds commits you do not have. Pulling first is simply cheaper than pulling last, because you reconcile your teammate's changes before building new work on top of an outdated starting point.</li>
+  <li><strong><code>push</code> only sends commits.</strong> Edits sitting in your working tree, or changes you have staged but not committed, go nowhere. If <code>git status</code> still lists them, pushing will not carry them to the remote.</li>
+  <li><strong>If a teammate pushed while you were working, your push will be refused.</strong> The remote holds commits you do not have, and Git will not quietly discard them to make room for yours. The fix is the first step of the loop again: <code>git pull</code> to bring their commits in, sort out anything that overlaps, then push.</li>
+</ul>
+
+<p>That last point causes more confusion than anything else when people first share a repository, so it is worth restating plainly: a rejected push is not an error in your work — it is Git refusing to discard someone else's.</p>
+
+<p><strong>Publishing a branch of your own.</strong> Both sequences so far committed straight to <code>main</code>, which is workable for two people on a small project but not much beyond that. In most team projects, people do not commit directly to the shared main branch. Instead, they create a branch for one piece of work, commit to that branch locally, publish it with <code>git push</code>, and have the work reviewed before it is merged into <code>main</code>. Branches are used to isolate development work without affecting other branches — Week 4 already gave you that much. What is new here is the review step: the mechanism a team uses to decide whether a branch is ready to be merged at all, which is the subject of the rest of this section.</p>
+
+<p>A common branch-based workflow looks like this: a developer first brings their local <code>main</code> up to date — a fetch alone would not do it, since fetching leaves <code>main</code> where it was — then creates a feature branch from it, makes focused commits, and pushes that feature branch to the remote repository. At that point, the branch becomes visible to other collaborators and to hosting platforms such as GitHub. Because the change lives on its own branch, it can be discussed, compared, reviewed, and even revised repeatedly without disturbing the main branch.</p>
+
+<p>The same workflow written out as commands:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">main</span>
+<span class="prompt-sym">$</span> <span class="cmd">git pull</span>                          <span class="comment"># bring local main up to date first</span>
+<span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">-c feature-parser</span>    <span class="comment"># branch from that up-to-date main</span>
+<span class="comment"># edit files, stage, and commit locally</span>
+<span class="prompt-sym">$</span> <span class="cmd">git push</span> <span class="arg">-u origin feature-parser</span></code></pre>
+
+<ul>
+  <li><code>git switch main</code> and <code>git pull</code> are the "brings their local <code>main</code> up to date" step above. Doing this <em>before</em> branching is what stops the new branch from starting out already missing commits the remote has.</li>
+  <li><code>git switch -c feature-parser</code> creates the branch <em>on your machine only</em>. Nobody else can see it, and the remote holds no record of it — which is precisely what makes a branch a safe place to work.</li>
+  <li><code>git push -u origin feature-parser</code> is what finally publishes it. Here the remote and branch have to be named, because a brand-new local branch has no upstream yet: there is no <code>origin/feature-parser</code> for Git to assume.</li>
+  <li>That is exactly what <code>-u</code> is for. It records <code>origin/feature-parser</code> as the branch's upstream, so from the second push onwards a bare <code>git push</code> or <code>git pull</code> works on this branch, just as it does on <code>main</code>.</li>
+</ul>
+
+<h3>Where pull requests fit in</h3>
+<p>This is where <strong>pull requests (PR)</strong> enter the picture. A pull request is not a core Git object stored in the repository itself — it is a collaboration feature offered by platforms such as GitHub that lets people discuss and review changes before merging them. Pull requests compare the changes made on your feature branch (the <strong>compare branch</strong>) against the branch you want to merge into (the <strong>base branch</strong>) — these are literally labelled "compare" and "base" in GitHub's own interface. In other words, a pull request is the review-oriented layer built on top of Git's underlying branch model: Git handles the branches and commits, and the hosting platform presents those changes as a reviewable proposal.</p>
+
+<div class="fig">
+  <img src="images/week5-pr-workflow.png" alt="Four-part workflow diagram: the developer workflow of updating main, creating a feature branch, making commits, and pushing it; how the feature branch relates to main before and after the push; an example Pull Request screen showing the base and compare branches, review comments, passing checks, and a Merge pull request button; the remote history after the merge, with the feature branch optionally deleted.">
+  <figcaption>Branch, publish, open a pull request, review, merge — and optionally delete the feature branch afterward. (One thing to ignore in the first panel: the <code>git fetch origin</code> shown before <code>git pull origin main</code> is not necessary, because <code>git pull</code> performs a fetch itself.)</figcaption>
+</div>
+
+<p>A good way to understand the relationship between branches and pull requests is that the <strong>branch is the technical unit of isolated work</strong>, and the <strong>pull request is the social and review unit</strong> built around that branch. Inside a pull request, reviewers can inspect commits, changed files, and the diff between the base and compare branches. The review interface becomes a place where collaborators discuss what the change does, point out issues, request revisions, and decide whether the proposal is ready to merge.</p>
+
+<h3>Keeping the process coherent</h3>
+<p>Maintaining a coherent history in this process requires discipline. Branches should generally correspond to focused tasks rather than to large mixed bundles of unrelated work. Commits on those branches should be meaningful and reviewable rather than arbitrary snapshots of everything that changed that day. Pull requests also benefit from being reasonably small, because smaller diffs are easier to inspect carefully and discuss.</p>
+
+<p>Putting that together, a minimal pull-request cycle is the branch workflow you have already seen, with one change at the end: instead of merging the branch yourself, you open a pull request and let review decide.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">main</span>
+<span class="prompt-sym">$</span> <span class="cmd">git pull</span>                              <span class="comment"># start from an up-to-date main</span>
+<span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">-c feature-readme</span>
+<span class="comment"># edit, add, commit</span>
+<span class="prompt-sym">$</span> <span class="cmd">git push</span> <span class="arg">-u origin feature-readme</span>
+<span class="comment"># open a pull request on the hosting platform</span></code></pre>
+
+<p>One detail worth noting about that second line: <code>git pull</code> already performs a fetch, so there is never any need to run <code>git fetch</code> immediately before it.</p>
+
+<p>After this point, the workflow often alternates between review and revision: reviewers comment, the author updates the branch with more commits, and the pull request automatically updates because it is tied to the branch. Review is not a single event but an iterative process.</p>
+
+<p>One distinction is worth being precise about, because it is easy to lose sight of once this cycle becomes routine: <strong>a pull request is not part of Git.</strong> There is no <code>git pull-request</code> command, and nothing about a pull request is stored in your repository — clone the project on another machine and you will find the branches and the commits, but no pull requests. It is a feature of the <em>hosting platform</em>. GitHub and GitLab both provide one, and they do not even agree on the name: what GitHub calls a pull request, GitLab calls a <strong>merge request</strong>. Underneath, both are doing the ordinary Git you already know — comparing two branches, and eventually merging one into the other. When you open one, the platform asks you to specify:</p>
+
+<ul>
+  <li>The <strong>base branch</strong> — the branch you are asking to merge <em>into</em>, typically <code>main</code>.</li>
+  <li>The <strong>compare branch</strong> — the branch holding your commits, such as <code>feature-parser</code>. The platform computes the diff between the two for you, so you do not state what changed; the branches determine that.</li>
+  <li>A <strong>title and description</strong>, which serve the same purpose for the change as a whole that a commit message serves for a single commit: what it does, and why.</li>
+  <li>Optionally, <strong>reviewers</strong> — the people you are asking to look at it before it is merged.</li>
+</ul>
+
+<h3>Keeping your branch current while it is under review</h3>
+<p>Review takes time, and <code>main</code> rarely stands still while it happens. The longer your branch goes without <code>main</code>'s newer commits, the more likely the pull request is to report conflicts that have nothing to do with the change you are proposing. The habit that prevents this is to bring those commits into your branch periodically, rather than all at once at the end:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">main</span>
+<span class="prompt-sym">$</span> <span class="cmd">git pull</span>
+<span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">feature-readme</span>
+<span class="prompt-sym">$</span> <span class="cmd">git merge</span> <span class="arg">main</span>                        <span class="comment"># resolve any conflicts now, while they are small</span>
+<span class="prompt-sym">$</span> <span class="cmd">git push</span></code></pre>
+
+<p>Merging <code>main</code> into your branch like this is one of two ways to stay current; Section 5.4 introduces the other, which brings the same new commits in without recording a merge commit. Both keep the branch up to date and differ only in the history they leave behind, and teams usually settle on one convention.</p>
+
+<div class="callout callout-fun">
+  <strong>The core insight of this section</strong>
+  Push, pull, and branches are the mechanics; pull requests are the review process built around them. Keep branches focused, commits coherent, and synchronisation frequent — it is that combination of technical structure and review practice that keeps a shared repository productive rather than chaotic.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 5 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

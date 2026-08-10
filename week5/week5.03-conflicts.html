@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.3 — Revisiting Merging and Conflict Resolution — FIT2109 Week 5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>5.3 Revisiting Merging and Conflict Resolution</h2>
+
+<p>Once two people work on the same project, their changes have to be combined. Most of the time Git does this silently and you never notice: if you edited one file and your teammate edited another, or you both edited the same file in different places, Git simply takes both. A <strong>merge conflict</strong> is the much narrower case where Git cannot decide on your behalf — where the same region of the same file was changed differently on each side, and any automatic choice would risk throwing away someone's work.</p>
+
+<p>The same thing happens in a pull request. When the compare branch and the base branch conflict, the platform lists the files involved and the "Merge pull request" button stays disabled until the conflict has been resolved.</p>
+
+<p>Conflicts become more likely the longer two lines of work stay apart, because more edits accumulate on each side. The habit that prevents most of them is therefore to synchronise often rather than once at the end of a long task: bring your local <code>main</code> up to date, and merge it into your feature branch while the differences are still small enough to reason about.</p>
+
+<h3>How a conflict actually arises</h3>
+<p>It is easier to reason about conflicts after watching one appear. Take the smallest possible case: you and one teammate share a project and both work on <code>main</code>, exactly as in the first workflow of Section 5.2. The repository contains a one-line file, <code>greeting.py</code>:</p>
+
+<pre><code><span class="out">message = "Hello"</span></code></pre>
+
+<p>Your teammate gets there first. They change that line, commit, and push:</p>
+
+<pre><code><span class="comment"># teammate's machine — changes the line to: message = "Hello, world!"</span>
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">greeting.py</span>
+<span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Use a friendlier greeting"</span>
+<span class="prompt-sym">$</span> <span class="cmd">git push</span></code></pre>
+
+<p>You know nothing about this, because their commit only reached the remote — not your machine. Working from the older version, you edit <em>the same line</em> differently and commit:</p>
+
+<pre><code><span class="comment"># your machine — changes the same line to: message = "Welcome"</span>
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">greeting.py</span>
+<span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Use Welcome as the greeting"</span></code></pre>
+
+<p>Now you try to publish your work. Your push is refused — the remote has your teammate's commit, which you do not have — so you pull first, as Section 5.2 described. That pull is where the two versions finally meet:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git pull</span>
+<span class="out">Auto-merging greeting.py
+CONFLICT (content): Merge conflict in greeting.py
+Automatic merge failed; fix conflicts and then commit the result.</span></code></pre>
+
+<p>Nothing has gone wrong, and nothing has been lost. Both commits exist; Git simply has two different replacements for one line and no basis for preferring either. Note how specific this is: had your teammate edited a different line of <code>greeting.py</code> — or a different file entirely — this pull would have completed silently. It is the <em>overlap</em> that Git cannot resolve, not the fact that you both edited the project.</p>
+
+<p>Opening <code>greeting.py</code> now shows both versions, kept side by side:</p>
+
+<pre><code><span class="out">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span class="out">message = "Welcome"</span>
+<span class="out">=======</span>
+<span class="out">message = "Hello, world!"</span>
+<span class="out">&gt;&gt;&gt;&gt;&gt;&gt;&gt; 9d4e7b0 (Use a friendlier greeting)</span></code></pre>
+
+<p>Your own version is on top, under <code>HEAD</code>; the incoming version is below, labelled with the commit it came from. Deciding between them is your job, not Git's — and that is what the rest of this section is about.</p>
+
+<h3>Resolving a conflict, step by step</h3>
+<p>Git has paused the merge and marked <code>greeting.py</code> as conflicted. The merge is unfinished: Git will not record it, and will not let you move on, until you say what that line should contain. Before editing anything, make sure you can read the block precisely, because the two halves are not interchangeable:</p>
+
+<ul>
+  <li>Between <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> and <code>=======</code> is the version from <code>HEAD</code> — <strong>the side you already had</strong>, on the branch you are currently on.</li>
+  <li>Between <code>=======</code> and <code>&gt;&gt;&gt;&gt;&gt;&gt;&gt;</code> is <strong>the version coming in</strong>. Git labels it after the closing marker with whatever you merged: a branch name if you ran <code>git merge &lt;branch&gt;</code>, or the incoming commit if the merge came from a <code>git pull</code>, as above.</li>
+</ul>
+
+<p>Resolving does not have to mean picking one side. Often the right answer combines both, or is something new that neither side contained — Git is showing you a disagreement to settle, not a multiple-choice question. What Git requires is only that the markers are gone and the file makes sense before you stage it.</p>
+
+<h4 style="font-size:1rem;font-weight:600;margin:28px 0 10px;">The normal path: resolve and finish the merge</h4>
+
+<ol>
+  <li><strong>Find out what is conflicted.</strong> <code>git status</code> lists every affected file under <em>Unmerged paths</em>. Do this first: a single merge can stop on several files at once, and every one of them has to be dealt with before the merge can complete.</li>
+  <li><strong>Edit each conflicted file</strong> into the version you actually want, and delete all three marker lines as you go. Git does not strip them for you — a file still containing <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code> is almost always broken code, and committing one is a common and embarrassing mistake.</li>
+  <li><strong>Stage each file you have finished</strong> with <code>git add &lt;file&gt;</code>. There is no separate "mark as resolved" command — staging <em>is</em> that signal. Running <code>git status</code> again now tells you whether anything is still unmerged.</li>
+  <li><strong>Complete the merge</strong> with <code>git merge --continue</code>, which records the merge commit. It refuses to run while any conflict remains, so it also acts as a final check that you have not missed a file. (<code>git commit</code> finishes the merge equally well; <code>--continue</code> simply states the intent more clearly.)</li>
+</ol>
+
+<p>Applied to the <code>greeting.py</code> conflict above, that is:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git status</span>                  <span class="comment"># greeting.py is listed as unmerged</span>
+<span class="comment"># edit greeting.py: settle on the final wording, delete the markers</span>
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">greeting.py</span>       <span class="comment"># this one is resolved</span>
+<span class="prompt-sym">$</span> <span class="cmd">git status</span>                  <span class="comment"># confirm nothing is left unmerged</span>
+<span class="prompt-sym">$</span> <span class="cmd">git merge</span> <span class="arg">--continue</span>       <span class="comment"># record the merge commit</span></code></pre>
+
+<p>The result is an ordinary merge commit with two parents — your commit and your teammate's — recording that the two lines of work were brought back together, and containing whichever wording you settled on. You can then <code>git push</code> as usual.</p>
+
+<h4 style="font-size:1rem;font-weight:600;margin:28px 0 10px;">The other path: back out and try later</h4>
+
+<p>Resolving immediately is not always the right call. If the conflict turns out to be larger than expected, or it touches code you did not write and would rather discuss first, you can abandon the merge entirely instead of resolving it under pressure:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git merge</span> <span class="arg">--abort</span></code></pre>
+
+<p>This discards the half-finished merge and restores your branch and working tree to the state they were in before you started it — as though the merge had never been attempted. Your own commits are untouched, and so is your teammate's work on the remote; only the in-progress merge disappears. You can then talk it over, or synchronise at a better moment, and run the merge again. One caveat: if you had uncommitted changes in your working tree when the merge began, Git cannot always reconstruct them, which is one more reason to start a merge from a clean working tree.</p>
+
+<div class="callout callout-fun">
+  <strong>Prevention beats resolution</strong>
+  Some conflicts are easier to prevent than to resolve. Clear task boundaries, smaller pull requests, frequent synchronization, and review before merge all reduce the chance of painful integration later. Conflict resolution is part technical skill and part collaboration skill: Git shows you where the disagreement is, and the team still has to decide what the software should actually do.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 5 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 5 Pre-Reading: Version Control with Git — Collaboration & History — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+  .hero code { background: rgba(255,255,255,0.12); color: #a6e3a1; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hero">
+  <h1>Week 5: Version Control with Git — Collaboration &amp; History</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol class="goals">
+      <li>Explain what a <strong>remote</strong> and a <strong>remote-tracking branch</strong> are, and state precisely what <code>fetch</code>, <code>pull</code> and <code>push</code> each change.</li>
+      <li>Work in a shared repository day to day — clone, pull, commit, push, and publish a branch — and explain what a <strong>pull request</strong> adds on top of Git itself.</li>
+      <li>Read conflict markers correctly, and either resolve a merge conflict or back out of it deliberately.</li>
+      <li>Rebase a branch onto a newer base, and choose between merging and rebasing for a given situation.</li>
+      <li>Investigate history with <code>git log</code>, <code>git diff</code>, <code>git blame</code> and <code>git show</code>, including comparing two branches with a commit range.</li>
+      <li>Find the commit that introduced a regression using <code>git bisect</code>, and explain what makes a bisect trustworthy.</li>
+      <li>Choose between <code>git revert</code> and <code>git reset</code> according to whether a commit has been shared, and describe what each <code>reset</code> mode keeps.</li>
+    </ol>
+  </div>
+</div>
+
+<h3>A scenario</h3>
+<p>Your group cloned the unit's project repository a fortnight ago, so all four of you have a complete copy of the project and its history sitting on your own laptop. Since then you have worked exactly the way Week 4 described: a branch for your part of the assignment, small commits with clear messages, and a local history you are honestly a bit proud of.</p>
+
+<p>Tonight you need to combine everyone's work — and this is where Week 4 runs out.</p>
+
+<p>Your commits exist on your laptop and nowhere else. Your teammate's exist on theirs. Running <code>git log</code> on your machine shows a project where you appear to have done all the work, because your machine has never seen a single one of their commits. And <code>git merge</code> is no help: it combines two branches that live in <em>the same</em> repository, but your teammate's branch simply is not in yours. Four complete copies of one project have quietly drifted into four different versions of the truth, and nothing in Week 4 can bring them back together.</p>
+
+<p>Week 4 was Git on one machine. Week 5 is Git <em>between</em> machines, and it begins with the piece deliberately left out until now: how one copy of a repository exchanges commits with another. Once that exists, three further questions follow naturally.</p>
+
+<ul>
+  <li>How do you take in your teammates' commits without losing or overwriting your own?</li>
+  <li>How do you look over each other's work <em>before</em> it gets combined, rather than discovering the problems afterwards?</li>
+  <li>When a change everyone already has turns out to be wrong, how do you undo it without disrupting the copies they are working from?</li>
+</ul>
+
+<p>Each one has a precise answer in Git, and this week works through them in that order.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  You have already met a clue to this week's first idea without it being explained. In Week 4's <a href="../week4/week4.06-coreops.html">Section 4.6</a>, immediately after cloning a repository, <code>git status</code> reported <em>"Your branch is up to date with 'origin/main'"</em>, and <code>git log --oneline</code> showed <code>(HEAD -&gt; main, origin/main)</code>. You know what the branch <code>main</code> is — so what is this <em>second</em> name, <code>origin/main</code>, sitting beside it? And how could your own laptop claim to know whether it is still up to date with anything? Section 5.1 answers exactly this.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 5 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

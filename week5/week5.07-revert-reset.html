@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.7 — Recovering from Common Mistakes — FIT2109 Week 5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>5.7 Recovering from Common Mistakes</h2>
+
+<p>Even careful Git users make mistakes. You may stage the wrong files, commit too much in one snapshot, merge the wrong branch, push a flawed change, or realise that the current working tree has drifted into a state you do not want to keep. Git's recovery tools exist precisely because version control workflows need structured ways to undo, repair, and recover.</p>
+
+<p>Two of the most important tools for this are <code>git revert</code> and <code>git reset</code>, and they solve different problems. <code>git revert</code> records a new commit that reverses the effect of an earlier one. <code>git reset</code> moves your branch to point at a different commit, and depending on the mode may also update the staging area and working tree.</p>
+
+<h3>Which one? Ask whether the commit has left your machine</h3>
+<p>Choosing between them is not a matter of taste or of which you happen to remember. It follows from a single question:</p>
+
+<ul>
+  <li><strong>Has the commit been pushed, or could anyone else already have pulled it?</strong> Then use <code>git revert</code>. It only ever adds to history, so your branch stays ahead of the remote and everyone else's copy stays valid.</li>
+  <li><strong>Is it still only on your machine?</strong> Then <code>git reset</code> is available, and is often tidier — it can take the commit off the branch entirely instead of leaving a reversal in the permanent record.</li>
+</ul>
+
+<p>Everything else in this section follows from that split, so it is worth settling before reaching for either command.</p>
+
+<h3>git revert — the safer choice for shared history</h3>
+<p><code>git revert</code> is the safer mental model when you need to undo a bad commit while preserving visible history. Because it creates a new commit whose effect is the opposite of an earlier one, it does not remove the original commit from the historical record. That makes it especially appropriate once a bad commit has already been shared with others or incorporated into a common branch — you are saying "this happened, and now here is the explicit reversal," rather than pretending the earlier commit never existed.</p>
+
+<p>The contrast with <code>reset</code> is concrete rather than a matter of taste. Moving a shared branch backwards with <code>reset</code> leaves your local branch <em>behind</em> the remote's, so an ordinary <code>git push</code> is refused — the same refusal you met in Section 5.2, because the remote now holds a commit that you do not. <code>git revert</code> only ever moves history forwards: it adds a commit rather than removing one, so a plain <code>git push</code> is enough and nobody else's work is disturbed.</p>
+
+<p>In practice it is a two-command fix. Suppose the password-reset commit turns out to be broken, and it is already on <code>origin/main</code> where your teammates can see it:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">--oneline -3</span>
+<span class="out">9d4e7b0 (HEAD -&gt; main, origin/main) Add password reset
+5c1f6a8 Fix off-by-one error in tokenizer
+3f8a2c1 Add token scanner</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">git revert</span> <span class="arg">9d4e7b0</span>
+<span class="out">[main 1a2b3c4] Revert "Add password reset"
+ 1 file changed, 5 insertions(+), 7 deletions(-)</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">git push</span></code></pre>
+
+<p>Git opens an editor with a message already filled in — <code>Revert "Add password reset"</code> — which you can accept as is. Looking at the log afterwards shows what makes this safe:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">--oneline -3</span>
+<span class="out">1a2b3c4 (HEAD -&gt; main) Revert "Add password reset"
+9d4e7b0 Add password reset
+5c1f6a8 Fix off-by-one error in tokenizer</span></code></pre>
+
+<p>Both commits are still there. The broken change is recorded, and so is the decision to undo it — which is usually what you want on a shared branch, because a teammate who already pulled <code>9d4e7b0</code> simply pulls one more commit and ends up in the same state as you. Nothing they have is invalidated. As a bonus, the reversal is itself an ordinary commit, so if it later turns out the change was fine after all, you can revert the revert.</p>
+
+<h3>git reset — for local cleanup</h3>
+<p><code>git reset</code> is about moving your branch tip and optionally aligning the index and working tree with that moved tip. <code>git reset [&lt;mode&gt;] &lt;commit&gt;</code> sets the current branch head to point at a chosen commit and, depending on the mode, may also update the staged state and the working directory. This is powerful, but it is also why reset must be used thoughtfully.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git revert</span> <span class="arg">&lt;bad-commit&gt;</span>
+<span class="prompt-sym">$</span> <span class="cmd">git reset</span> <span class="arg">--soft HEAD~1</span>
+<span class="prompt-sym">$</span> <span class="cmd">git reset</span> <span class="arg">--mixed HEAD~1</span>
+<span class="prompt-sym">$</span> <span class="cmd">git reset</span> <span class="arg">--hard HEAD~1</span></code></pre>
+
+<p>The first creates a new commit reversing an earlier commit. The other three all move the branch tip back by one commit, and differ only in how much else they bring with them:</p>
+
+<table class="key-table">
+  <thead>
+    <tr><th style="width:7rem;">Mode</th><th>Staging area</th><th>Working tree</th><th>Where your changes end up</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>--soft</code></td><td>untouched</td><td>untouched</td>
+      <td>The undone commit's changes are left <strong>staged</strong>, ready to be recommitted — useful for redoing a commit with a different message or split differently.</td>
+    </tr>
+    <tr>
+      <td><code>--mixed</code><br><span style="color:#888;font-size:0.85em;">(default)</span></td><td>reset</td><td>untouched</td>
+      <td>The changes survive as <strong>unstaged</strong> edits in your files, so you can restage them selectively.</td>
+    </tr>
+    <tr>
+      <td><code>--hard</code></td><td>reset</td><td>reset</td>
+      <td>The changes are <strong>discarded</strong>. Your files are forced to match the target commit.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Reading down that table, each mode simply reaches one step further: <code>--soft</code> moves only the branch pointer, <code>--mixed</code> also clears the staging area, and <code>--hard</code> additionally overwrites the files on disk. Only the last one destroys work, which is why it is the one to pause over.</p>
+
+<p><code>--soft</code> is the hardest of the three to picture, so here it is doing the job it is best at: splitting a commit that bundled two unrelated changes, which is exactly the habit Week 4 warned against. The commit has not been pushed, so <code>reset</code> is fair game:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">--oneline -1</span>
+<span class="out">7c2d1e9 (HEAD -&gt; main) Fix regex and reformat utils</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">git reset</span> <span class="arg">--soft HEAD~1</span>   <span class="comment"># undo the commit, keep everything staged</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">git status</span>
+<span class="out">On branch main
+Changes to be committed:
+        modified:   validators.py
+        modified:   utils.py</span></code></pre>
+
+<p>The commit is gone but not one line of work is lost — both files sit staged, exactly as they were the moment before you committed. From here you can rebuild the history you meant to record, unstaging one file so that each commit covers one idea:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git restore</span> <span class="arg">--staged utils.py</span>
+<span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Fix email regex rejecting valid addresses"</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">utils.py</span>
+<span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Reformat utils.py to consistent indentation"</span></code></pre>
+
+<p>One muddled commit has become two reviewable ones. Note that this only worked because the original commit was still local — had it been pushed, the same tidying would have meant rewriting history other people already had, and the right answer would have been to leave it alone.</p>
+
+<div class="callout callout-warn">
+  <strong>--hard is the only one of the three that destroys work</strong>
+  When you run <code>git reset --hard</code>, two different things can disappear at once, and they are worth separating. Any edit you had <em>never committed</em> is gone permanently — Git never recorded it, so there is nothing for it to restore from. The commit you reset past is a milder case: its snapshot is still in the repository, but no branch points at it any more, so getting back to it means knowing its hash (which <code>git log</code> would have shown you beforehand). The practical rule is the same either way: run <code>git status</code> first, and treat <code>--hard</code> as irreversible unless you are certain.
+</div>
+
+<div class="callout callout-fun">
+  <strong>The rule that ties it together</strong>
+  Before sharing your work, local history is often flexible — local cleanup workflows using reset are common. Once commits are shared, teams need greater care, because branch rewriting affects what other collaborators see and base their work on. That is why revert is the safer recovery tool for shared history, and reset is the stronger, more local-history-oriented repair tool.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 5 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
