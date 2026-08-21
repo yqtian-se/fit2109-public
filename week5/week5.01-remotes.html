@@ -1,0 +1,661 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      5.1 — Remotes, Upstream Tracking, and Synchronising Repositories — FIT2109
+      Week 5
+    </title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 16px;
+        line-height: 1.7;
+        color: #1a1a2e;
+        background: #f9f9fb;
+      }
+
+      .page {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 48px 32px 80px;
+      }
+
+      h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f0f23;
+        margin-bottom: 8px;
+      }
+      h2 {
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: #0f0f23;
+        margin: 52px 0 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e0e0f0;
+      }
+      h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #1a1a2e;
+        margin: 32px 0 12px;
+      }
+      p {
+        margin-bottom: 14px;
+      }
+      ul,
+      ol {
+        margin: 12px 0 16px 24px;
+      }
+      li {
+        margin-bottom: 6px;
+      }
+      a {
+        color: #4361ee;
+        text-decoration: none;
+      }
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .section-badge {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-bottom: 6px;
+      }
+      .badge-history {
+        background: #fff3e0;
+        color: #e65100;
+      }
+      .badge-concept {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .badge-tool {
+        background: #e3f2fd;
+        color: #1565c0;
+      }
+      .badge-quiz {
+        background: #f3e5f5;
+        color: #6a1b9a;
+      }
+
+      code {
+        font-family:
+          "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+        font-size: 0.88em;
+        background: #eef0f8;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: #d63031;
+      }
+      pre {
+        background: #1e1e2e;
+        color: #cdd6f4;
+        padding: 18px 20px;
+        border-radius: 10px;
+        overflow-x: auto;
+        margin: 16px 0;
+        font-family:
+          "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+        font-size: 0.9em;
+        line-height: 1.6;
+      }
+      pre code {
+        background: none;
+        color: inherit;
+        padding: 0;
+        font-size: inherit;
+      }
+      .comment {
+        color: #6c7086;
+      }
+      .prompt-sym {
+        color: #a6e3a1;
+      }
+      .cmd {
+        color: #89dceb;
+      }
+      .arg {
+        color: #fab387;
+      }
+      .out {
+        color: #cdd6f4;
+      }
+
+      .callout {
+        border-left: 4px solid;
+        padding: 14px 18px;
+        border-radius: 0 8px 8px 0;
+        margin: 20px 0;
+      }
+      .callout-try {
+        border-color: #00b894;
+        background: #f0fdf8;
+      }
+      .callout-fun {
+        border-color: #6c5ce7;
+        background: #f5f3ff;
+      }
+      .callout-note {
+        border-color: #fdcb6e;
+        background: #fffbee;
+      }
+      .callout-warn {
+        border-color: #e17055;
+        background: #fff4f2;
+      }
+      .callout strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.88rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .callout-try strong {
+        color: #00856a;
+      }
+      .callout-fun strong {
+        color: #5846d4;
+      }
+      .callout-note strong {
+        color: #b8860b;
+      }
+      .callout-warn strong {
+        color: #c0392b;
+      }
+
+      .diagram {
+        text-align: center;
+        margin: 24px 0;
+      }
+      .diagram svg {
+        max-width: 100%;
+        height: auto;
+      }
+      .diagram figcaption {
+        font-size: 0.82rem;
+        color: #666;
+        margin-top: 8px;
+      }
+
+      .fig {
+        margin: 24px 0;
+        text-align: center;
+      }
+      .fig img {
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      }
+      .fig figcaption {
+        font-size: 0.82rem;
+        color: #666;
+        margin-top: 8px;
+      }
+
+      .key-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0;
+      }
+      .key-table th {
+        background: #1e1e2e;
+        color: #a6e3a1;
+        padding: 10px 14px;
+        text-align: left;
+        font-size: 0.85rem;
+      }
+      .key-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #e8e8f0;
+      }
+      .key-table tr:last-child td {
+        border-bottom: none;
+      }
+      .key-table tr:nth-child(even) td {
+        background: #f4f4fb;
+      }
+      .key-table td:first-child,
+      .key-table th:first-child {
+        white-space: nowrap;
+      }
+      /* Narrow yes/no answer columns, so the prose column keeps the space. */
+      .key-table.compare th,
+      .key-table.compare td {
+        padding: 9px 10px;
+      }
+      .key-table.compare .yn {
+        text-align: center;
+        font-size: 0.82rem;
+        line-height: 1.35;
+        white-space: normal;
+      }
+      .key-table.compare td.yn {
+        font-size: 0.92rem;
+        font-weight: 600;
+      }
+      .key-table.compare td.yes {
+        color: #1e7a34;
+      }
+      .key-table.compare td.no {
+        color: #999;
+      }
+      .key-table.compare td:nth-child(2) {
+        white-space: nowrap;
+        color: #444;
+        font-size: 0.92rem;
+      }
+      .key-table.compare td:nth-child(3) {
+        font-size: 0.94rem;
+      }
+
+      .keycap {
+        display: inline-block;
+        background: #f0f0f5;
+        border: 1px solid #ccc;
+        border-bottom: 3px solid #aaa;
+        border-radius: 5px;
+        padding: 2px 8px;
+        font-family: monospace;
+        font-size: 0.85em;
+        color: #333;
+      }
+
+      .tool-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin: 20px 0;
+      }
+      .tool-card {
+        background: #fff;
+        border: 1px solid #e0e0f0;
+        border-radius: 10px;
+        padding: 18px;
+        transition: box-shadow 0.15s;
+      }
+      .tool-card:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      .tool-card .name {
+        font-weight: 700;
+        color: #4361ee;
+        font-size: 1rem;
+      }
+      .tool-card .desc {
+        font-size: 0.88rem;
+        color: #555;
+        margin-top: 6px;
+      }
+
+      .quiz-q {
+        background: #fff;
+        border: 1px solid #dde;
+        border-radius: 10px;
+        padding: 20px 22px;
+        margin: 18px 0;
+      }
+      .quiz-q .qnum {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+      .quiz-q .qtext {
+        font-weight: 600;
+        margin: 6px 0 14px;
+      }
+      .quiz-q .options label {
+        display: block;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 6px;
+        cursor: pointer;
+        border: 1px solid #e8e8f0;
+      }
+      .quiz-q .options label:hover {
+        background: #f0f4ff;
+        border-color: #b0c0f0;
+      }
+      .quiz-q .options input {
+        margin-right: 10px;
+      }
+
+      .ext-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 14px 0;
+      }
+      .ext-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff;
+        border: 1px solid #d0d8f0;
+        border-radius: 20px;
+        padding: 5px 14px;
+        font-size: 0.84rem;
+        color: #4361ee;
+        text-decoration: none;
+      }
+      .ext-link:hover {
+        background: #f0f4ff;
+        text-decoration: none;
+      }
+      .ext-link::before {
+        content: "↗";
+        font-size: 0.8em;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid #e0e0f0;
+        margin: 40px 0;
+      }
+
+      .hero {
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 60%,
+          #0f3460 100%
+        );
+        color: #e0e0f8;
+        padding: 40px 36px;
+        border-radius: 12px;
+        margin-bottom: 36px;
+      }
+      .hero h1 {
+        color: #fff;
+        font-size: 1.8rem;
+      }
+      .hero .sub {
+        color: #a0b0d0;
+        margin-top: 8px;
+        font-size: 0.95rem;
+      }
+      .hero .goals {
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.07);
+        border-radius: 8px;
+        padding: 16px 20px;
+      }
+      .hero .goals li {
+        color: #c8d8f0;
+      }
+
+      @media (max-width: 600px) {
+        .tool-grid {
+          grid-template-columns: 1fr;
+        }
+        .page {
+          padding: 24px 16px 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <span class="section-badge badge-concept">Core material</span>
+      <h2>5.1 Remotes, Upstream Tracking, and Synchronising Repositories</h2>
+
+      <p>
+        In Week 4, Git was introduced mainly as a local version control system:
+        you created a repository, staged changes, committed snapshots, and read
+        history on your own machine. In collaborative work, Git also needs a way
+        to connect your local repository to other copies of the same project.
+        That is where <strong>remotes</strong> come in.
+      </p>
+
+      <p>
+        A remote is a named reference to another repository, usually hosted on a
+        shared server or platform. The command
+        <code>git remote add &lt;name&gt; &lt;url&gt;</code> records that
+        relationship locally, so that later commands can refer to that other
+        repository by a short name instead of a full URL. By convention, the
+        remote you get automatically when you clone a repository is named
+        <code>origin</code>, which is why <code>origin</code> shows up in almost
+        every example, including this unit's.
+      </p>
+
+      <p>
+        That name should look familiar. In Week 4 you cloned a repository and
+        <code>git status</code> answered <em>"Your branch is up to date with
+        'origin/main'"</em>, while <code>git log</code> showed
+        <code>(HEAD -&gt; main, origin/main)</code>. Two names appeared for what
+        looked like one branch, and only <code>main</code> was explained at the
+        time. <code>origin/main</code> is the other half of that picture, and it
+        has a specific meaning.
+      </p>
+
+      <p>
+        <strong>Remote-tracking branches</strong>, such as
+        <code>origin/main</code>, are local references recording what Git last
+        saw on the remote repository. They are not editable working branches —
+        they are your local record of remote branch positions. So when a freshly
+        cloned repository claims your branch is "up to date with
+        <code>origin/main</code>", it is not contacting the server to check.
+        It is comparing your <code>main</code> against its own stored note of
+        where <code>origin</code>'s <code>main</code> stood the last time the
+        two actually spoke — which, immediately after a clone, was a moment ago.
+      </p>
+
+      <h3>fetch, pull, and push</h3>
+      <p>
+        Now that the remote and its remote-tracking branches have names, the
+        question is how data actually moves between the two repositories. Three
+        commands do that work, and the differences between them are worth being
+        precise about, because they change different things.
+      </p>
+
+      <table class="key-table">
+        <thead>
+          <tr>
+            <th style="width: 12rem">Command</th>
+            <th>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>git fetch</code></td>
+            <td>
+              Updates your remote-tracking information only — does not touch
+              your working branch.
+            </td>
+          </tr>
+          <tr>
+            <td><code>git pull</code></td>
+            <td>
+              Runs <code>git fetch</code>, then integrates the chosen remote
+              branch into your current branch — by merging it, which is the
+              behaviour you get by default. (Section 5.4 introduces a second
+              way of integrating, which <code>pull</code> can also be asked to
+              use.)
+            </td>
+          </tr>
+          <tr>
+            <td><code>git push</code></td>
+            <td>
+              Uploads your local branch to the remote, e.g.
+              <code>git push origin main</code> pushes local main to origin's
+              main.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="fig">
+        <img
+          src="images/week5-fetch-pull-push-diagram.png"
+          alt="Diagram of a local developer machine connected to a remote repository: git fetch downloads changes into the remote-tracking branch without touching working files; git pull fetches and immediately merges into the local working directory; git push uploads committed local changes to the remote."
+        />
+        <figcaption>
+          fetch downloads only; pull downloads and integrates; push uploads your
+          committed local changes.
+        </figcaption>
+      </div>
+
+      <p>
+        The same three commands, side by side — a quick reference for which one
+        changes what:
+      </p>
+
+      <table class="key-table compare">
+        <thead>
+          <tr>
+            <th style="width: 6.5rem">Command</th>
+            <th style="width: 8rem">Direction</th>
+            <th>What it does</th>
+            <th class="yn" style="width: 4.6rem">Working files?</th>
+            <th class="yn" style="width: 4.6rem">Your branch?</th>
+            <th class="yn" style="width: 4.6rem">Remote?</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>git fetch</code></td>
+            <td>Remote → you</td>
+            <td>
+              Downloads new commits and updates your remote-tracking branches.
+            </td>
+            <td class="yn no">No</td>
+            <td class="yn no">No</td>
+            <td class="yn no">No</td>
+          </tr>
+          <tr>
+            <td><code>git pull</code></td>
+            <td>Remote → you</td>
+            <td>
+              Fetches, then integrates the new commits into your current branch.
+            </td>
+            <td class="yn yes">Yes</td>
+            <td class="yn yes">Yes</td>
+            <td class="yn no">No</td>
+          </tr>
+          <tr>
+            <td><code>git push</code></td>
+            <td>You → remote</td>
+            <td>Uploads your local commits to the remote.</td>
+            <td class="yn no">No</td>
+            <td class="yn no">No</td>
+            <td class="yn yes">Yes</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="font-size: 0.86rem; color: #666">
+        <code>git pull</code> only changes your files and branch when the remote
+        actually has new commits; if there is nothing to fetch, it does nothing.
+        Note also that <code>git push</code> leaves your working files and your
+        local branch untouched — it sends commits you have already made.
+      </p>
+
+      <h3>Local branch vs. remote-tracking branch</h3>
+      <p>
+        Keeping these two apart is one of the most important mental models in
+        collaborative Git, and <code>git fetch</code> is the command that shows
+        why: it moves only one of them. When you run <code>git fetch</code>, Git
+        contacts the remote repository, downloads any new objects and
+        references, and updates your remote-tracking branches — and then stops.
+        Your own <code>main</code> stays exactly where it was, and so do the
+        files in your working tree. Nothing you have written can be overwritten
+        by a fetch, which is precisely what makes it the cautious way to find
+        out what has changed before deciding what to do about it.
+      </p>
+
+      <div class="fig">
+        <img
+          src="images/week5-remote-tracking-fetch.png"
+          alt="Three-step diagram of remote-tracking branches: the initial diverged state, running git fetch origin which updates the read-only origin/main remote-tracking branch without moving local main, and after git merge origin/main or git pull where local main fast-forwards to match."
+        />
+        <figcaption>
+          git fetch updates your remote-tracking branch only. Your local main
+          only moves when you merge or pull.
+        </figcaption>
+      </div>
+
+      <h3>Upstream tracking</h3>
+      <p>
+        A local branch can be configured to <strong>track</strong> a remote
+        branch, meaning Git records which remote and which branch should be
+        treated as the default partner for operations such as
+        <code>git pull</code>. That default partner is called the branch's
+        <strong>upstream</strong>. The <code>--track</code> option sets an
+        upstream explicitly, and clone operations usually configure the initial
+        local branch to track the default branch from the repository that was
+        cloned. This is why a freshly cloned repository often lets you type
+        <code>git pull</code> or <code>git push</code> without repeatedly
+        spelling out the remote and branch names. A branch you created yourself
+        has no upstream until you give it one, which is what the
+        <code>-u</code> in <code>git push -u origin &lt;branch&gt;</code> does on
+        that branch's first push.
+      </p>
+
+      <h3>Seeing what is actually configured</h3>
+      <p>
+        Rather than guessing which remotes exist or which branch tracks what,
+        ask Git directly. <code>git remote -v</code> lists every remote with its
+        fetch and push URLs, and <code>git branch -vv</code> lists your local
+        branches together with their upstream and how far ahead or behind each
+        one currently is:
+      </p>
+
+      <pre><code><span class="prompt-sym">$</span> <span class="cmd">git remote</span> <span class="arg">-v</span>
+<span class="out">origin  https://github.com/ada/parser.git (fetch)
+origin  https://github.com/ada/parser.git (push)</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">git branch</span> <span class="arg">-vv</span>
+<span class="out">* feature-parser 3f8a2c1 [origin/feature-parser: ahead 2] Add token scanner
+  main           9d4e7b0 [origin/main] Add unit tests for parser</span></code></pre>
+
+      <p>
+        Here <code>feature-parser</code> tracks
+        <code>origin/feature-parser</code> and has two commits that have not been
+        pushed yet, while <code>main</code> is level with
+        <code>origin/main</code>. One caution: "ahead 2" is measured against your
+        <em>remote-tracking</em> branch, which is only as current as your last
+        fetch. If a teammate has pushed since then, Git cannot know until you run
+        <code>git fetch</code> — which is exactly why fetching before you judge
+        the state of a shared branch is a good habit.
+      </p>
+
+      <div class="callout callout-fun">
+        <strong>The remote is not a magical black box</strong>
+        A remote is simply another repository with named branches. Fetch updates
+        your view of it. Pull integrates from it. Push publishes to it. Upstream
+        tracking tells Git which remote branch should be treated as the default
+        counterpart of your current branch.
+      </div>
+
+      <hr class="divider" />
+      <p style="color: #aaa; font-size: 0.82rem; text-align: center">
+        FIT2109 · Week 5 · Monash University · by
+        <a
+          href="https://research.monash.edu/en/persons/zahra-mirzamomen/"
+          target="_blank"
+          style="color: #4361ee; font-weight: 600"
+          >Dr. Zahra Mirzamomen</a
+        >
+      </p>
+    </div>
+  </body>
+</html>

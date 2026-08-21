@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.6 — Tracing Problems and Regressions with bisect — FIT2109 Week 5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Debugging tool</span>
+<h2>5.6 Tracing Problems and Regressions with bisect</h2>
+
+<p>Some bugs are easy to trace because you already know roughly where they came from. Others are much harder: a project that worked last week now fails, but the code has changed many times in between. Looking through the log one commit at a time is possible, but slow. This is the kind of problem <code>git bisect</code> is designed to solve.</p>
+
+<p>The situation has a name: a <strong>regression</strong> is behaviour that used to work and now does not. Because Git history is a series of snapshots taken over time, tracking one down is a search problem. Somewhere between a commit where the behaviour was still correct and one where it is not, a single commit changed it — and the job is to find which.</p>
+
+<p><code>git bisect</code> searches that range by <strong>binary search</strong>. You give it one commit known to be good and one known to be bad; it checks out the midpoint for you to test, and each verdict you give it discards half of what remains. The saving is exactly what binary search buys anywhere: the number of tests grows with the logarithm of the range rather than its length, so a span of 1,000 commits takes around 10 tests rather than 500.</p>
+
+<h3>A worked session</h3>
+<p>Suppose the login tests pass at release <code>v1.0</code> but fail on today's <code>main</code>. You start a bisect by marking those two endpoints — the tag is usable here because, as Section 5.4 noted, Git accepts any commit reference where a commit is expected:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git bisect</span> <span class="arg">start</span>
+<span class="prompt-sym">$</span> <span class="cmd">git bisect</span> <span class="arg">bad</span>              <span class="comment"># the commit I am on is broken</span>
+<span class="prompt-sym">$</span> <span class="cmd">git bisect</span> <span class="arg">good v1.0</span>         <span class="comment"># this release was fine</span>
+<span class="out">Bisecting: 9 revisions left to test after this (roughly 3 steps)
+[c3d4e5f] Refactor session handling</span></code></pre>
+
+<p>Notice what just happened to your files: Git has <em>checked out</em> commit <code>c3d4e5f</code>, so the working tree now contains the project exactly as it stood at that point. That is what makes the next step possible — you run your test against real code, not against a diff:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">python</span> <span class="arg">-m pytest tests/test_login.py</span>
+<span class="out">... 4 passed</span>
+<span class="prompt-sym">$</span> <span class="cmd">git bisect</span> <span class="arg">good</span>             <span class="comment"># this one is fine; the bug is later</span>
+<span class="out">Bisecting: 4 revisions left to test after this (roughly 2 steps)
+[d4e5f6a] Add password reset</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">python</span> <span class="arg">-m pytest tests/test_login.py</span>
+<span class="out">... 1 failed</span>
+<span class="prompt-sym">$</span> <span class="cmd">git bisect</span> <span class="arg">bad</span>              <span class="comment"># broken here; the cause is earlier</span>
+<span class="out">Bisecting: 1 revision left to test after this (roughly 1 step)</span></code></pre>
+
+<p>You continue answering <code>good</code> or <code>bad</code> until the range collapses to a single commit, which Git then names:</p>
+
+<pre><code><span class="out">d4e5f6a is the first bad commit
+commit d4e5f6a...
+Author: Dave &lt;dave@example.com&gt;
+
+    Add password reset
+
+ auth.py | 12 +++++++-----</span></code></pre>
+
+<p>Four questions answered, and the culprit is identified out of a dozen candidates. Each verdict you gave was a plain yes-or-no about observed behaviour — at no point did you have to reason about what any commit's code was doing.</p>
+
+<div class="callout callout-warn">
+  <strong>Bisect is only as reliable as your test</strong>
+  Every step asks you the same question, so you must be able to answer it the same way every time. A test you run slightly differently at each step, or a bug that only appears intermittently, will produce a confident but wrong answer — one misjudged verdict sends the search into the wrong half and it never comes back. Decide exactly how you will reproduce the problem <em>before</em> you start, and use the same check at every step.
+</div>
+
+<h3>After bisect finds the culprit</h3>
+<p>First, a word about where you have been standing all this time. To hand you each commit to test, Git checked them out in a <strong>detached HEAD</strong> state — the same look-but-don't-commit mode you met with tags in Week 4. That is why none of this disturbed your work: you were never <em>on</em> a branch during the search, so no branch moved. It also means the bisect is not finished just because Git has named the culprit; you are still in bisect mode until you say otherwise.</p>
+
+<p>The rest is a short, fixed routine: read the commit, leave bisect mode, then repair on a normal branch.</p>
+
+<pre><code><span class="comment"># bisect has named d4e5f6a as the first bad commit</span>
+
+<span class="comment"># 1) Read what that commit actually did — this moves nothing</span>
+<span class="prompt-sym">$</span> <span class="cmd">git show</span> <span class="arg">d4e5f6a</span>
+
+<span class="comment"># 2) End the bisect and go back to where you started</span>
+<span class="prompt-sym">$</span> <span class="cmd">git bisect</span> <span class="arg">reset</span>
+<span class="out">Previous HEAD position was d4e5f6a Add password reset
+Switched to branch 'main'</span>
+
+<span class="comment"># 3) Branch off the code you actually want to repair</span>
+<span class="prompt-sym">$</span> <span class="cmd">git switch</span> <span class="arg">-c fix/login-regression</span>
+
+<span class="comment"># 4) Edit the files, then commit the fix</span>
+<span class="prompt-sym">$</span> <span class="cmd">git add</span> <span class="arg">auth.py tests/test_login.py</span>
+<span class="prompt-sym">$</span> <span class="cmd">git commit</span> <span class="arg">-m "Fix login regression introduced by d4e5f6a"</span></code></pre>
+
+<p>Step 2 is the one to remember. <code>git bisect reset</code> ends the search and returns you to the branch you were on when you started it — skip it and you are left stranded at some midpoint commit, wondering why your files look wrong. Step 3 then branches from that restored branch, which is the current code, <em>not</em> from the old bad commit.</p>
+
+<div class="callout callout-note">
+  <strong>Inspect the bad commit, but fix on a normal branch</strong>
+  The bad commit may be old, while your real target for repair is usually the current main branch or a maintenance branch. If the bad commit has already been shared with others, it is usually safer to add a new fixing commit rather than editing history.
+</div>
+
+<div class="callout callout-fun">
+  <strong>bisect rewards good commit discipline</strong>
+  When the result of a bisect is a non-merge commit, you should normally be able to discover the problem by examining just that commit — which is much easier if developers break changes into small, self-contained commits. A repository full of giant mixed commits is harder to debug historically.
+</div>
+
+<p>It is helpful to contrast <code>git bisect</code> with <code>git blame</code>. Blame answers "which commit last changed this line?" Bisect answers "which commit introduced the behavior change I am observing?" A bug can appear because of interactions across multiple lines or files, so line-level annotation is not always enough — bisect works at the level of snapshots and observed behavior. Because every local clone has the full history, bisect is also a good example of why Git's distributed model makes debugging local, fast, and under your control.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 5 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

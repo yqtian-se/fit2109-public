@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>5.5 — Reading and Interpreting Repository History — FIT2109 Week 5</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: #f9f9fb;
+  }
+
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+
+  h1 { font-size: 2rem; font-weight: 700; color: #0f0f23; margin-bottom: 8px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px;
+       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .section-badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px;
+  }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+
+  code {
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.88em;
+    background: #eef0f8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #d63031;
+  }
+  pre {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    margin: 16px 0;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .comment { color: #6c7086; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .out { color: #cdd6f4; }
+
+  .callout {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    margin: 20px 0;
+  }
+  .callout-try   { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun   { border-color: #6c5ce7; background: #f5f3ff; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem;
+                    text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-try  strong { color: #00856a; }
+  .callout-fun  strong { color: #5846d4; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px;
+                  text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .key-table td:first-child, .key-table th:first-child { white-space: nowrap; }
+  .keycap {
+    display: inline-block; background: #f0f0f5; border: 1px solid #ccc;
+    border-bottom: 3px solid #aaa; border-radius: 5px;
+    padding: 2px 8px; font-family: monospace; font-size: 0.85em; color: #333;
+  }
+
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card {
+    background: #fff; border: 1px solid #e0e0f0; border-radius: 10px;
+    padding: 18px; transition: box-shadow 0.15s;
+  }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+
+  .quiz-q {
+    background: #fff; border: 1px solid #dde; border-radius: 10px;
+    padding: 20px 22px; margin: 18px 0;
+  }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888;
+                  text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label {
+    display: block; padding: 8px 12px; border-radius: 6px;
+    margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0;
+  }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #fff; border: 1px solid #d0d8f0;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.84rem; color: #4361ee; text-decoration: none;
+  }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+
+  .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+    color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px;
+  }
+  .hero h1 { color: #fff; font-size: 1.8rem; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07);
+                  border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; }
+
+  @media (max-width: 600px) {
+    .tool-grid { grid-template-columns: 1fr; }
+    .page { padding: 24px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>5.5 Reading and Interpreting Repository History</h2>
+
+<p>Git stores history so that you can question it later. In collaborative work the current state of the files rarely answers everything you need to know: when did this file last change, what exactly is different between two versions, and who last touched the line you are staring at? Three commands cover most of those questions — <code>git log</code> for <em>which commits</em>, <code>git diff</code> for <em>what changed</em>, and <code>git blame</code> for <em>who changed it and when</em>.</p>
+
+<div class="fig">
+  <img src="images/week5-log-diff-blame.png" alt="Three-panel diagram of git log, git diff, and git blame: git log --oneline --graph --decorate showing commit history, git diff output showing unstaged changes / staged changes / a comparison between two commits, and git blame output annotating each line of a file with the commit, author, and date that last changed it.">
+  <figcaption>git log shows history, git diff shows what changed, git blame shows who last touched each line.</figcaption>
+</div>
+
+<table class="key-table">
+  <thead><tr><th style="width:16rem;">Command</th><th>Answers</th></tr></thead>
+  <tbody>
+    <tr><td><code>git log</code></td><td>What commits are reachable from here, following parent links?</td></tr>
+    <tr><td><code>git log A..B</code></td><td>Which commits are in <code>B</code> but not in <code>A</code>?</td></tr>
+    <tr><td><code>git log --follow -- file</code></td><td>What is this file's history, even across renames?</td></tr>
+    <tr><td><code>git diff</code></td><td>What have I changed but not staged yet?</td></tr>
+    <tr><td><code>git diff --staged</code></td><td>What will go into the next commit if I commit now?</td></tr>
+    <tr><td><code>git diff A B</code></td><td>How do two commits differ?</td></tr>
+    <tr><td><code>git blame file</code></td><td>What commit last changed each line of this file?</td></tr>
+    <tr><td><code>git show &lt;commit&gt;</code></td><td>What did this one commit change, and what was its message?</td></tr>
+  </tbody>
+</table>
+
+<p><code>git log</code> is the starting point for most historical questions, and it is more than a chronological diary. Beyond listing the commits reachable from where you are, it can restrict that list to one side of a comparison — <code>git log A..B</code> shows the commits reachable from <code>B</code> but not from <code>A</code>, which you met in Week 4 and which turns out to be the single most useful form in collaborative work. It can also narrow to one file, and <code>--follow</code> keeps tracking that file's history back past any renames.</p>
+
+<p>One piece of syntax appears in several of those commands and is worth naming: the bare <code>--</code>. It separates the things Git should treat as commits or branches from the things it should treat as file paths. Without it, a command like <code>git log README.md</code> is ambiguous if a branch happens to also be called <code>README.md</code>; writing <code>git log -- README.md</code> tells Git that what follows is definitely a path. You will see the same separator in <code>git diff &lt;commit&gt; &lt;commit&gt; -- &lt;file&gt;</code>.</p>
+
+<p><code>git diff</code> answers a different class of question: not <em>which commits</em>, but <em>what is textually different</em> between two states. Which two states depends entirely on what you give it, and three forms are worth knowing by heart — the same three set out in the figure above. With no arguments, it compares your working tree against the staging area: what you have changed but not staged. With <code>--staged</code>, it compares the staging area against the last commit: what committing right now would record. Given two commits, it compares those. The first two you met in Week 4; what is new here is using the third to inspect work that is not yours.</p>
+
+<p><code>git blame</code> is often misunderstood because of its name. In practice, it is better treated as a line-level <strong>annotation</strong> tool than as a social blame mechanism — a way to see what commit last modified each line of a file, which is extremely useful "code archaeology" when you are trying to understand where suspicious code came from.</p>
+
+<p>One more piece of notation is worth having before going further, because it recurs through the rest of this week. Wherever Git expects a commit, you can write <code>HEAD~N</code> to mean "<em>N</em> commits back from where you are now": <code>HEAD~1</code> is the commit before the current one, <code>HEAD~2</code> the one before that, and so on. It saves looking up a hash whenever you only need to point a short way back. So the quickest way to review what your own last commit actually did is:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git diff</span> <span class="arg">HEAD~1 HEAD</span>     <span class="comment"># what changed in the most recent commit?</span>
+<span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">--follow -- README.md</span>   <span class="comment"># and this file's history, past renames</span></code></pre>
+
+<h3>Three questions you will actually ask</h3>
+<p>These commands are far more useful combined than listed. Below are the three questions that come up most often once you are sharing a repository, and the commands that answer each.</p>
+
+<p><strong>1. "What have my teammates done since I last looked?"</strong> This is where <code>git fetch</code> earns its place. Fetching updates <code>origin/main</code> but deliberately leaves your own <code>main</code> alone (Section 5.1) — which means the gap between the two is exactly the work you have not seen yet, and a range asks for precisely that gap:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git fetch</span> <span class="arg">origin</span>
+<span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">main..origin/main --oneline</span>
+<span class="out">9d4e7b0 Add unit tests for parser
+5c1f6a8 Fix off-by-one error in tokenizer</span></code></pre>
+
+<p>Two commits arrived that you do not have. Read <code>main..origin/main</code> as "in <code>origin/main</code>, but not in <code>main</code>". You can now decide whether to pull them straight away, and you have read them <em>before</em> they touch your working tree — which is the whole reason to prefer fetching over pulling blind.</p>
+
+<p><strong>2. "What is on my branch that <code>main</code> does not have yet?"</strong> The same question with the two sides swapped. Run this before opening a pull request and you see exactly the set of commits the reviewer will see:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git log</span> <span class="arg">main..feature-parser --oneline</span>
+<span class="out">3f8a2c1 Add token scanner
+c8d2e91 Add parser skeleton
+a7b3f40 wip</span></code></pre>
+
+<p>That third commit is the reason to look. A message like <code>wip</code> tells a reviewer nothing, and this is the moment to notice it — before other people are reading your history rather than after.</p>
+
+<p><strong>3. "Where did this line come from, and why?"</strong> Blame tells you <em>which</em> commit last touched a line, but a hash on its own explains nothing. The useful move is to take that hash straight to <code>git show</code>, which prints the commit's message together with its diff:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">git blame</span> <span class="arg">parser.py</span>
+<span class="out">...
+5c1f6a8 (Bob 2024-05-10 42)     if index &lt;= len(tokens):
+...</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">git show</span> <span class="arg">5c1f6a8</span>
+<span class="out">commit 5c1f6a8...
+Author: Bob &lt;bob@example.com&gt;
+
+    Fix off-by-one error in tokenizer
+...</span></code></pre>
+
+<p>The line now has a reason attached to it, not just an author. That two-step — <code>blame</code> to find the commit, <code>show</code> to understand it — is the everyday form of what people call code archaeology, and it is why Week 4 insisted on commit messages that explain <em>why</em> rather than <em>what</em>.</p>
+
+<div class="callout callout-fun">
+  <strong>Choose the lens, don't memorise the commands</strong>
+  Each of these tools answers one shape of question: <code>log</code> for <em>which commits</em>, <code>diff</code> for <em>what text changed</em>, <code>blame</code> for <em>who last touched this line</em>, <code>show</code> for <em>what one commit did</em>. Almost every real investigation chains two or three of them together. The skill is not recalling flags — it is recognising which question you are actually asking.
+</div>
+
+<p>A clean commit message helps <code>git log</code> make sense. Focused changes make <code>git diff</code> easier to read. Small, meaningful commits make <code>git blame</code> more informative, because each line then points back to a clearer historical decision. Good collaboration today creates better history analysis tomorrow.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 5 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
