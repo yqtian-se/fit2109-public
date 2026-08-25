@@ -3,41 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6.3 One Python environment per project — FIT2109</title>
+  <title>6.3 Description and installed state — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required pre-reading</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label required">Required</span><span>6.3</span></div>
-  <h1>One Python environment per project</h1>
-  <p class="lead">Recording a version answers “what should pip install?” A virtual environment answers “which project-specific package location should pip use?”</p>
+  <h1>Description and installed state</h1>
+  <p class="lead">A dependency file and a <code>.venv/</code> directory may sit beside the same source code, but they play very different roles. One describes what the project needs; the other is a local installation produced from that description.</p>
 
-  <h2>The conflict</h2>
-  <p>Suppose App A requires <code>messagekit==1.4</code>, while App B has been updated for <code>messagekit==2.0</code>. If both applications use one shared Python package location, installing the version for one application can make the other application fail.</p>
+  <h2>Four kinds of project information</h2>
+  <table>
+    <thead><tr><th>Category</th><th>Example</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>Source</td><td><code>app.py</code></td><td>Instructions written by the project.</td></tr>
+      <tr><td>Dependency description</td><td><code>requirements.txt</code> or <code>pyproject.toml</code></td><td>Package constraints the project records and reviews.</td></tr>
+      <tr><td>Installed state</td><td><code>.venv/</code> and its <code>site-packages/</code></td><td>Files produced when an environment is created and packages are installed.</td></tr>
+      <tr><td>Runtime evidence</td><td>Interpreter path, package path, and version output</td><td>Observations showing which environment a process actually used.</td></tr>
+    </tbody>
+  </table>
+  <p>Source and dependency descriptions normally belong in version control. Each checkout rebuilds its own installed state. When something looks wrong, interpreter paths, package paths, and version output show what the process actually used.</p>
 
-  <div class="grid-2">
-    <section class="panel"><h3>Shared environment</h3><p>Only one installed <code>messagekit</code> version is selected by that Python environment. App A or App B may be broken.</p></section>
-    <section class="panel"><h3>One venv per project</h3><p>App A uses <code>.venv-a</code> with 1.4. App B uses <code>.venv-b</code> with 2.0. Both can run.</p></section>
-  </div>
+  <h2>Where Python finds packages</h2>
+  <p>A Python interpreter searches configured directories when resolving an import. One important location is commonly called <code>site-packages</code>, where third-party packages are installed. If several projects use the same interpreter and the same package location, changing that shared state for one project can affect the others.</p>
+  <p>A Python virtual environment, or <em>venv</em>, creates a project-specific Python environment with its own package location. It is created from an existing Python interpreter, so it inherits that interpreter's Python version rather than downloading a different one.</p>
 
-  <h2>Create, activate, and install</h2>
-  <pre><code>python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt</code></pre>
-  <p>Activation places the venv's launchers at the front of the shell's <code>PATH</code>. After activation, <code>python</code> and <code>python -m pip</code> refer to the project environment.</p>
+  <pre><code>project/
+├── source files
+├── dependency description
+└── .venv/
+    ├── Python launcher
+    └── site-packages/</code></pre>
 
-  <h2>Inspect the active environment</h2>
-  <pre><code>python -c "import sys; print(sys.executable)"
-python -c "import messagekit; print(messagekit.__file__)"</code></pre>
-  <p>Both paths should point inside <code>.venv</code>. This is evidence that the shell is using the project environment.</p>
+  <h2>Activation changes command lookup</h2>
+  <p>The shell variable <code>PATH</code> is an ordered list of directories searched for executable commands. Activating a venv places the environment's launcher directory near the front of <code>PATH</code> in the current shell. A command named <code>python</code> then resolves to the venv launcher before a system-wide launcher.</p>
+  <p>Activation does not copy the environment, start a new operating system, or permanently reconfigure the machine. It changes command lookup for one shell session. A new terminal has its own shell state and normally needs its environment selected again.</p>
 
-  <div class="callout warning"><strong>A venv does not supply a new operating system</strong>It is created from the Python interpreter you select. It isolates Python packages, but it does not change that Python version, provide system commands, or start a separate kernel.</div>
+  <h2>The interpreter decides where pip installs</h2>
+  <p>A machine can contain several Python interpreters, each with its own package locations. Running pip through a specific interpreter makes the relationship explicit: that interpreter determines which Python environment receives the installed package. This is why the workshop will inspect both the Python executable path and the imported package path rather than trusting the prompt alone.</p>
 
-  <h2><code>pip3</code> and <code>python3 -m pip</code></h2>
-  <p><code>pip3</code> is normally a pip executable associated with a Python 3 installation. <code>python3 -m pip</code> makes the relationship explicit by running pip through the selected interpreter. Inside the activated venv, use <code>python -m pip</code> so the destination is clear.</p>
+  <h2>Why installed environments are rebuilt, not shared</h2>
+  <p>A venv can contain platform-specific installed files and references to the interpreter used to create it. Copying a venv between machines can therefore fail even when the directory names look identical.</p>
+  <p>The usual handoff is the project description, not the generated directory. Each developer creates local installed state from the recorded description. The <code>.venv/</code> directory is normally excluded from Git, while dependency declarations remain reviewable with the source.</p>
 
-  <nav class="page-nav"><a href="week6.02-dependencies.html">← Dependency versions</a><a href="week6.04-package-layers.html">Next: Python and system packages →</a></nav>
+  <div class="callout warning"><strong>The boundary of a venv</strong>A venv separates Python package state. It does not provide system commands, isolate running processes, create a separate filesystem, or supply another operating-system kernel.</div>
+
+  <div class="key-points"><strong>Key points</strong><ul><li>Dependency declarations and installed packages are different kinds of state.</li><li>A venv provides a project-specific Python package location and inherits its creator's Python version.</li><li>Activation changes command lookup in one shell; it does not create a new machine.</li><li>Developers share the description and rebuild the generated environment locally.</li></ul></div>
+
+  <nav class="page-nav"><a href="week6.02-dependencies.html">← Dependency resolution</a><a href="week6.04-package-layers.html">Next: package-manager boundaries →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>
 </article></main>
 </body>

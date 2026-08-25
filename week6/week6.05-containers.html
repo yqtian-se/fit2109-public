@@ -3,46 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6.5 What a container controls — FIT2109</title>
+  <title>6.5 Processes, filesystems, and isolation — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required pre-reading</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label required">Required</span><span>6.5</span></div>
-  <h1>What a container controls</h1>
-  <p class="lead">A container is an isolated process with its own view of files, processes, and configuration. On Linux, containers share the host kernel rather than booting a guest kernel.</p>
+  <h1>Processes, filesystems, and isolation</h1>
+  <p class="lead">A venv, a container, and a virtual machine do not create the same kind of boundary. Comparing them starts with three pieces: the running process, the files it can see, and the operating-system kernel doing the low-level work.</p>
 
-  <figure class="figure">
-    <img src="images/week6-container-isolation.png" alt="Several containers with isolated files and processes share one Linux kernel">
-    <figcaption>Containers isolate user-space state while sharing the Linux kernel.</figcaption>
-  </figure>
+  <h2>A process is a running program</h2>
+  <p>A program file is stored code. A <em>process</em> is a running instance of that code with memory, open files, environment variables, permissions, and a current working directory. Starting the same program twice creates two processes with separate runtime state.</p>
+  <p>A process can use only what the operating system makes available through paths, permissions, environment variables, network interfaces, and services. Change that view and the process may behave differently.</p>
 
-  <h2>Image and container</h2>
-  <div class="grid-2">
-    <section class="panel"><h3>Image</h3><p>A reusable set of filesystem contents and runtime configuration. It can exist locally and can also be distributed through a registry.</p></section>
-    <section class="panel"><h3>Container</h3><p>A runtime instance created from an image. It adds a writable container layer while it exists.</p></section>
-  </div>
+  <h2>The kernel and user space</h2>
+  <p>The <em>kernel</em> is the core of an operating system. It manages hardware, memory, filesystems, networking, and process scheduling. Ordinary applications and most libraries run outside the kernel in <em>user space</em> and request kernel services when they need low-level work.</p>
+  <p>The <em>host</em> is the machine or managed environment that provides the kernel and runs the isolation software. A <em>guest</em> is a separate operating system running on virtualised hardware.</p>
 
-  <h2>Why filesystem isolation matters</h2>
-  <p>The developer may store a project anywhere on the host. The image can place the application at a stable internal path such as <code>/app</code>. It can also include Python, the tested Python packages, and <code>curl</code>. Another user starts from those recorded contents instead of recreating each host path and installation manually.</p>
-
-  <p>Installing a package inside a container changes that container's filesystem, not the host filesystem. A stopped container remains until it is removed. For one-off runs, <code>docker run --rm ...</code> removes the container after it exits.</p>
-
-  <h2>Container and VM: the essential distinction</h2>
+  <h2>Three boundaries</h2>
   <table>
-    <thead><tr><th></th><th>Container</th><th>Virtual machine</th></tr></thead>
+    <thead><tr><th>Tool</th><th>Primarily separates</th><th>Still shared or inherited</th></tr></thead>
     <tbody>
-      <tr><td>Kernel</td><td>Shares the Linux host kernel</td><td>Boots a guest kernel</td></tr>
-      <tr><td>Typical startup</td><td>Fast process startup</td><td>Boots an operating system</td></tr>
-      <tr><td>Boundary</td><td>Process and user-space isolation</td><td>Separate guest operating system</td></tr>
+      <tr><td>Python venv</td><td>Python launcher and package location</td><td>Host processes, filesystem, system commands, and kernel</td></tr>
+      <tr><td>Container</td><td>Application processes, user-space filesystem view, and selected configuration</td><td>A Linux kernel supplied by the host or a managed Linux environment</td></tr>
+      <tr><td>Virtual machine</td><td>A complete guest operating system on virtualised hardware</td><td>Physical host resources managed by a hypervisor</td></tr>
     </tbody>
   </table>
-  <p>Docker Desktop provides a Linux environment behind the scenes on macOS and Windows, because Linux containers need a Linux kernel.</p>
+  <p>A <em>hypervisor</em> is the software layer that creates and manages the virtual hardware presented to a VM.</p>
+  <p>Do not choose by asking which tool is “strongest.” Ask where the troublesome dependency lives. If it is only a Python package, a venv may be enough. If the application also needs system files and commands, a container covers more. A complete guest operating system calls for the larger VM boundary.</p>
 
-  <div class="callout warning"><strong>What the image does not capture</strong>The host kernel, CPU architecture, external services, secrets, and live input are still outside the image. Containers improve repeatability; they do not make every run identical.</div>
+  <figure class="figure runtime-stack">
+    <div class="container-row">
+      <div class="flow-node"><strong>Container A</strong><span>processes + user-space files</span></div>
+      <div class="flow-node"><strong>Container B</strong><span>processes + user-space files</span></div>
+    </div>
+    <div class="shared-layer"><strong>Shared Linux kernel</strong><span>memory, filesystems, networking, and hardware access</span></div>
+    <div class="host-layer"><strong>Linux host or managed Linux environment</strong></div>
+    <figcaption>Container processes have separated user-space views while relying on one Linux kernel.</figcaption>
+  </figure>
 
-  <nav class="page-nav"><a href="week6.04-package-layers.html">← Package layers</a><a href="week6.06-dockerfile.html">Next: Dockerfile, image, and container →</a></nav>
+  <h2>Image and container are different states</h2>
+  <p>A container <em>image</em> is a reusable package of user-space filesystem contents and runtime configuration. A <em>container</em> is an instance created from an image. This is similar to the distinction between a program file and a process: one stored artifact can create many runtime instances.</p>
+  <p>Changes made by one container do not rewrite the original image. A new container starts again from the image's recorded contents. Storage that must outlive a disposable container needs an explicitly managed location outside that temporary runtime state.</p>
+
+  <h2>Files inside and outside the boundary</h2>
+  <p>A container can give an application a predictable internal directory structure even when users store the project in different host locations. Files can also be mounted from the host when the application must read changing source or data. Mounted files remain host-controlled and can therefore reintroduce differences in paths, permissions, and contents.</p>
+
+  <h2>What these boundaries do not guarantee</h2>
+  <p>A container image does not contain the host kernel, processor architecture, network services, secrets, or live input. A VM includes a guest kernel but still depends on virtual hardware, external services, and runtime data. Isolation reduces selected variation; it does not make every execution identical.</p>
+  <p>The <a href="week6.08-vms.html">further-reading chapter on virtual machines</a> introduces common local and cloud VM software. The workshop will revisit the container/VM boundary through concrete requirements.</p>
+
+  <div class="key-points"><strong>Key points</strong><ul><li>A process is runtime state created from stored program files.</li><li>A venv, container, and VM isolate different layers of an environment.</li><li>A container packages user-space state but uses an existing Linux kernel.</li><li>An image is a reusable artifact; a container is one runtime instance.</li></ul></div>
+
+  <nav class="page-nav"><a href="week6.04-package-layers.html">← Package-manager boundaries</a><a href="week6.06-dockerfile.html">Next: descriptions, recipes, and artifacts →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>
 </article></main>
 </body>

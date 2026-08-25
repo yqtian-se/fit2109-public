@@ -3,49 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6.4 Python packages and system packages — FIT2109</title>
+  <title>6.4 Package managers have boundaries — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required pre-reading</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label required">Required</span><span>6.4</span></div>
-  <h1>Python packages and system packages</h1>
-  <p class="lead">A Python process can depend on both imported packages and programs supplied by the operating system. These are different package layers.</p>
+  <h1>Package managers have boundaries</h1>
+  <p class="lead">There is no single package manager for everything on a computer. pip, npm, apt, and Homebrew each manage a particular collection of software and install it into particular locations.</p>
 
-  <h2>One application, two kinds of dependency</h2>
-  <pre><code>import requests
-import subprocess
-
-print(requests.__version__)
-subprocess.run(["curl", "--version"], check=True)</code></pre>
-  <p><code>requests</code> is imported by Python. <code>curl</code> is a separate system command launched by the Python process. Not every host has <code>curl</code> installed.</p>
-
+  <h2>Scope: what a manager is responsible for</h2>
+  <p>A package manager can discover releases, resolve dependencies, install files, record installed state, and remove software. Its <em>scope</em> defines which packages and locations it manages.</p>
   <table>
-    <thead><tr><th>Layer</th><th>Package manager</th><th>Example</th><th>Installation target</th></tr></thead>
+    <thead><tr><th>Scope</th><th>Example manager</th><th>Typical responsibility</th></tr></thead>
     <tbody>
-      <tr><td>Python</td><td><code>pip</code></td><td><code>python -m pip install requests</code></td><td>The selected Python environment</td></tr>
-      <tr><td>Debian/Ubuntu system</td><td><code>apt-get</code></td><td><code>apt-get install -y curl</code></td><td>The current operating-system filesystem</td></tr>
-      <tr><td>macOS system</td><td>Homebrew</td><td><code>brew install curl</code></td><td>The macOS package-manager prefix</td></tr>
+      <tr><td>Python environment</td><td><code>pip</code></td><td>Python packages imported by a selected interpreter.</td></tr>
+      <tr><td>JavaScript project</td><td><code>npm</code></td><td>Packages used by a Node.js project.</td></tr>
+      <tr><td>Ubuntu or Debian system</td><td><code>apt</code></td><td>Commands, libraries, and services installed into the operating-system filesystem.</td></tr>
+      <tr><td>macOS software ecosystem</td><td>Homebrew</td><td>Commands and libraries installed into directories managed by Homebrew.</td></tr>
     </tbody>
   </table>
+  <p>One manager does not automatically satisfy dependencies owned by another scope. A Python installer cannot generally install an arbitrary operating-system command, and an operating-system manager does not know which package set belongs inside a particular Python venv.</p>
 
-  <div class="callout warning"><strong>pip does not manage every program on the machine</strong>Running <code>pip install requests</code> does not install the <code>curl</code> executable. A venv can isolate Python packages, but it does not isolate or supply the host's system packages.</div>
+  <h2>One application can cross several scopes</h2>
+  <p>Consider a media-report application. Its Python source imports an image-processing library, launches a separate video-conversion executable, reads a font installed on the operating system, and sends results to a remote service. These are four different dependency types:</p>
+  <ul>
+    <li>a Python package resolved by the selected Python environment;</li>
+    <li>a system executable discovered through <code>PATH</code>;</li>
+    <li>a data file located in the operating-system filesystem; and</li>
+    <li>an external service reached over the network.</li>
+  </ul>
+  <p>Successfully installing the Python package proves only that one layer is present. It does not prove that the executable, font, network, or remote service is available.</p>
 
-  <h2>Why system setup becomes difficult</h2>
-  <p>System packages depend on the operating-system release and configured repositories. They are often installed into shared machine state. Upgrading a shared library or command can affect several applications, and switching between two system-level versions may be difficult.</p>
+  <h2>Repositories connect package names to releases</h2>
+  <p>An operating-system repository is a configured source of package metadata and files. The operating-system release determines which repositories and package families are compatible. Two machines can use the same package name but receive different releases because their operating-system versions or repository configurations differ.</p>
+  <p>Repositories also change over time as maintainers publish security fixes and updates. A setup instruction written today may select a different package release when it is repeated later.</p>
 
-  <h2>Inside a Dockerfile</h2>
-  <p>The image <code>python:3.12-slim</code> is based on Debian, so its system package manager is <code>apt-get</code>. A typical non-interactive installation step is:</p>
-  <pre><code>RUN apt-get update \
-    &amp;&amp; apt-get install -y curl \
-    &amp;&amp; rm -rf /var/lib/apt/lists/*</code></pre>
-  <p>Another base image may use another package manager. For example, Alpine Linux uses <code>apk</code>. Read the base image documentation before choosing the command.</p>
+  <h2>System state is often shared</h2>
+  <p>Operating-system packages commonly install into shared directories. Several applications may use the same executable or dynamically loaded library. Upgrading that shared component for one application can affect another, while keeping incompatible system versions side by side may require extra configuration.</p>
+  <p>Permissions are part of this boundary. Modifying shared operating-system state often requires administrator authority, whereas installing into a project-owned environment may not.</p>
 
-  <h2>Concept check</h2>
-  <p>The Python import succeeds, but <code>subprocess.run(["curl", "--version"])</code> reports that the file is not found. Which dependency layer is missing?</p>
+  <h2>Documentation is not isolation</h2>
+  <p>A setup guide can record the package name and installation procedure. This is useful and may be sufficient for a simple local tool. However, the command still operates on each user's operating system, repositories, permissions, and existing shared state. Recording an instruction does not record the result that the host will produce.</p>
+  <p>If those host differences keep causing failures, the project may need to carry more of its filesystem and configuration with the application. That is the problem containers are designed to address.</p>
 
-  <nav class="page-nav"><a href="week6.03-venv.html">← Virtual environments</a><a href="week6.05-containers.html">Next: what a container controls →</a></nav>
+  <div class="key-points"><strong>Key points</strong><ul><li>Package managers operate within different scopes.</li><li>An application can depend on language packages, system software, files, and external services at the same time.</li><li>Operating-system releases, repositories, permissions, and shared state influence system installations.</li><li>A setup guide documents host changes; it does not isolate them.</li></ul></div>
+
+  <nav class="page-nav"><a href="week6.03-venv.html">← Installed state</a><a href="week6.05-containers.html">Next: processes and isolation →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>
 </article></main>
 </body>

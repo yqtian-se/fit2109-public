@@ -3,64 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6.6 Dockerfile, image, and container — FIT2109</title>
+  <title>6.6 Descriptions, recipes, and artifacts — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 4 minutes</span></div></header>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required pre-reading</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label required">Required</span><span>6.6</span></div>
-  <h1>Dockerfile, image, and container</h1>
-  <p class="lead">The Dockerfile is the build recipe. <code>docker build</code> uses that recipe and the build context to create an image. <code>docker run</code> creates a container from the image.</p>
+  <h1>Descriptions, recipes, and artifacts</h1>
+  <p class="lead">Three things are easy to mix up: the instructions for creating an environment, the result created from those instructions, and a running instance of that result. In Docker, these are the Dockerfile, image, and container.</p>
 
   <figure class="figure">
-    <img src="images/week6-image-vs-container.png" alt="A Dockerfile is built into an image and the image is run as a container">
-    <figcaption>Recipe → reusable artifact → runtime instance.</figcaption>
+    <div class="concept-flow" aria-label="A recorded input is constructed into installed state or an artifact, which is then run">
+      <div class="flow-node"><strong>Recorded input</strong><span>description or recipe</span></div>
+      <div class="flow-arrow"><code>construct</code><span>→</span></div>
+      <div class="flow-node"><strong>Constructed state</strong><span>local state or shared artifact</span></div>
+      <div class="flow-arrow"><code>run</code><span>→</span></div>
+      <div class="flow-node"><strong>Runtime instance</strong><span>processes and live input</span></div>
+    </div>
+    <figcaption>Recording instructions, constructing an environment, and running it are separate stages.</figcaption>
   </figure>
 
-  <h2>The Week 6 example</h2>
-  <p>The earlier <code>messagekit</code> timeline isolated the version-drift idea. The runnable seminar example has three files:</p>
-  <pre><code>pyapp/
-├── app.py              # imports requests and launches curl
-├── requirements.txt    # contains requests==2.31.0
-└── Dockerfile           # records how to build the environment</code></pre>
-  <p>The Dockerfile records both dependency layers: pip installs the Python package, while apt installs the system command.</p>
-  <pre><code>FROM python:3.12-slim
-
-RUN apt-get update \
-    &amp;&amp; apt-get install -y curl
-
-WORKDIR /app
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
-COPY app.py .
-
-CMD ["python", "app.py"]</code></pre>
-
+  <h2>How the terms map to different tools</h2>
   <table>
-    <thead><tr><th>Instruction</th><th>Its job in this image</th></tr></thead>
+    <thead><tr><th>Layer</th><th>Recorded input</th><th>Constructed state</th><th>Runtime instance</th></tr></thead>
     <tbody>
-      <tr><td><code>FROM</code></td><td>Select Python 3.12 and the starting Linux user-space filesystem.</td></tr>
-      <tr><td><code>RUN</code></td><td>Execute installation commands while building the image.</td></tr>
-      <tr><td><code>WORKDIR</code></td><td>Give later steps and containers the stable internal path <code>/app</code>.</td></tr>
-      <tr><td><code>COPY</code></td><td>Place declared dependencies and source files into the image.</td></tr>
-      <tr><td><code>CMD</code></td><td>Choose the default command when the user supplies no replacement command.</td></tr>
+      <tr><td>Python packages</td><td>Dependency declaration or lockfile</td><td>Local venv and installed packages</td><td>Python process using that environment</td></tr>
+      <tr><td>Container</td><td>Dockerfile and build inputs</td><td>Image intended for reuse or distribution</td><td>Container created from the image</td></tr>
+      <tr><td>Virtual machine</td><td>VM configuration and provisioning description</td><td>Virtual disk or machine image</td><td>Running guest operating system</td></tr>
     </tbody>
   </table>
+  <p>Recorded input is usually text that a team can review and version. The constructed state may be large, platform-specific, or expensive to recreate. Starting it adds temporary process state and live input.</p>
+  <p>Not all constructed state is a handoff artifact. A local venv is normally rebuilt by each developer. A tested container image or VM image may be stored and distributed as an artifact.</p>
 
-  <h2>Build and run</h2>
-  <pre><code>docker build -t fit2109-week6 .
-docker run --rm fit2109-week6</code></pre>
+  <h2>A recipe describes a process; an artifact records one result</h2>
+  <p>A Dockerfile tells Docker how to build an image. The image contains the resulting user-space files and runtime configuration. Starting that image creates a container.</p>
+  <p>If a developer shares only the recipe, the receiver must perform another build. If the developer shares a tested image, the receiver starts from the files produced by that particular build. Image registries store and distribute these built artifacts.</p>
 
-  <h2>Why an old image still contains old source</h2>
-  <p>The build reads the files available at build time. Editing <code>app.py</code> on the host does not rewrite an existing image. Run the old image and it still starts from the old image contents. Run <code>docker build</code> again to capture the changed source in a new image.</p>
+  <h2>Construction time and run time</h2>
+  <p>Construction-time actions prepare the artifact: select a starting environment, install dependencies, create directories, and copy source files. Their results become part of the image. Run-time configuration chooses what process starts when a container instance is created.</p>
+  <p>Installing a dependency during the build changes the image being created. Starting a container later uses the files already captured in that image; it does not normally repeat the installation.</p>
 
-  <div class="callout"><strong>One useful ordering rule</strong>Copy <code>requirements.txt</code> and install dependencies before copying frequently changed source. Docker can often reuse the dependency installation when only <code>app.py</code> changes.</div>
+  <h2>Build inputs need a boundary</h2>
+  <p>A container build receives a selected directory of input files called the <em>build context</em>. The recipe can copy files from that context into the image. Files outside it are unavailable to the build.</p>
+  <p>A <code>.dockerignore</code> file excludes unnecessary or sensitive paths from the context. Typical exclusions include local virtual environments, generated caches, temporary files, and credentials. A smaller, deliberate context makes builds faster and reduces accidental inclusion of host-specific state.</p>
 
-  <h2>Concept check</h2>
-  <p>You edit <code>app.py</code> from “version 1” to “version 2” and immediately run the existing image. Why does the container still print version 1?</p>
+  <h2>Why the same recipe can produce a different artifact later</h2>
+  <p>Recipes often refer to inputs that can change: a base-image tag, an operating-system repository, a package range, or a remote download. Repeating the same recipe later may therefore select updated inputs and produce a different artifact.</p>
+  <p>Reusing the same already-built image is more repeatable than rebuilding the same Dockerfile at different times. Teams still rebuild deliberately to receive security and dependency updates, then test the new artifact before replacing the old one.</p>
 
-  <nav class="page-nav"><a href="week6.05-containers.html">← Containers</a><a href="week6.07-docker-install.html">Next: install and check Docker →</a></nav>
+  <h2>Why source changes do not update an old image</h2>
+  <p>A build copies the source available at construction time. Editing the host source later does not rewrite the existing image. A new runtime instance created from that old image still receives the old captured files. The changed source appears only after constructing a new image or explicitly mounting host files at runtime.</p>
+
+  <details><summary>Further detail: instruction order and build caching</summary><p>Container builders can reuse earlier construction results when their instructions and inputs have not changed. Projects often install dependencies before copying frequently changing source, allowing the expensive dependency step to be reused when only application code changes.</p><p>Caching improves build speed, but it does not make an old image update itself. Changed inputs still require a new build.</p></details>
+
+  <h2>Check the environment that actually ran</h2>
+  <p>A description states intent, and an artifact records constructed contents. Runtime evidence shows what a process actually received. Useful evidence can include version output, executable and package paths, file locations, process exit status, and automated test results.</p>
+  <p>A practical workflow is to record the important inputs, build from a clean state, run the result, and inspect what actually happened. The workshop will follow those steps with a concrete Dockerfile. The recipe is useful, but the running result is the final check.</p>
+
+  <div class="key-points"><strong>Key points</strong><ul><li>Descriptions, generated artifacts, and runtime instances are different kinds of state.</li><li>A recipe can be versioned, while an artifact records one result of executing that recipe.</li><li>Build time prepares image contents; run time creates a process from those contents.</li><li>Mutable external inputs mean the same recipe can produce a different artifact later.</li><li>Reproducibility requires recorded inputs and observable verification.</li></ul></div>
+
+  <nav class="page-nav"><a href="week6.05-containers.html">← Isolation boundaries</a><a href="week6.07-docker-install.html">Next: install and check Docker →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>
 </article></main>
 </body>

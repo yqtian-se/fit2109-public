@@ -3,15 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6.1 Why developers control the environment — FIT2109</title>
+  <title>6.1 The runtime environment — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required pre-reading</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label required">Required</span><span>6.1</span></div>
-  <h1>Why developers control the environment</h1>
-  <p class="lead">A developer must be able to reproduce a failure, test a fix, and hand the software to someone else. That is impossible when important runtime inputs are unknown.</p>
+  <h1>The runtime environment</h1>
+  <p class="lead">When a failure appears on one laptop but not another, “we used the same code” is only the start of the investigation. Developers also need to know what ran that code.</p>
+
+  <h2>The environment is part of execution</h2>
+  <p>Source code describes what a program should do, but it is executed by other software. A Python file is read by a particular Python interpreter. Imports are resolved from installed package locations. Calls to external commands are resolved through the filesystem and the shell's <code>PATH</code>, an ordered list of directories searched for executable commands. Configuration and permissions can change which resources are available.</p>
+  <p>So “the same code” does not imply “the same execution conditions.” A difference between two machines may come from the source, but it may just as easily come from one of these surrounding layers.</p>
 
   <h2>Source code depends on several layers</h2>
   <table>
@@ -19,26 +23,28 @@
     <tbody>
       <tr><td>Language runtime</td><td>Python 3.9 and Python 3.12 support different syntax and library behaviour.</td></tr>
       <tr><td>Python packages</td><td>Two releases can expose different functions or defaults.</td></tr>
-      <tr><td>System tools and libraries</td><td>The program may call <code>curl</code> or load a shared library that is missing.</td></tr>
+      <tr><td>System tools and libraries</td><td>The program may launch a command-line tool or load a shared library that is missing.</td></tr>
       <tr><td>Filesystem and configuration</td><td>Paths, permissions, environment variables, and configuration files can differ.</td></tr>
-      <tr><td>Operating system and hardware</td><td>Kernel interfaces and CPU architecture can affect native software.</td></tr>
+      <tr><td>Operating system and hardware</td><td>The operating-system version and processor type can affect compiled software.</td></tr>
     </tbody>
   </table>
 
-  <h2>Why this matters during development</h2>
+  <h2>Why developers need control</h2>
+  <p>Developers rarely need two machines to be identical in every detail. They do need to record the relevant choices, keep incompatible projects apart, and expose enough information to explain a failure.</p>
   <div class="grid-2">
-    <section class="panel"><h3>Debugging</h3><p>You need the environment that produced the failure, not a guess about the environment.</p></section>
-    <section class="panel"><h3>Testing and CI</h3><p>A test result is meaningful only when you know which runtime and dependencies were tested.</p></section>
-    <section class="panel"><h3>Team handoff</h3><p>A new developer should rebuild the setup from recorded instructions instead of copying your machine.</p></section>
-    <section class="panel"><h3>Deployment</h3><p>The deployed process needs the same intended inputs that passed the tests.</p></section>
+    <section class="panel"><h3>Debugging</h3><p>If a failure depends on Python 3.12 and a particular package release, reproducing only the source is not enough. The relevant environment must also be recreated or inspected.</p></section>
+    <section class="panel"><h3>Testing and CI</h3><p>Continuous integration (CI) systems automatically build software and run tests. A passing result is evidence about the runtime and dependencies used by that CI job.</p></section>
+    <section class="panel"><h3>Team handoff</h3><p>A teammate should be able to construct the intended setup from project files and documented prerequisites rather than copying another developer's machine.</p></section>
+    <section class="panel"><h3>Deployment</h3><p>The deployed application should start from an environment that matches the important choices validated during development and testing.</p></section>
   </div>
 
-  <div class="callout warning"><strong>Do not promise “identical results everywhere”</strong>A recorded environment gives each run a controlled starting point. Hardware, kernels, network services, secrets, and runtime inputs can still differ.</div>
+  <h2>Repeatability is not the same as compatibility</h2>
+  <p>A repeatable setup lets two runs begin from the same recorded choices. Compatibility is a separate question: does the application actually work with those choices? Pinning a package version improves repeatability, but only tests can show that the application behaves correctly with that version.</p>
+  <p>Likewise, a container can provide the same application files and installed packages on two machines, while the machines still differ in operating-system behaviour, processor type, network access, secrets, or external services. Environment tools reduce accidental variation; they do not remove every source of variation.</p>
 
-  <h2>Concept check</h2>
-  <p>Your application imports successfully on your laptop but CI reports <code>ModuleNotFoundError</code>. Which layer should you investigate first, and what information would make the failure reproducible?</p>
+  <div class="key-points"><strong>Key points</strong><ul><li>The runtime environment contains inputs beyond source code.</li><li>Developers record and isolate the layers that affect execution.</li><li>Repeatable inputs make results easier to interpret, but tests are still required.</li></ul></div>
 
-  <nav class="page-nav"><a href="week6.00-overview.html">← Week 6 map</a><a href="week6.02-dependencies.html">Next: dependencies change over time →</a></nav>
+  <nav class="page-nav"><a href="week6.00-overview.html">← Week 6 guide</a><a href="week6.02-dependencies.html">Next: dependency resolution →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>
 </article></main>
 </body>

@@ -3,38 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>6.2 Dependencies change over time — FIT2109</title>
+  <title>6.2 Packages, dependencies, and resolution — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required pre-reading</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label required">Required</span><span>6.2</span></div>
-  <h1>Dependencies change over time</h1>
-  <p class="lead">The command can stay the same while the result changes. An unpinned install asks the package index what is available now.</p>
+  <h1>Packages, dependencies, and resolution</h1>
+  <p class="lead">Installing one package can add many packages to an environment. It can also produce a different result next month, even when the command has not changed. Dependency resolution explains both behaviours.</p>
 
-  <div class="timeline">
-    <article><h3>Monday</h3><p>The latest release is <code>messagekit 1.4</code>. The developer runs <code>pip install messagekit</code>, receives 1.4, tests the application, and commits only the source code.</p></article>
-    <article><h3>Friday</h3><p><code>messagekit 2.0</code> has been released with a major API change. A teammate runs the same install command, receives 2.0, and the application no longer starts.</p></article>
-  </div>
+  <h2>Packages come from an ecosystem</h2>
+  <p>A <em>package</em> is a distributable unit of software. A package usually has a name, a version, metadata, and its own dependencies. A <em>package index</em> is an online service that publishes metadata and distributes package releases. Python's main public index is the Python Package Index (PyPI).</p>
+  <p>An installer such as pip does more than download a named file. It reads the project's requested constraints, examines package metadata, considers the selected Python version and platform, and chooses a set of releases that can be installed together. This choice is called <em>dependency resolution</em>.</p>
 
-  <div class="callout"><strong>The cause</strong>Different install times can select different versions when the dependency declaration does not constrain the version.</div>
+  <h2>Direct and transitive dependencies</h2>
+  <p>A package named directly by an application is a <em>direct dependency</em>. That package may depend on other packages, which become <em>transitive dependencies</em> of the application.</p>
+  <pre><code>your application
+└── reportlib             direct dependency
+    ├── template-core     transitive dependency
+    └── text-utils        transitive dependency</code></pre>
+  <p>The application may never import <code>template-core</code> itself, yet a compatible release is still required for the environment to work. A declaration containing one direct dependency can therefore create many installed packages.</p>
 
-  <h2>Record the tested direct dependency</h2>
-  <p>Python projects commonly use a file named <code>requirements.txt</code>. For this small project, the developer records the exact direct package version that was tested:</p>
-  <pre><code># requirements.txt
-messagekit==1.4</code></pre>
-  <p>Another developer installs the declaration with:</p>
-  <pre><code>python3 -m pip install -r requirements.txt</code></pre>
+  <h2>A requirement is a constraint, not an installed package</h2>
+  <p>A project declaration describes acceptable software. It is an input to the resolver; it is not the installed environment itself. Common constraint styles include:</p>
+  <table>
+    <thead><tr><th>Example declaration</th><th>Meaning</th><th>Consequence</th></tr></thead>
+    <tbody>
+      <tr><td><code>reportlib</code></td><td>No version constraint is stated.</td><td>A later installation may choose a newer release.</td></tr>
+      <tr><td><code>reportlib==3.2.1</code></td><td>Request one exact release.</td><td>The direct version choice is repeatable while that release remains available.</td></tr>
+      <tr><td><code>reportlib&gt;=3,&lt;4</code></td><td>Allow a range of releases.</td><td>The resolver can choose different releases at different times.</td></tr>
+    </tbody>
+  </table>
+  <p>Ranges are useful when a library supports several compatible releases. Exact pins are useful when a team wants to repeat a tested choice. Neither form proves that the selected software works correctly; compatibility still requires tests.</p>
 
-  <p>The exact pin makes this package choice repeatable. Tests still matter: a version number records what to install, while tests show whether the application works with it.</p>
+  <h2>Why resolution can change</h2>
+  <p>Resolution depends on more than the text in one file. New package releases appear, old releases can be withdrawn, transitive dependencies change, and some releases support only particular Python versions, operating systems, or processor types. Two installations can therefore differ when the declaration leaves any of those choices open.</p>
+  <p>Installation is therefore not a permanent, one-time decision. Dependency updates can provide security and reliability fixes, but the newly selected set still needs to be reviewed and tested with the application.</p>
 
-  <div class="callout warning"><strong>What this file does not record</strong>This one requirement does not choose the Python version, operating system, kernel, system commands, or installation location. The next pages add those controls one layer at a time.</div>
+  <h2>Requirements files and lockfiles</h2>
+  <p>Python projects often use <code>requirements.txt</code> to record package requirements. The file format can contain exact pins, ranges, or a mixture. The filename alone does not guarantee that every transitive version has been fixed.</p>
+  <p>A tool-generated <em>lockfile</em> normally records a complete resolved set, often with additional integrity or platform information. Different ecosystems and Python tools use different lockfile formats. In short, a declaration says what may be installed; a lockfile records one resolution result.</p>
 
-  <h2>Concept check</h2>
-  <p>Why can two people run <code>pip install messagekit</code> on different days and receive different software even though neither person changed the command?</p>
+  <div class="callout warning"><strong>Still outside this layer</strong>Package declarations do not choose the operating system, provide system commands, select an installation location, or isolate one project from another. Later chapters introduce those boundaries.</div>
 
-  <nav class="page-nav"><a href="week6.01-environments.html">← Why control environments?</a><a href="week6.03-venv.html">Next: one environment per project →</a></nav>
+  <div class="key-points"><strong>Key points</strong><ul><li>A resolver chooses direct and transitive package releases from an ecosystem.</li><li>A declaration states constraints; installed packages are generated state.</li><li>Exact pins and ranges make different tradeoffs between repeatability and permitted updates.</li><li>A requirements file is not automatically equivalent to a complete lockfile.</li></ul></div>
+
+  <nav class="page-nav"><a href="week6.01-environments.html">← The runtime environment</a><a href="week6.03-venv.html">Next: description and installed state →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>
 </article></main>
 </body>

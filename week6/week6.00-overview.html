@@ -3,36 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Week 6 map — FIT2109</title>
+  <title>Week 6 guide — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 2 minutes</span></div></header>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required pre-reading · Start here</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label required">Required</span><span>Start here</span></div>
-  <h1>The Week 6 map</h1>
-  <p class="lead">Source code is only one input to a running program. Python, installed packages, system tools, files, and operating-system behaviour can also change the result.</p>
+  <h1>Reproducible development environments</h1>
+  <p class="lead">Source code is only one input to a running program. The Python version, installed packages, system tools, files, configuration, and operating system all take part.</p>
 
   <figure class="figure">
     <img src="images/week6-works-on-my-machine.png" alt="The same source code works for one developer but fails for another developer">
     <figcaption>The environment explains why the same source can behave differently.</figcaption>
   </figure>
 
-  <h2>The running example</h2>
-  <p>A small Python application imports a package named <code>messagekit</code> and calls the system command <code>curl</code>. It works for its developer. A second person installs the project later and receives a different package version. Their program fails before they can even investigate the original task.</p>
+  <h2>The “works on my machine” problem</h2>
+  <p>Suppose a developer tests an application successfully and sends the source files to a teammate. The teammate has the same files, but the application fails. The files match; the two runs do not. They may use different versions of Python, different package releases, or different system commands.</p>
+  <p>We use <em>environment</em> for these surrounding runtime conditions. If a project does not record them, each developer reconstructs the setup from memory and from whatever software is available that day. The program can then behave differently even though nobody changed its source.</p>
 
-  <h2>The causal story</h2>
+  <h2>How this guide connects to the workshop</h2>
+  <p>This pre-reading develops a general model: package ecosystems resolve dependencies, installed state must be separated from project descriptions, and different tools create different isolation boundaries. These ideas apply beyond Python and Docker.</p>
+  <p>The workshop will deliberately revisit the most important concepts through one concrete Python application. It will use a simple version-change story, inspect a real virtual environment, demonstrate the difference between a Python package and a system command, and build a container image. Those examples and commands are left to the workshop; the supporting model is developed here.</p>
+
+  <h2>From an accidental setup to a recorded environment</h2>
   <ol>
-    <li>An unpinned install can select the newest package available at that time.</li>
-    <li>A requirements file records the package version that the developer tested.</li>
-    <li>A virtual environment gives each Python project its own package location.</li>
-    <li>A system package manager supplies tools outside the Python package layer.</li>
-    <li>A Docker image records a larger runnable environment that another machine can reuse.</li>
+    <li><strong>Understand what can vary.</strong> The runtime, dependencies, system software, paths, and configuration are all inputs to execution.</li>
+    <li><strong>Record Python package versions.</strong> A <code>requirements.txt</code> file can state which package release the application expects.</li>
+    <li><strong>Separate Python projects.</strong> A virtual environment gives each project its own Python package location.</li>
+    <li><strong>Recognise system dependencies.</strong> Command-line tools and shared libraries belong to a different installation layer from Python packages.</li>
+    <li><strong>Package a larger environment.</strong> A container image can include the application, Python, Python packages, system packages, and a predictable internal filesystem.</li>
   </ol>
 
-  <div class="callout success"><strong>Your preparation goal</strong>You do not need to memorise Docker commands. Before class, be able to explain why each step exists and what problem it controls.</div>
+  <h2>What this pre-reading covers</h2>
+  <p>This guide provides the background needed to reason about development environments; it is not a catalogue of every Docker feature or Python packaging tool. The workshop returns to the main ideas, demonstrates the commands, and applies them to the Week 6 project. Some supporting details appear only here.</p>
 
-  <nav class="page-nav"><a href="index.html">← Week 6 contents</a><a href="week6.01-environments.html">Next: why developers control environments →</a></nav>
+  <div class="key-points"><strong>Central idea</strong><p>Reproducibility begins by treating the environment as part of the software that developers must describe, inspect, and maintain.</p></div>
+
+  <nav class="page-nav"><a href="index.html">← Week 6 contents</a><a href="week6.01-environments.html">Next: the runtime environment →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>
 </article></main>
 </body>

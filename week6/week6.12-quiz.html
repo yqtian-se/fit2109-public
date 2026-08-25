@@ -10,34 +10,34 @@
 <header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Self-check · 6 questions</span></div></header>
 <main class="page"><article class="reading">
   <div class="eyebrow"><span class="label check">Self-check</span><span>About 5 minutes</span></div>
-  <h1>Can you explain the causal story?</h1>
-  <p class="lead">Answer each question before opening its explanation. These questions check reasoning, not command memorisation.</p>
+  <h1>Can you distinguish the layers?</h1>
+  <p class="lead">Try these questions before class. They check whether you can tell the layers apart. You do not need the workshop example or its commands.</p>
 
-  <h2>1. Different install times</h2>
-  <p>On Monday, <code>pip install messagekit</code> selects version 1.4. On Friday, the same command selects version 2.0. What changed?</p>
-  <details><summary>Show explanation</summary><p>The package index changed: a newer release became available. The unpinned command asks for a currently acceptable release, so the command text alone does not determine one version.</p></details>
+  <h2>1. Direct and transitive dependencies</h2>
+  <p>Your project names <code>reportlib</code>. During resolution, two additional packages are selected because <code>reportlib</code> needs them. How should the three packages be classified?</p>
+  <details><summary>Show explanation</summary><p><code>reportlib</code> is a direct dependency because the project names it. The additional packages are transitive dependencies because they are required through another dependency.</p></details>
 
-  <h2>2. What a requirement controls</h2>
-  <p>The file contains <code>messagekit==1.4</code>. Which decision does this record, and name one environment layer it does not record.</p>
-  <details><summary>Show explanation</summary><p>It records the selected package version. It does not select the Python runtime, operating system, system commands, kernel, or package installation location.</p></details>
+  <h2>2. Declaration and installed state</h2>
+  <p>Why is a dependency file normally committed while a generated <code>.venv/</code> directory is normally rebuilt?</p>
+  <details><summary>Show explanation</summary><p>The dependency file is a reviewable project description. The venv is generated installed state tied to a particular Python interpreter, platform, and local checkout.</p></details>
 
-  <h2>3. Why use two virtual environments?</h2>
-  <p>App A needs <code>messagekit==1.4</code> and App B needs <code>messagekit==2.0</code>. Why can two venvs solve the conflict?</p>
-  <details><summary>Show explanation</summary><p>Each venv has its own Python package location. App A and App B no longer compete for one installed package version. The venvs still use the Python interpreters from which they were created.</p></details>
+  <h2>3. The boundary of activation</h2>
+  <p>Activating a venv changes which <code>python</code> command the current shell finds first. What mechanism changes, and what does not change?</p>
+  <details><summary>Show explanation</summary><p>Activation changes command lookup by placing the venv launcher directory near the front of <code>PATH</code>. It does not install another operating system, create a new kernel, or permanently change every terminal.</p></details>
 
-  <h2>4. Python package or system package?</h2>
-  <p><code>import requests</code> succeeds, but launching <code>curl --version</code> fails because the command is missing. Why does installing requests with pip not fix the failure?</p>
-  <details><summary>Show explanation</summary><p>Requests is a Python package. Curl is a separate system command. Pip manages the selected Python environment; the image's system package manager must supply curl.</p></details>
+  <h2>4. Package-manager scope</h2>
+  <p>A media-report application can import its Python image library, but a separate video-conversion executable is absent. Why is the successful import not evidence that the executable exists?</p>
+  <details><summary>Show explanation</summary><p>The Python package and the system executable belong to different package-management scopes and installation locations. Satisfying one dependency layer says nothing about the other.</p></details>
 
-  <h2>5. Why does the old image run old source?</h2>
-  <p>You edit <code>app.py</code> and then run an image that was built before the edit. Which version of the file does the container start with?</p>
-  <details><summary>Show explanation</summary><p>It starts with the file captured in the existing image. Editing the host file does not rewrite that image. Rebuild to create image contents from the changed source.</p></details>
+  <h2>5. Isolation boundaries</h2>
+  <p>Which tool primarily separates Python packages, which packages a user-space filesystem and processes, and which boots a guest operating system?</p>
+  <details><summary>Show explanation</summary><p>A venv separates Python package state. A container isolates application processes and a user-space filesystem view while using an existing Linux kernel. A VM boots a complete guest operating system and guest kernel.</p></details>
 
-  <h2>6. Container or VM?</h2>
-  <p>Which one boots a guest kernel: a Linux container or a virtual machine?</p>
-  <details><summary>Show explanation</summary><p>A VM boots a guest kernel. A Linux container shares the Linux host kernel while isolating processes and user-space state.</p></details>
+  <h2>6. Recipe and artifact</h2>
+  <p>Why can reusing one tested image be more repeatable than rebuilding the same Dockerfile several months later?</p>
+  <details><summary>Show explanation</summary><p>The image records one constructed result. A later rebuild may resolve updated base images, repositories, or transitive dependencies even when the recipe text is unchanged.</p></details>
 
-  <div class="callout success"><strong>Ready for class</strong>You are ready if you can connect each failure to the layer that caused it and explain why the next tool is needed.</div>
+  <div class="callout success"><strong>Ready for class</strong>You are ready if you can distinguish descriptions from installed state, identify a dependency's layer, and explain which boundary a tool controls.</div>
 
   <nav class="page-nav"><a href="week6.11-cheatsheet.html">← Cheatsheet</a><a href="index.html">Back to Week 6 contents →</a></nav>
   <p class="footer">FIT2109 · Week 6 · Monash University</p>

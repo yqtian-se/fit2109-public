@@ -13,7 +13,7 @@ Author: [Dr. Yongqiang Tian](https://yqtian.com) · [Unit handbook](https://hand
 | [Week 3](week3/index.html) | Editor / Modern IDE | 18 pre-reading slides |
 | [Week 4](week4/index.html) | Version Control with Git: Foundations | 13 pre-reading slides |
 | [Week 5](week5/index.html) | Version Control with Git: Collaboration & History | 10 pre-reading slides |
-| [Week 6](week6/index.html) | Virtual Machines, Containers & Package Management | 13 pre-reading slides |
+| [Week 6](week6/index.html) | Reproducible Environments and Containers | Pre-reading guide, setup, and further reading |
 | [Week 8](week8/index.html) | Debugging: Systematic Bug Hunting | 13 pre-reading slides |
 | [Week 9](week9/index.html) | Profiling & Performance | 10 pre-reading slides |
 | [Week 12](week12/index.html) | Agentic Coding & AI Tools | 11 pre-reading slides |
@@ -44,4 +44,3 @@ fit2109-public/
 ```
 
 Each week folder contains self-contained HTML pages (no external dependencies) and a `workshop.pdf` where available.
-

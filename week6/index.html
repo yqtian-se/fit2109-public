@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Week 6 preparation — FIT2109</title>
+  <title>Week 6 pre-reading guide — FIT2109</title>
   <link rel="stylesheet" href="week6.css">
 </head>
 <body>
@@ -12,19 +12,19 @@
   <span class="week">Week 6 · Reproducible environments</span>
 </div></header>
 <main class="page"><section class="reading">
-  <div class="eyebrow"><span>Week 6 preparation</span><span>Required reading: about 20 minutes</span></div>
+  <div class="eyebrow"><span>Week 6 pre-reading guide</span><span>Required reading: about 30–35 minutes</span></div>
   <h1>Versions, environments, and Docker</h1>
-  <p class="lead">Prepare for the seminar by following one problem from cause to solution: a dependency changes, two installations diverge, and the developer must record and isolate the environment.</p>
+  <p class="lead">This guide introduces the basic concepts for Week 6. The workshop will revisit the key ideas and apply them, but some supporting explanations are provided only in this pre-reading.</p>
 
-  <h2>Required background</h2>
+  <h2>Required pre-reading</h2>
   <div class="catalog">
-    <a href="week6.00-overview.html"><span class="num">Start</span><span><strong>The Week 6 map</strong><br><span class="desc">What the environment problem is and what you should learn before class.</span></span><span class="time">2 min</span></a>
-    <a href="week6.01-environments.html"><span class="num">6.1</span><span><strong>Why developers control the environment</strong><br><span class="desc">The runtime layers that can change a program's behaviour.</span></span><span class="time">3 min</span></a>
-    <a href="week6.02-dependencies.html"><span class="num">6.2</span><span><strong>Dependencies change over time</strong><br><span class="desc">Different install times can select different package versions.</span></span><span class="time">3 min</span></a>
-    <a href="week6.03-venv.html"><span class="num">6.3</span><span><strong>One Python environment per project</strong><br><span class="desc">How a venv prevents two applications from fighting over one package location.</span></span><span class="time">3 min</span></a>
-    <a href="week6.04-package-layers.html"><span class="num">6.4</span><span><strong>Python packages and system packages</strong><br><span class="desc">Why pip can install a Python library but cannot supply every system command.</span></span><span class="time">3 min</span></a>
-    <a href="week6.05-containers.html"><span class="num">6.5</span><span><strong>What a container controls</strong><br><span class="desc">Image contents, filesystem isolation, stable paths, and the shared kernel.</span></span><span class="time">3 min</span></a>
-    <a href="week6.06-dockerfile.html"><span class="num">6.6</span><span><strong>Dockerfile, image, and container</strong><br><span class="desc">Build a reusable environment, run it, then rebuild after a source change.</span></span><span class="time">4 min</span></a>
+    <a href="week6.00-overview.html"><span class="num">Start</span><span><strong>Reproducible development environments</strong><br><span class="desc">Why source code alone does not describe a complete execution.</span></span><span class="time">4 min</span></a>
+    <a href="week6.01-environments.html"><span class="num">6.1</span><span><strong>The runtime environment</strong><br><span class="desc">The runtime layers developers need to record, inspect, and maintain.</span></span><span class="time">5 min</span></a>
+    <a href="week6.02-dependencies.html"><span class="num">6.2</span><span><strong>Packages, dependencies, and resolution</strong><br><span class="desc">Indexes, direct and transitive dependencies, constraints, and lockfiles.</span></span><span class="time">5 min</span></a>
+    <a href="week6.03-venv.html"><span class="num">6.3</span><span><strong>Description and installed state</strong><br><span class="desc">Package locations, PATH, venv boundaries, and rebuildable state.</span></span><span class="time">5 min</span></a>
+    <a href="week6.04-package-layers.html"><span class="num">6.4</span><span><strong>Package managers have boundaries</strong><br><span class="desc">Ecosystem scope, repositories, permissions, and shared system state.</span></span><span class="time">5 min</span></a>
+    <a href="week6.05-containers.html"><span class="num">6.5</span><span><strong>Processes, filesystems, and isolation</strong><br><span class="desc">The foundations needed to compare a venv, container, and VM.</span></span><span class="time">5 min</span></a>
+    <a href="week6.06-dockerfile.html"><span class="num">6.6</span><span><strong>Descriptions, recipes, and artifacts</strong><br><span class="desc">Construction and runtime state, build inputs, stale artifacts, and evidence.</span></span><span class="time">6 min</span></a>
   </div>
 
   <h2>Required setup before the Applied class</h2>
@@ -42,7 +42,7 @@
   <h2>Reference and self-check</h2>
   <div class="catalog">
     <a href="week6.11-cheatsheet.html"><span class="num">Reference</span><span><strong>Week 6 cheatsheet</strong><br><span class="desc">Commands and distinctions to use during class.</span></span><span class="time">Do not memorise</span></a>
-    <a href="week6.12-quiz.html"><span class="num">Check</span><span><strong>Six concept questions</strong><br><span class="desc">Check the causal story, not command syntax recall.</span></span><span class="time">5 min</span></a>
+    <a href="week6.12-quiz.html"><span class="num">Check</span><span><strong>Six concept questions</strong><br><span class="desc">Check the layer boundaries and state distinctions introduced in the guide.</span></span><span class="time">5 min</span></a>
   </div>
 
   <h2>Workshop slides</h2>
