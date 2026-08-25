@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6.2 Dependencies change over time — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
+</head>
+<body>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label required">Required</span><span>6.2</span></div>
+  <h1>Dependencies change over time</h1>
+  <p class="lead">The command can stay the same while the result changes. An unpinned install asks the package index what is available now.</p>
+
+  <div class="timeline">
+    <article><h3>Monday</h3><p>The latest release is <code>messagekit 1.4</code>. The developer runs <code>pip install messagekit</code>, receives 1.4, tests the application, and commits only the source code.</p></article>
+    <article><h3>Friday</h3><p><code>messagekit 2.0</code> has been released with a major API change. A teammate runs the same install command, receives 2.0, and the application no longer starts.</p></article>
+  </div>
+
+  <div class="callout"><strong>The cause</strong>Different install times can select different versions when the dependency declaration does not constrain the version.</div>
+
+  <h2>Record the tested direct dependency</h2>
+  <p>Python projects commonly use a file named <code>requirements.txt</code>. For this small project, the developer records the exact direct package version that was tested:</p>
+  <pre><code># requirements.txt
+messagekit==1.4</code></pre>
+  <p>Another developer installs the declaration with:</p>
+  <pre><code>python3 -m pip install -r requirements.txt</code></pre>
+
+  <p>The exact pin makes this package choice repeatable. Tests still matter: a version number records what to install, while tests show whether the application works with it.</p>
+
+  <div class="callout warning"><strong>What this file does not record</strong>This one requirement does not choose the Python version, operating system, kernel, system commands, or installation location. The next pages add those controls one layer at a time.</div>
+
+  <h2>Concept check</h2>
+  <p>Why can two people run <code>pip install messagekit</code> on different days and receive different software even though neither person changed the command?</p>
+
+  <nav class="page-nav"><a href="week6.01-environments.html">← Why control environments?</a><a href="week6.03-venv.html">Next: one environment per project →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
+</body>
+</html>

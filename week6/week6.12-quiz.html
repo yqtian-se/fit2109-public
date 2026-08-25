@@ -1,154 +1,46 @@
-<!-- DO NOT SYNC: Ed does not support embedded radio-button quizzes.
-     Keep in web/ for local reference only. Do not copy to fit2109-public/week6/. -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>6.12 — Check Your Understanding — FIT2109 Week 6</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
-  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
-  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
-  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
-  p  { margin-bottom: 14px; }
-  ul, ol { margin: 12px 0 16px 24px; }
-  li { margin-bottom: 6px; }
-  a  { color: #4361ee; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
-  .badge-quiz { background: #f3e5f5; color: #6a1b9a; }
-  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
-  .quiz-q { background: #fff; border: 1px solid #dde; border-radius: 10px; padding: 20px 22px; margin: 18px 0; }
-  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
-  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
-  .quiz-q .options label { display: block; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0; }
-  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
-  .quiz-q .options input { margin-right: 10px; }
-  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
-  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 6 self-check — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<div class="page">
-<span class="section-badge badge-quiz">Quiz — 10 questions</span>
-<h2>Check Your Understanding</h2>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Self-check · 6 questions</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label check">Self-check</span><span>About 5 minutes</span></div>
+  <h1>Can you explain the causal story?</h1>
+  <p class="lead">Answer each question before opening its explanation. These questions check reasoning, not command memorisation.</p>
 
-<p>These questions check concepts, not syntax recall. Think through each one and bring your answers to class — we will discuss them together.</p>
+  <h2>1. Different install times</h2>
+  <p>On Monday, <code>pip install messagekit</code> selects version 1.4. On Friday, the same command selects version 2.0. What changed?</p>
+  <details><summary>Show explanation</summary><p>The package index changed: a newer release became available. The unpinned command asks for a currently acceptable release, so the command text alone does not determine one version.</p></details>
 
-<div class="quiz-q">
-  <div class="qnum">Question 1</div>
-  <div class="qtext">Which statement best describes the key architectural difference between a virtual machine and a container?</div>
-  <div class="options">
-    <label><input type="radio" name="q1"> A VM runs inside a container to provide extra security.</label>
-    <label><input type="radio" name="q1"> A VM boots its own kernel; a container shares the host kernel.</label>
-    <label><input type="radio" name="q1"> A container boots its own kernel; a VM shares the host kernel.</label>
-    <label><input type="radio" name="q1"> VMs and containers are the same thing — just different names.</label>
-  </div>
-</div>
+  <h2>2. What a requirement controls</h2>
+  <p>The file contains <code>messagekit==1.4</code>. Which decision does this record, and name one environment layer it does not record.</p>
+  <details><summary>Show explanation</summary><p>It records the selected package version. It does not select the Python runtime, operating system, system commands, kernel, or package installation location.</p></details>
 
-<div class="quiz-q">
-  <div class="qnum">Question 2</div>
-  <div class="qtext">What does <code>docker ps -a</code> show, and how does it differ from <code>docker ps</code>?</div>
-  <div class="options">
-    <label><input type="radio" name="q2"> <code>docker ps -a</code> shows all images; <code>docker ps</code> shows running images only.</label>
-    <label><input type="radio" name="q2"> <code>docker ps -a</code> shows all containers including stopped ones; <code>docker ps</code> shows only running containers.</label>
-    <label><input type="radio" name="q2"> <code>docker ps -a</code> shows all images and containers; <code>docker ps</code> shows only images.</label>
-    <label><input type="radio" name="q2"> There is no difference — both show the same output.</label>
-  </div>
-</div>
+  <h2>3. Why use two virtual environments?</h2>
+  <p>App A needs <code>messagekit==1.4</code> and App B needs <code>messagekit==2.0</code>. Why can two venvs solve the conflict?</p>
+  <details><summary>Show explanation</summary><p>Each venv has its own Python package location. App A and App B no longer compete for one installed package version. The venvs still use the Python interpreters from which they were created.</p></details>
 
-<div class="quiz-q">
-  <div class="qnum">Question 3</div>
-  <div class="qtext">In a Dockerfile, why should <code>COPY requirements.txt .</code> appear before <code>COPY . .</code> and before the <code>pip install</code> step?</div>
-  <div class="options">
-    <label><input type="radio" name="q3"> Docker requires <code>requirements.txt</code> to be present before any Python command.</label>
-    <label><input type="radio" name="q3"> It ensures <code>pip install</code> runs as root.</label>
-    <label><input type="radio" name="q3"> It exploits Docker's layer caching so <code>pip install</code> is only re-run when dependencies change, not on every source code edit.</label>
-    <label><input type="radio" name="q3"> It prevents <code>COPY . .</code> from overwriting <code>requirements.txt</code>.</label>
-  </div>
-</div>
+  <h2>4. Python package or system package?</h2>
+  <p><code>import requests</code> succeeds, but launching <code>curl --version</code> fails because the command is missing. Why does installing requests with pip not fix the failure?</p>
+  <details><summary>Show explanation</summary><p>Requests is a Python package. Curl is a separate system command. Pip manages the selected Python environment; the image's system package manager must supply curl.</p></details>
 
-<div class="quiz-q">
-  <div class="qnum">Question 4</div>
-  <div class="qtext">You activate a Python virtual environment and run <code>deactivate</code>. What happens to the packages you installed inside the <code>.venv/</code> directory?</div>
-  <div class="options">
-    <label><input type="radio" name="q4"> They are uninstalled immediately.</label>
-    <label><input type="radio" name="q4"> They are moved to the global Python installation.</label>
-    <label><input type="radio" name="q4"> They remain in <code>.venv/</code>; <code>deactivate</code> only restores the shell's <code>PATH</code>.</label>
-    <label><input type="radio" name="q4"> They are deleted when the terminal closes.</label>
-  </div>
-</div>
+  <h2>5. Why does the old image run old source?</h2>
+  <p>You edit <code>app.py</code> and then run an image that was built before the edit. Which version of the file does the container start with?</p>
+  <details><summary>Show explanation</summary><p>It starts with the file captured in the existing image. Editing the host file does not rewrite that image. Rebuild to create image contents from the changed source.</p></details>
 
-<div class="quiz-q">
-  <div class="qnum">Question 5</div>
-  <div class="qtext">Which of the following should <em>not</em> be committed to a Git repository?</div>
-  <div class="options">
-    <label><input type="radio" name="q5"> <code>requirements.txt</code></label>
-    <label><input type="radio" name="q5"> <code>package-lock.json</code></label>
-    <label><input type="radio" name="q5"> <code>node_modules/</code></label>
-    <label><input type="radio" name="q5"> <code>Dockerfile</code></label>
-  </div>
-</div>
+  <h2>6. Container or VM?</h2>
+  <p>Which one boots a guest kernel: a Linux container or a virtual machine?</p>
+  <details><summary>Show explanation</summary><p>A VM boots a guest kernel. A Linux container shares the Linux host kernel while isolating processes and user-space state.</p></details>
 
-<div class="quiz-q">
-  <div class="qnum">Question 6</div>
-  <div class="qtext">What is the purpose of running <code>pip freeze &gt; requirements.txt</code>?</div>
-  <div class="options">
-    <label><input type="radio" name="q6"> It installs all packages listed in <code>requirements.txt</code>.</label>
-    <label><input type="radio" name="q6"> It writes an exact list of all installed packages with their pinned versions into <code>requirements.txt</code>.</label>
-    <label><input type="radio" name="q6"> It removes outdated packages from the virtual environment.</label>
-    <label><input type="radio" name="q6"> It creates a new virtual environment from scratch.</label>
-  </div>
-</div>
+  <div class="callout success"><strong>Ready for class</strong>You are ready if you can connect each failure to the layer that caused it and explain why the next tool is needed.</div>
 
-<div class="quiz-q">
-  <div class="qnum">Question 7</div>
-  <div class="qtext">You are writing a Dockerfile based on <code>ubuntu:22.04</code> and need to install <code>curl</code>. Which command is correct?</div>
-  <div class="options">
-    <label><input type="radio" name="q7"> <code>RUN yum install -y curl</code></label>
-    <label><input type="radio" name="q7"> <code>RUN brew install curl</code></label>
-    <label><input type="radio" name="q7"> <code>RUN apt-get update &amp;&amp; apt-get install -y curl</code></label>
-    <label><input type="radio" name="q7"> <code>RUN pip install curl</code></label>
-  </div>
-</div>
-
-<div class="quiz-q">
-  <div class="qnum">Question 8</div>
-  <div class="qtext">What is the difference between a Docker <em>image</em> and a Docker <em>container</em>?</div>
-  <div class="options">
-    <label><input type="radio" name="q8"> An image is running; a container is stopped.</label>
-    <label><input type="radio" name="q8"> An image is a read-only template; a container is a running instance of an image.</label>
-    <label><input type="radio" name="q8"> Images are stored in <code>node_modules/</code>; containers are stored in <code>.venv/</code>.</label>
-    <label><input type="radio" name="q8"> There is no difference — both terms refer to the same thing.</label>
-  </div>
-</div>
-
-<div class="quiz-q">
-  <div class="qnum">Question 9</div>
-  <div class="qtext">What does the <code>--rm</code> flag do when passed to <code>docker run</code>?</div>
-  <div class="options">
-    <label><input type="radio" name="q9"> It removes the image from Docker Hub.</label>
-    <label><input type="radio" name="q9"> It removes all running containers before starting a new one.</label>
-    <label><input type="radio" name="q9"> It automatically deletes the container when it exits.</label>
-    <label><input type="radio" name="q9"> It runs the container as root.</label>
-  </div>
-</div>
-
-<div class="quiz-q">
-  <div class="qnum">Question 10</div>
-  <div class="qtext">You join a Rust project and find two files: <code>Cargo.toml</code> and <code>Cargo.lock</code>. You have never used Rust before. Which file plays the same role as <code>requirements.txt</code> (produced by <code>pip freeze</code>) in Python, and why?</div>
-  <div class="options">
-    <label><input type="radio" name="q10"> <code>Cargo.toml</code> — it lists the exact pinned versions of every dependency.</label>
-    <label><input type="radio" name="q10"> <code>Cargo.lock</code> — it records the exact resolved versions, just as <code>pip freeze</code> output does for Python.</label>
-    <label><input type="radio" name="q10"> Neither — Rust does not use lockfiles.</label>
-    <label><input type="radio" name="q10"> Both files together form the lockfile in Rust.</label>
-  </div>
-</div>
-
-<hr class="divider">
-<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 6 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
-</div>
+  <nav class="page-nav"><a href="week6.11-cheatsheet.html">← Cheatsheet</a><a href="index.html">Back to Week 6 contents →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
 </body>
 </html>

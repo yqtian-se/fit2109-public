@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6.3 One Python environment per project — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
+</head>
+<body>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label required">Required</span><span>6.3</span></div>
+  <h1>One Python environment per project</h1>
+  <p class="lead">Recording a version answers “what should pip install?” A virtual environment answers “which project-specific package location should pip use?”</p>
+
+  <h2>The conflict</h2>
+  <p>Suppose App A requires <code>messagekit==1.4</code>, while App B has been updated for <code>messagekit==2.0</code>. If both applications use one shared Python package location, installing the version for one application can make the other application fail.</p>
+
+  <div class="grid-2">
+    <section class="panel"><h3>Shared environment</h3><p>Only one installed <code>messagekit</code> version is selected by that Python environment. App A or App B may be broken.</p></section>
+    <section class="panel"><h3>One venv per project</h3><p>App A uses <code>.venv-a</code> with 1.4. App B uses <code>.venv-b</code> with 2.0. Both can run.</p></section>
+  </div>
+
+  <h2>Create, activate, and install</h2>
+  <pre><code>python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt</code></pre>
+  <p>Activation places the venv's launchers at the front of the shell's <code>PATH</code>. After activation, <code>python</code> and <code>python -m pip</code> refer to the project environment.</p>
+
+  <h2>Inspect the active environment</h2>
+  <pre><code>python -c "import sys; print(sys.executable)"
+python -c "import messagekit; print(messagekit.__file__)"</code></pre>
+  <p>Both paths should point inside <code>.venv</code>. This is evidence that the shell is using the project environment.</p>
+
+  <div class="callout warning"><strong>A venv does not supply a new operating system</strong>It is created from the Python interpreter you select. It isolates Python packages, but it does not change that Python version, provide system commands, or start a separate kernel.</div>
+
+  <h2><code>pip3</code> and <code>python3 -m pip</code></h2>
+  <p><code>pip3</code> is normally a pip executable associated with a Python 3 installation. <code>python3 -m pip</code> makes the relationship explicit by running pip through the selected interpreter. Inside the activated venv, use <code>python -m pip</code> so the destination is clear.</p>
+
+  <nav class="page-nav"><a href="week6.02-dependencies.html">← Dependency versions</a><a href="week6.04-package-layers.html">Next: Python and system packages →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
+</body>
+</html>

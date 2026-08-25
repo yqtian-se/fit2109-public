@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6.4 Python packages and system packages — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
+</head>
+<body>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label required">Required</span><span>6.4</span></div>
+  <h1>Python packages and system packages</h1>
+  <p class="lead">A Python process can depend on both imported packages and programs supplied by the operating system. These are different package layers.</p>
+
+  <h2>One application, two kinds of dependency</h2>
+  <pre><code>import requests
+import subprocess
+
+print(requests.__version__)
+subprocess.run(["curl", "--version"], check=True)</code></pre>
+  <p><code>requests</code> is imported by Python. <code>curl</code> is a separate system command launched by the Python process. Not every host has <code>curl</code> installed.</p>
+
+  <table>
+    <thead><tr><th>Layer</th><th>Package manager</th><th>Example</th><th>Installation target</th></tr></thead>
+    <tbody>
+      <tr><td>Python</td><td><code>pip</code></td><td><code>python -m pip install requests</code></td><td>The selected Python environment</td></tr>
+      <tr><td>Debian/Ubuntu system</td><td><code>apt-get</code></td><td><code>apt-get install -y curl</code></td><td>The current operating-system filesystem</td></tr>
+      <tr><td>macOS system</td><td>Homebrew</td><td><code>brew install curl</code></td><td>The macOS package-manager prefix</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout warning"><strong>pip does not manage every program on the machine</strong>Running <code>pip install requests</code> does not install the <code>curl</code> executable. A venv can isolate Python packages, but it does not isolate or supply the host's system packages.</div>
+
+  <h2>Why system setup becomes difficult</h2>
+  <p>System packages depend on the operating-system release and configured repositories. They are often installed into shared machine state. Upgrading a shared library or command can affect several applications, and switching between two system-level versions may be difficult.</p>
+
+  <h2>Inside a Dockerfile</h2>
+  <p>The image <code>python:3.12-slim</code> is based on Debian, so its system package manager is <code>apt-get</code>. A typical non-interactive installation step is:</p>
+  <pre><code>RUN apt-get update \
+    &amp;&amp; apt-get install -y curl \
+    &amp;&amp; rm -rf /var/lib/apt/lists/*</code></pre>
+  <p>Another base image may use another package manager. For example, Alpine Linux uses <code>apk</code>. Read the base image documentation before choosing the command.</p>
+
+  <h2>Concept check</h2>
+  <p>The Python import succeeds, but <code>subprocess.run(["curl", "--version"])</code> reports that the file is not found. Which dependency layer is missing?</p>
+
+  <nav class="page-nav"><a href="week6.03-venv.html">← Virtual environments</a><a href="week6.05-containers.html">Next: what a container controls →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
+</body>
+</html>

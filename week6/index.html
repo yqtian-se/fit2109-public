@@ -1,69 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Week 6 — Virtual Machines, Containers &amp; Package Management — FIT2109</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-         background: #f4f4f8; color: #1a1a2e; }
-
-  header { background: #1a1a2e; color: #fff; padding: 20px 32px; }
-  header a { color: #aab4ff; font-size: 0.85rem; text-decoration: none; }
-  header a:hover { text-decoration: underline; }
-  header h1 { font-size: 1.2rem; font-weight: 600; }
-  header p { font-size: 0.85rem; opacity: 0.55; margin-top: 2px; }
-
-  .content { max-width: 900px; margin: 0 auto; padding: 40px 32px 80px; }
-
-  section { margin-bottom: 48px; }
-  h2 { font-size: 1.1rem; font-weight: 700; color: #0f0f23; margin-bottom: 16px;
-       padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
-
-  .slide-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
-  .slide-list li a { display: block; padding: 10px 14px; background: #fff;
-                     border: 1px solid #e0e0f0; border-radius: 8px; color: #1a1a2e;
-                     text-decoration: none; font-size: 0.92rem; transition: border-color .15s; }
-  .slide-list li a:hover { border-color: #4361ee; color: #4361ee; }
-
-  iframe { width: 100%; height: 700px; border: 1px solid #e0e0f0; border-radius: 8px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Week 6 preparation — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
 </head>
 <body>
+<header class="site-header"><div class="site-header-inner">
+  <a class="course" href="../index.html">FIT2109</a>
+  <span class="week">Week 6 · Reproducible environments</span>
+</div></header>
+<main class="page"><section class="reading">
+  <div class="eyebrow"><span>Week 6 preparation</span><span>Required reading: about 20 minutes</span></div>
+  <h1>Versions, environments, and Docker</h1>
+  <p class="lead">Prepare for the seminar by following one problem from cause to solution: a dependency changes, two installations diverge, and the developer must record and isolate the environment.</p>
 
-<header>
-  <div>
-    <a href="../index.html">← All Weeks</a>
-    <h1>Week 6 — Virtual Machines, Containers &amp; Package Management</h1>
-    <p>FIT2109 · Pre-Reading &amp; Workshop · Dr. Yongqiang Tian</p>
+  <h2>Required background</h2>
+  <div class="catalog">
+    <a href="week6.00-overview.html"><span class="num">Start</span><span><strong>The Week 6 map</strong><br><span class="desc">What the environment problem is and what you should learn before class.</span></span><span class="time">2 min</span></a>
+    <a href="week6.01-environments.html"><span class="num">6.1</span><span><strong>Why developers control the environment</strong><br><span class="desc">The runtime layers that can change a program's behaviour.</span></span><span class="time">3 min</span></a>
+    <a href="week6.02-dependencies.html"><span class="num">6.2</span><span><strong>Dependencies change over time</strong><br><span class="desc">Different install times can select different package versions.</span></span><span class="time">3 min</span></a>
+    <a href="week6.03-venv.html"><span class="num">6.3</span><span><strong>One Python environment per project</strong><br><span class="desc">How a venv prevents two applications from fighting over one package location.</span></span><span class="time">3 min</span></a>
+    <a href="week6.04-package-layers.html"><span class="num">6.4</span><span><strong>Python packages and system packages</strong><br><span class="desc">Why pip can install a Python library but cannot supply every system command.</span></span><span class="time">3 min</span></a>
+    <a href="week6.05-containers.html"><span class="num">6.5</span><span><strong>What a container controls</strong><br><span class="desc">Image contents, filesystem isolation, stable paths, and the shared kernel.</span></span><span class="time">3 min</span></a>
+    <a href="week6.06-dockerfile.html"><span class="num">6.6</span><span><strong>Dockerfile, image, and container</strong><br><span class="desc">Build a reusable environment, run it, then rebuild after a source change.</span></span><span class="time">4 min</span></a>
   </div>
-</header>
 
-<div class="content">
-  <section>
-    <h2>Pre-Reading Slides</h2>
-    <ul class="slide-list">
-      <li><a href="week6.00-overview.html">Week 6 Overview — Reproducible Environments</a></li>
-      <li><a href="week6.01-environments.html">6.1 — Why Environments Differ</a></li>
-      <li><a href="week6.02-tools.html">6.2 — Choosing the Right Tool</a></li>
-      <li><a href="week6.03-vms.html">6.3 — Virtual Machines</a></li>
-      <li><a href="week6.04-containers.html">6.4 — Containers</a></li>
-      <li><a href="week6.05-docker.html">6.5 — Docker Workflow</a></li>
-      <li><a href="week6.06-dockerfile.html">6.6 — Dockerfiles</a></li>
-      <li><a href="week6.07-apt.html">6.7 — System Packages</a></li>
-      <li><a href="week6.08-venv.html">6.8 — Python venv and pip</a></li>
-      <li><a href="week6.09-ecosystems.html">6.9 — Package Managers Across Ecosystems</a></li>
-      <li><a href="week6.10-lockfiles.html">6.10 — Lockfiles</a></li>
-      <li><a href="week6.11-cheatsheet.html">Week 6 — Cheatsheet</a></li>
-    </ul>
-  </section>
+  <h2>Required setup before the Applied class</h2>
+  <div class="catalog">
+    <a href="week6.07-docker-install.html"><span class="num">Setup</span><span><strong>Install and check Docker</strong><br><span class="desc">Windows with the existing WSL environment, macOS, and native Ubuntu.</span></span><span class="time">10–20 min once</span></a>
+  </div>
 
-  <section>
-    <h2>Workshop Slides</h2>
-    <iframe src="workshop.pdf" title="Week 6 Workshop PDF"></iframe>
-  </section>
-</div>
+  <h2>Further reading (not required)</h2>
+  <div class="catalog">
+    <a href="week6.08-vms.html"><span class="num">6.8</span><span><strong>Virtual machines</strong><br><span class="desc">Common VM software, stronger guest boundaries, and resource costs.</span></span><span class="time">4 min</span></a>
+    <a href="week6.09-ecosystems.html"><span class="num">6.9</span><span><strong>Other package ecosystems</strong><br><span class="desc">Recognise manifests, resolved-version files, and installed directories.</span></span><span class="time">3 min</span></a>
+    <a href="week6.10-lockfiles.html"><span class="num">6.10</span><span><strong>Requirements files and lockfiles</strong><br><span class="desc">A careful comparison without treating every pinned file as the same tool.</span></span><span class="time">3 min</span></a>
+  </div>
 
+  <h2>Reference and self-check</h2>
+  <div class="catalog">
+    <a href="week6.11-cheatsheet.html"><span class="num">Reference</span><span><strong>Week 6 cheatsheet</strong><br><span class="desc">Commands and distinctions to use during class.</span></span><span class="time">Do not memorise</span></a>
+    <a href="week6.12-quiz.html"><span class="num">Check</span><span><strong>Six concept questions</strong><br><span class="desc">Check the causal story, not command syntax recall.</span></span><span class="time">5 min</span></a>
+  </div>
+
+  <h2>Workshop slides</h2>
+  <p class="muted">The PDF is provided for review after class. The pre-reading above is the preparation task.</p>
+  <p><a href="workshop.pdf">Open the Week 6 workshop slides (PDF)</a></p>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</section></main>
 </body>
 </html>

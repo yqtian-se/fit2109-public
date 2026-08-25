@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Install Docker for Week 6 — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
+</head>
+<body>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required setup before the Applied class</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label setup">Required setup</span><span>Complete once</span></div>
+  <h1>Install and check Docker</h1>
+  <p class="lead">Complete this setup before the Week 6 Applied class. The seminar explains the model; the Applied class runs the commands.</p>
+  <p>Windows students should already have an Ubuntu environment in WSL from Week 1. This page installs Docker; it does not reinstall WSL.</p>
+
+  <h2>Windows: Docker Desktop with your existing WSL environment</h2>
+  <ol>
+    <li>Install <a href="https://docs.docker.com/desktop/setup/install/windows-install/">Docker Desktop for Windows</a>.</li>
+    <li>Use the WSL 2 backend. Start Docker Desktop and wait until it reports that Docker is running.</li>
+    <li>Open <a href="https://docs.docker.com/desktop/features/wsl/"><strong>Settings → Resources → WSL Integration</strong></a>. Enable the Ubuntu distribution used for FIT2109, then select <strong>Apply</strong>.</li>
+    <li>Close and reopen the Ubuntu terminal. Run all FIT2109 Docker commands from that Ubuntu terminal.</li>
+  </ol>
+  <div class="callout warning"><strong>Do not install a second Docker engine inside Ubuntu</strong>When Docker Desktop provides WSL integration, do not run <code>sudo apt install docker.io</code>. Two Docker installations can refer to different engines, images, and containers.</div>
+  <p>Keep course projects in the Linux filesystem, such as <code>~/fit2109</code>, rather than under <code>/mnt/c/...</code>. Docker builds are usually faster there.</p>
+
+  <h2>macOS: Docker Desktop</h2>
+  <ol>
+    <li>Install <a href="https://docs.docker.com/desktop/setup/install/mac-install/">Docker Desktop for Mac</a>.</li>
+    <li>Choose Apple silicon if “About This Mac” shows an Apple chip; otherwise choose Intel.</li>
+    <li>Start Docker Desktop, accept the requested permissions, and wait until Docker reports that it is running.</li>
+  </ol>
+
+  <h2>Native Ubuntu Linux: Docker Engine</h2>
+  <p>This section is only for a computer that runs Ubuntu directly, not Ubuntu inside Windows WSL.</p>
+  <ol>
+    <li>Follow Docker's <a href="https://docs.docker.com/engine/install/ubuntu/">Ubuntu installation instructions</a>.</li>
+    <li>Complete the official <a href="https://docs.docker.com/engine/install/linux-postinstall/">Linux post-installation steps</a> so course commands work without <code>sudo</code>.</li>
+    <li>Log out and back in before running the readiness check.</li>
+  </ol>
+
+  <h2>Readiness check</h2>
+  <p>Run these commands in the terminal that you will use for the Applied class:</p>
+  <pre><code>docker version
+docker run --rm python:3.12-slim python --version</code></pre>
+  <p>The first image download may take several minutes. You are ready when:</p>
+  <ul>
+    <li><code>docker version</code> shows both a <strong>Client</strong> and a <strong>Server</strong> section; and</li>
+    <li>the second command exits successfully and prints a Python 3.12 version.</li>
+  </ul>
+
+  <h2>Common problems</h2>
+  <table>
+    <thead><tr><th>Problem</th><th>What to check</th></tr></thead>
+    <tbody>
+      <tr><td><code>docker: command not found</code></td><td>Start Docker Desktop, check WSL Integration on Windows, then reopen the terminal.</td></tr>
+      <tr><td>Cannot connect to the Docker daemon</td><td>Start or restart Docker Desktop and wait for it to finish starting.</td></tr>
+      <tr><td>Permission denied</td><td>On Windows, do not use <code>sudo</code> or change socket permissions. Check WSL Integration. On native Ubuntu, complete the official post-installation steps.</td></tr>
+      <tr><td>The image will not download</td><td>Keep the complete error. Check the network, VPN, or proxy, then ask your tutor or IT support.</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout success"><strong>Bring evidence if setup fails</strong>Copy the complete output of <code>docker version</code> and the failing command. A tutor can diagnose an exact error more quickly than “Docker does not work.”</div>
+
+  <nav class="page-nav"><a href="week6.06-dockerfile.html">← Docker workflow</a><a href="week6.12-quiz.html">Go to the self-check →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6.8 Further reading: virtual machines — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
+</head>
+<body>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Further reading · Not required</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label optional">Further reading</span><span>6.8 · Not required</span></div>
+  <h1>Virtual machines</h1>
+  <p class="lead">A virtual machine (VM) runs a guest operating system and guest kernel on virtualised hardware. This creates a more complete guest boundary than a language virtual environment or a container.</p>
+
+  <figure class="figure">
+    <img src="images/week6-vm-architecture.png" alt="Virtual machines each run a guest operating system above a hypervisor">
+    <figcaption>Each VM boots a guest operating system; the hypervisor manages access to the host hardware.</figcaption>
+  </figure>
+
+  <h2>Common VM software</h2>
+  <table>
+    <thead><tr><th>Software</th><th>Where you commonly see it</th></tr></thead>
+    <tbody>
+      <tr><td>VirtualBox</td><td>Cross-platform teaching, testing, and local guest operating systems</td></tr>
+      <tr><td>VMware Workstation / Fusion</td><td>Windows/Linux and macOS developer machines</td></tr>
+      <tr><td>Parallels Desktop</td><td>Running Windows or Linux guests on macOS</td></tr>
+      <tr><td>Hyper-V</td><td>Virtualisation built into supported Windows editions and Windows Server</td></tr>
+      <tr><td>QEMU, often with UTM on macOS</td><td>Virtualisation and architecture emulation</td></tr>
+    </tbody>
+  </table>
+
+  <h2>When a VM is useful</h2>
+  <ul>
+    <li>You need a guest kernel or a different supported operating system.</li>
+    <li>You need a stronger boundary for testing untrusted or risky software.</li>
+    <li>You need to preserve a legacy operating-system environment.</li>
+    <li>You want a complete server-like guest that can be snapshotted and restored.</li>
+  </ul>
+
+  <h2>Costs and limitations</h2>
+  <p>A VM normally needs more memory, disk space, startup time, and operating-system maintenance than a container. A VM boundary is stronger, but it is not a claim that hypervisors have no vulnerabilities.</p>
+
+  <div class="callout"><strong>How this relates to Docker Desktop</strong>Linux containers require a Linux kernel. Docker Desktop uses a managed Linux environment on macOS and Windows, then runs Linux containers inside it. You normally interact with Docker rather than managing that VM directly.</div>
+
+  <nav class="page-nav"><a href="index.html">← Week 6 contents</a><a href="week6.09-ecosystems.html">Next further reading: package ecosystems →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
+</body>
+</html>

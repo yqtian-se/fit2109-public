@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6.5 What a container controls — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
+</head>
+<body>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 3 minutes</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label required">Required</span><span>6.5</span></div>
+  <h1>What a container controls</h1>
+  <p class="lead">A container is an isolated process with its own view of files, processes, and configuration. On Linux, containers share the host kernel rather than booting a guest kernel.</p>
+
+  <figure class="figure">
+    <img src="images/week6-container-isolation.png" alt="Several containers with isolated files and processes share one Linux kernel">
+    <figcaption>Containers isolate user-space state while sharing the Linux kernel.</figcaption>
+  </figure>
+
+  <h2>Image and container</h2>
+  <div class="grid-2">
+    <section class="panel"><h3>Image</h3><p>A reusable set of filesystem contents and runtime configuration. It can exist locally and can also be distributed through a registry.</p></section>
+    <section class="panel"><h3>Container</h3><p>A runtime instance created from an image. It adds a writable container layer while it exists.</p></section>
+  </div>
+
+  <h2>Why filesystem isolation matters</h2>
+  <p>The developer may store a project anywhere on the host. The image can place the application at a stable internal path such as <code>/app</code>. It can also include Python, the tested Python packages, and <code>curl</code>. Another user starts from those recorded contents instead of recreating each host path and installation manually.</p>
+
+  <p>Installing a package inside a container changes that container's filesystem, not the host filesystem. A stopped container remains until it is removed. For one-off runs, <code>docker run --rm ...</code> removes the container after it exits.</p>
+
+  <h2>Container and VM: the essential distinction</h2>
+  <table>
+    <thead><tr><th></th><th>Container</th><th>Virtual machine</th></tr></thead>
+    <tbody>
+      <tr><td>Kernel</td><td>Shares the Linux host kernel</td><td>Boots a guest kernel</td></tr>
+      <tr><td>Typical startup</td><td>Fast process startup</td><td>Boots an operating system</td></tr>
+      <tr><td>Boundary</td><td>Process and user-space isolation</td><td>Separate guest operating system</td></tr>
+    </tbody>
+  </table>
+  <p>Docker Desktop provides a Linux environment behind the scenes on macOS and Windows, because Linux containers need a Linux kernel.</p>
+
+  <div class="callout warning"><strong>What the image does not capture</strong>The host kernel, CPU architecture, external services, secrets, and live input are still outside the image. Containers improve repeatability; they do not make every run identical.</div>
+
+  <nav class="page-nav"><a href="week6.04-package-layers.html">← Package layers</a><a href="week6.06-dockerfile.html">Next: Dockerfile, image, and container →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
+</body>
+</html>

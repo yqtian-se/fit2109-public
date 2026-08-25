@@ -1,144 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>6.6 — Dockerfiles — FIT2109 Week 6</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
-  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
-  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
-  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
-  p  { margin-bottom: 14px; }
-  ul, ol { margin: 12px 0 16px 24px; }
-  li { margin-bottom: 6px; }
-  a  { color: #4361ee; text-decoration: none; }
-  a:hover { text-decoration: underline; }
-  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
-  .badge-concept { background: #e8f5e9; color: #2e7d32; }
-  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
-  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
-  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
-  .prompt-sym { color: #a6e3a1; }
-  .cmd { color: #89dceb; }
-  .arg { color: #fab387; }
-  .kw  { color: #cba6f7; }
-  .str { color: #a6e3a1; }
-  .comment { color: #6c7086; }
-  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
-  .callout-try   { border-color: #00b894; background: #f0fdf8; }
-  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
-  .callout-warn  { border-color: #e17055; background: #fff4f2; }
-  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
-  .callout-try  strong { color: #00856a; }
-  .callout-note strong { color: #b8860b; }
-  .callout-warn strong { color: #c0392b; }
-  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
-  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
-  .key-table tr:last-child td { border-bottom: none; }
-  .key-table tr:nth-child(even) td { background: #f4f4fb; }
-  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
-  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>6.6 Dockerfile, image, and container — FIT2109</title>
+  <link rel="stylesheet" href="week6.css">
 </head>
 <body>
-<div class="page">
-<span class="section-badge badge-concept">Core material</span>
-<h2>6.6 Dockerfiles</h2>
+<header class="site-header"><div class="site-header-inner"><a class="course" href="index.html">FIT2109 Week 6</a><span class="week">Required background · 4 minutes</span></div></header>
+<main class="page"><article class="reading">
+  <div class="eyebrow"><span class="label required">Required</span><span>6.6</span></div>
+  <h1>Dockerfile, image, and container</h1>
+  <p class="lead">The Dockerfile is the build recipe. <code>docker build</code> uses that recipe and the build context to create an image. <code>docker run</code> creates a container from the image.</p>
 
-<p>A Dockerfile is a plain-text recipe that describes how to build a Docker image. Every instruction adds a layer to the image. Running <code>docker build</code> executes those instructions in order, producing a reproducible, versioned artifact that anyone can use to recreate the same environment.</p>
+  <figure class="figure">
+    <img src="images/week6-image-vs-container.png" alt="A Dockerfile is built into an image and the image is run as a container">
+    <figcaption>Recipe → reusable artifact → runtime instance.</figcaption>
+  </figure>
 
-<h3>Core instructions</h3>
-<table class="key-table">
-  <thead><tr><th>Instruction</th><th>What it does</th></tr></thead>
-  <tbody>
-    <tr><td><code>FROM</code></td><td>Set the base image to start from. Every Dockerfile must begin with <code>FROM</code>. Common bases: <code>ubuntu:22.04</code>, <code>python:3.12-slim</code>, <code>node:20-alpine</code>.</td></tr>
-    <tr><td><code>WORKDIR</code></td><td>Set the working directory inside the image for subsequent instructions. Creates the directory if it does not exist.</td></tr>
-    <tr><td><code>COPY</code></td><td>Copy files from the build context (your host) into the image.</td></tr>
-    <tr><td><code>RUN</code></td><td>Execute a shell command during the build. Used to install packages, compile code, and set up configuration.</td></tr>
-    <tr><td><code>ENV</code></td><td>Set an environment variable that will be present at both build time and runtime.</td></tr>
-    <tr><td><code>EXPOSE</code></td><td>Document which port the application listens on. Does not actually publish the port — use <code>-p</code> when running.</td></tr>
-    <tr><td><code>CMD</code></td><td>The default command to run when a container starts. Can be overridden by passing a command to <code>docker run</code>.</td></tr>
-  </tbody>
-</table>
+  <h2>The Week 6 example</h2>
+  <p>The earlier <code>messagekit</code> timeline isolated the version-drift idea. The runnable seminar example has three files:</p>
+  <pre><code>pyapp/
+├── app.py              # imports requests and launches curl
+├── requirements.txt    # contains requests==2.31.0
+└── Dockerfile           # records how to build the environment</code></pre>
+  <p>The Dockerfile records both dependency layers: pip installs the Python package, while apt installs the system command.</p>
+  <pre><code>FROM python:3.12-slim
 
-<h3>A Dockerfile for a Python application</h3>
-<pre><code><span class="kw">FROM</span> <span class="str">python:3.12-slim</span>
-<span class="kw">WORKDIR</span> <span class="str">/app</span>
-<span class="kw">COPY</span> <span class="str">requirements.txt .</span>
-<span class="kw">ENV</span> <span class="str">PYTHONDONTWRITEBYTECODE=1</span>   <span class="comment"># no .pyc files during install or at runtime</span>
-<span class="kw">RUN</span> <span class="str">pip install --no-cache-dir -r requirements.txt</span>
-<span class="comment"># --no-cache-dir: skip pip's download cache → smaller image</span>
-<span class="kw">COPY</span> <span class="str">. .</span>
-<span class="kw">CMD</span> <span class="str">["python", "app.py"]</span></code></pre>
+RUN apt-get update \
+    &amp;&amp; apt-get install -y curl
 
-<h3>Building and running</h3>
-<pre><code><span class="comment"># Build the image from the current directory (where Dockerfile lives)</span>
-<span class="prompt-sym">$</span> <span class="cmd">docker build</span> <span class="arg">-t myapp .</span>
+WORKDIR /app
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
+COPY app.py .
 
-<span class="comment"># Run it</span>
-<span class="prompt-sym">$</span> <span class="cmd">docker run</span> <span class="arg">--rm myapp</span></code></pre>
+CMD ["python", "app.py"]</code></pre>
 
-<h3>Layer caching: why order matters</h3>
-<p>Docker caches each layer. If a layer's instruction and its inputs are unchanged since the last build, Docker reuses the cached layer and skips re-executing it. This makes rebuilds fast — but only if you write the Dockerfile to take advantage of it.</p>
+  <table>
+    <thead><tr><th>Instruction</th><th>Its job in this image</th></tr></thead>
+    <tbody>
+      <tr><td><code>FROM</code></td><td>Select Python 3.12 and the starting Linux user-space filesystem.</td></tr>
+      <tr><td><code>RUN</code></td><td>Execute installation commands while building the image.</td></tr>
+      <tr><td><code>WORKDIR</code></td><td>Give later steps and containers the stable internal path <code>/app</code>.</td></tr>
+      <tr><td><code>COPY</code></td><td>Place declared dependencies and source files into the image.</td></tr>
+      <tr><td><code>CMD</code></td><td>Choose the default command when the user supplies no replacement command.</td></tr>
+    </tbody>
+  </table>
 
-<p>The critical ordering rule: <strong>copy files that change rarely before files that change often</strong>.</p>
-<ul>
-  <li><code>requirements.txt</code> changes only when you add or remove dependencies.</li>
-  <li>Your source code changes on every edit.</li>
-</ul>
-<p>If you write <code>COPY . .</code> first and then <code>RUN pip install</code>, every source code change invalidates the pip install layer — Docker reinstalls all packages on every rebuild. By copying <code>requirements.txt</code> first and running <code>pip install</code> immediately after, the install layer is only invalidated when dependencies actually change.</p>
+  <h2>Build and run</h2>
+  <pre><code>docker build -t fit2109-week6 .
+docker run --rm fit2109-week6</code></pre>
 
-<div class="callout callout-warn">
-  <strong>Common mistake: COPY . . before pip install</strong>
-  This forces a full <code>pip install</code> on every rebuild, even when only a single source file changed. Keep dependency installation as early as possible in the Dockerfile.
-</div>
+  <h2>Why an old image still contains old source</h2>
+  <p>The build reads the files available at build time. Editing <code>app.py</code> on the host does not rewrite an existing image. Run the old image and it still starts from the old image contents. Run <code>docker build</code> again to capture the changed source in a new image.</p>
 
-<div class="callout callout-try">
-  <strong>Try this — annotate</strong>
-  Read the Dockerfile above line by line and write — in plain English — what each line does and why that specific choice was made. Pay attention to: why <code>python:3.12-slim</code> and not <code>python:3.12</code> (without the <code>-slim</code> suffix)? Why <code>--no-cache-dir</code>? Why is <code>ENV</code> placed before <code>RUN pip install</code>? Why is <code>COPY . .</code> last?
-</div>
+  <div class="callout"><strong>One useful ordering rule</strong>Copy <code>requirements.txt</code> and install dependencies before copying frequently changed source. Docker can often reuse the dependency installation when only <code>app.py</code> changes.</div>
 
-<div class="callout callout-try">
-  <strong>Try this — build it</strong>
-  Create a directory with three files: the Dockerfile above, a <code>requirements.txt</code> containing just <code>requests</code>, and an <code>app.py</code> that prints <code>import requests; print(requests.__version__)</code>. Then run:
-  <br><br>
-  <code>docker build -t myapp . &amp;&amp; docker run --rm myapp</code>
-  <br><br>
-  Edit <code>app.py</code> (change the print message) and rebuild. Notice which layers are cached (fast) and which re-execute (slow). Then add a new package to <code>requirements.txt</code> and rebuild again — observe the difference.
-</div>
+  <h2>Concept check</h2>
+  <p>You edit <code>app.py</code> from “version 1” to “version 2” and immediately run the existing image. Why does the container still print version 1?</p>
 
-<div class="callout callout-note">
-  <strong>Concept check</strong>
-  You add a new line to <code>app.py</code> and rebuild. Which layers does Docker reuse from cache, and which does it re-execute?
-</div>
-
-<h3>Advanced: multi-stage builds</h3>
-<p>Some applications need heavy build-time tools (compilers, test runners, build systems) that should never end up in the final deployed image. A <strong>multi-stage build</strong> uses multiple <code>FROM</code> instructions in one Dockerfile — each stage produces an intermediate image, and the final stage copies only the compiled output.</p>
-
-<pre><code><span class="comment"># Stage 1 — build: has Maven + JDK, compiles the app</span>
-<span class="kw">FROM</span> <span class="str">maven:3.9-eclipse-temurin-17 AS build</span>
-<span class="kw">WORKDIR</span> <span class="str">/src</span>
-<span class="kw">COPY</span> <span class="str">. .</span>
-<span class="kw">RUN</span> <span class="str">mvn -q -DskipTests package</span>   <span class="comment"># produces target/app.jar</span>
-
-<span class="comment"># Stage 2 — runtime: tiny JRE only, no Maven, no source code</span>
-<span class="kw">FROM</span> <span class="str">eclipse-temurin:17-jre</span>
-<span class="kw">WORKDIR</span> <span class="str">/app</span>
-<span class="kw">COPY</span> <span class="str">--from=build /src/target/app.jar .</span>   <span class="comment"># copy artifact from the build stage</span>
-<span class="kw">CMD</span> <span class="str">["java", "-jar", "app.jar"]</span></code></pre>
-
-<p>The final image contains only the JRE and the compiled <code>.jar</code>. The Maven installation, source code, and intermediate build files are discarded. This is the standard pattern for Java, Go, and any compiled language where the build toolchain is large.</p>
-
-<div class="callout callout-note">
-  <strong>Why this matters</strong>
-  A Maven + JDK image is ~500 MB. A JRE-only image is ~200 MB. Shipping the build toolchain to production wastes bandwidth, increases attack surface, and slows deployments. Multi-stage builds eliminate all three problems in one Dockerfile.
-</div>
-
-<hr class="divider">
-<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 6 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
-</div>
+  <nav class="page-nav"><a href="week6.05-containers.html">← Containers</a><a href="week6.07-docker-install.html">Next: install and check Docker →</a></nav>
+  <p class="footer">FIT2109 · Week 6 · Monash University</p>
+</article></main>
 </body>
 </html>
