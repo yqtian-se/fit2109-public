@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.7 — Tabular Data Processing — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: tabular data</span>
+<h2>10.7 Tabular Data Processing</h2>
+
+<p>Once data is <em>tabular</em>, the usual goals are to select columns, filter rows, and compute summaries. The catch is that "tabular" does not always mean "easy to split". You already know the standard line tools from <a href="../week2/week2.07-textprocessing.html">Week 2 (2.7)</a>: <code>cut</code> prints selected parts of each line, <code>sort</code> orders lines, and <code>uniq</code> removes or counts <em>adjacent</em> repeated lines &mdash; which is why <code>sort</code> comes first.</p>
+
+<h3>Simple delimited data</h3>
+<p>Take a CSV with no quoted commas:</p>
+
+<pre><code>name,city,score
+Alice,Melbourne,82
+Bob,Sydney,75
+Carol,Melbourne,91
+Dave,Perth,75</code></pre>
+
+<pre><code><span class="comment"># the city column (with its header):</span>
+<span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2 scores.csv</span>
+
+<span class="comment"># skip the header, then count each city:</span>
+<span class="prompt-sym">$</span> <span class="cmd">tail</span> <span class="arg">-n +2 scores.csv | cut -d',' -f2 | sort | uniq -c</span>
+<span class="out">   2 Melbourne</span>
+<span class="out">   1 Perth</span>
+<span class="out">   1 Sydney</span></code></pre>
+
+<p><code>-d','</code> sets the delimiter and <code>-f2</code> selects the second field. <code>tail -n +2</code> starts output at line 2, so the header is skipped. Then <code>cut</code> extracts, <code>sort</code> clusters equal values together, and <code>uniq -c</code> counts each cluster. This is a classic wrangling pattern because each tool does exactly one job.</p>
+
+<p>Two more small tools complete the set. <code>sort -t, -k3 -nr</code> sorts <em>numerically</em> (<code>-n</code>), highest first (<code>-r</code>), on comma-separated field 3 (<code>-t,</code> and <code>-k3</code>):</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">tail</span> <span class="arg">-n +2 scores.csv | sort -t, -k3 -nr | head -n 2</span>
+<span class="out">Carol,Melbourne,91</span>
+<span class="out">Alice,Melbourne,82</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Common trap — sorting numbers as text</strong>
+  Without <code>-n</code>, <code>sort</code> compares character by character, so <code>10</code> comes <em>before</em> <code>9</code> (because <code>1</code> &lt; <code>9</code>). Output like <code>10 100 9</code> is a classic sign you forgot <code>-n</code>.
+</div>
+
+<h3>Where line tools break: real CSV</h3>
+<p>Real CSV is often more complicated. RFC 4180 allows quoted fields that contain commas and even line breaks, so commands that split blindly on commas can misread perfectly valid files. Here is <code>sales.csv</code>:</p>
+
+<pre><code>date,customer,category,amount
+2026-10-01,"ACME, Inc.",hardware,1250.00
+2026-10-02,Globex,software,799.00
+2026-10-03,Initech,software,500.00
+2026-10-03,"ACME, Inc.",software,300.00
+2026-10-04,Globex,hardware,450.00</code></pre>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">cut</span> <span class="arg">-d',' -f2 sales.csv</span>
+<span class="out">customer</span>
+<span class="out">"ACME</span>
+<span class="out">Globex</span>
+<span class="out">Initech</span>
+<span class="out">"ACME</span>
+<span class="out">Globex</span></code></pre>
+
+<p>The customer <code>"ACME, Inc."</code> has been sliced in half &mdash; the output shows <code>"ACME</code> with a stray quote. Worse, <em>there was no error</em>: the command ran, printed plausible-looking output, and any total or count built on it is now wrong. Every <code>cut</code>, <code>awk -F,</code>, or <code>sed</code> pipeline that assumes one comma means one boundary has the same flaw.</p>
+
+<h3>Use a CSV-aware tool when quoting is possible</h3>
+<p><strong>Miller</strong> (<code>mlr</code>) describes itself as being like <code>sed</code>, <code>awk</code>, <code>cut</code>, <code>join</code>, and <code>sort</code> for name-indexed data such as CSV. It reads CSV, TSV, JSON, and JSON Lines, understands RFC 4180-style quoting, and addresses columns by <em>name</em> rather than by position. The same <code>cut</code> that mangled <code>"ACME, Inc."</code> now just works:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mlr</span> <span class="arg">--icsv --opprint cut -f customer,amount sales.csv</span>
+<span class="out">customer   amount</span>
+<span class="out">ACME, Inc. 1250.00</span>
+<span class="out">Globex     799.00</span>
+<span class="out">Initech    500.00</span>
+<span class="out">ACME, Inc. 300.00</span>
+<span class="out">Globex     450.00</span></code></pre>
+
+<p>The flags say how to read and write: <code>--icsv</code> means CSV <em>in</em>, <code>--opprint</code> means a readable aligned table <em>out</em> (<code>--ojson</code> and <code>--ocsv</code> work the same way, and <code>--c2p</code> is shorthand for <code>--icsv --opprint</code>). Verbs such as <code>cut</code> are then chained with the word <code>then</code>.</p>
+
+<h3>Installing Miller</h3>
+<p>Miller is a single self-contained program, but it is not installed by default. Use the line for your system, then check it worked with <code>mlr --version</code>:</p>
+
+<table class="key-table">
+  <thead><tr><th>Platform</th><th>Install command</th></tr></thead>
+  <tbody>
+    <tr><td>macOS (Homebrew)</td><td><code>brew install miller</code></td></tr>
+    <tr><td>Ubuntu / Debian</td><td><code>sudo apt update</code><br><code>sudo apt install miller</code></td></tr>
+  </tbody>
+</table>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mlr</span> <span class="arg">--version</span>
+<span class="out">mlr 6.22.0</span></code></pre>
+
+<p>The examples here are written for Miller 6, and the package that <code>apt</code> installs can be older on older Ubuntu/Debian releases, so check the version you got. The package name is the lowercase word <code>miller</code>, but the command it installs is <code>mlr</code>.</p>
+
+<h3>Miller in practice: filter, group, sort</h3>
+<p>Because Miller knows the column names and infers numbers, the common wrangling steps become short and readable. Revenue by category (the question from 10.1), then customers ranked by total:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mlr</span> <span class="arg">--icsv --opprint stats1 -a sum -f amount -g category sales.csv</span>
+<span class="out">category amount_sum</span>
+<span class="out">hardware 1700</span>
+<span class="out">software 1599</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">mlr</span> <span class="arg">--icsv --opprint stats1 -a sum,count -f amount -g customer \</span>
+    <span class="arg">then sort -nr amount_sum sales.csv</span>
+<span class="out">customer   amount_sum amount_count</span>
+<span class="out">ACME, Inc. 1550       2</span>
+<span class="out">Globex     1249       2</span>
+<span class="out">Initech    500        1</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">mlr</span> <span class="arg">--icsv --opprint filter '$category == "software" &amp;&amp; $amount &gt; 400' sales.csv</span>
+<span class="out">date       customer category amount</span>
+<span class="out">2026-10-02 Globex   software 799.00</span>
+<span class="out">2026-10-03 Initech  software 500.00</span></code></pre>
+
+<p><code>stats1</code> computes statistics (<code>-a</code>) over a field (<code>-f</code>), optionally grouped (<code>-g</code>); <code>filter</code> keeps records for which an expression is true, with fields written <code>$name</code>. Writing CSV <em>out</em> re-quotes correctly, and Miller converts between formats too:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mlr</span> <span class="arg">--csv sort -nr amount then head -n 2 sales.csv</span>
+<span class="out">date,customer,category,amount</span>
+<span class="out">2026-10-01,"ACME, Inc.",hardware,1250.00</span>
+<span class="out">2026-10-02,Globex,software,799.00</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">mlr</span> <span class="arg">--icsv --ojson head -n 1 then cut -f customer sales.csv</span>
+<span class="out">[</span>
+<span class="out">{</span>
+<span class="out">  "customer": "ACME, Inc."</span>
+<span class="out">}</span>
+<span class="out">]</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Miller vs SQLite</strong>
+  Both are CSV-aware, so either is a sound answer to the quoting problem. Miller is a streaming tool that slots into a shell pipeline and converts between CSV and JSON. SQLite (<a href="week10.09-sqlite.html">10.9</a>) suits questions that need several groupings or joins, and is usually already installed. In a Python project, the standard-library <code>csv</code> module is a third option.
+</div>
+
+<table class="key-table">
+  <thead><tr><th>Is your CSV…</th><th>Then use</th></tr></thead>
+  <tbody>
+    <tr><td>Simple: no quotes, no embedded commas or newlines, you have checked</td><td><code>cut</code>, <code>awk -F,</code>, <code>sort</code>, <code>uniq</code></td></tr>
+    <tr><td>Possibly quoted, or you did not produce it yourself</td><td>Miller, SQLite, or a CSV library</td></tr>
+  </tbody>
+</table>
+
+<p>The lesson is not that line tools are bad, but that you must <em>know which kind of file you have</em> before choosing. For easy cases they are excellent; for anything else, switch early.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

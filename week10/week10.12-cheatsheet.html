@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.12 — Data Wrangling at a Glance — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+  .tools-table td { vertical-align: top; }
+  .tools-table td:first-child { font-weight: 600; white-space: nowrap; width: 1%; }
+  .tools-table td code { white-space: nowrap; }
+  @media (max-width: 600px) { .tools-table td:first-child { white-space: normal; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Reference</span>
+<h2>10.12 Data Wrangling at a Glance</h2>
+
+<p>A one-page reference for the whole week. Keep it open during the workshop.</p>
+
+<h3>Which tool for which data?</h3>
+<table class="key-table tools-table">
+  <thead><tr><th>Data you have</th><th>First look</th><th>Filter / extract</th><th>Summarise</th></tr></thead>
+  <tbody>
+    <tr><td>Log / plain text lines</td><td><code>head</code><br><code>wc -l</code></td><td><code>grep</code><br><code>sed</code><br><code>awk</code></td><td><code>sort | uniq -c</code><br><code>awk</code> arrays</td></tr>
+    <tr><td>Simple CSV (no quotes)</td><td><code>head</code><br><code>column -t -s,</code></td><td><code>cut</code><br><code>awk -F,</code></td><td><code>awk</code><br><code>sort | uniq -c</code></td></tr>
+    <tr><td>Real CSV (quotes possible)</td><td><code>head</code><br><code>file</code></td><td><code>mlr</code> (Miller)<br>SQLite</td><td>SQL <code>GROUP BY</code><br><code>mlr stats1</code></td></tr>
+    <tr><td>JSON</td><td><code>jq '.'</code></td><td><code>jq</code> filters<br><code>select(...)</code></td><td><code>length</code>, <code>group_by</code> in <code>jq</code><br>or flatten to CSV first</td></tr>
+    <tr><td>Wrong encoding / CRLF</td><td><code>file</code><br><code>file --mime-encoding</code></td><td><code>iconv</code><br><code>tr -d '\r'</code></td><td>—</td></tr>
+  </tbody>
+</table>
+
+<h3>I want to&hellip;</h3>
+<table class="key-table">
+  <thead><tr><th>I want to…</th><th>Command</th></tr></thead>
+  <tbody>
+    <tr><td>Count lines containing a word</td><td><code>grep -c WORD file</code></td></tr>
+    <tr><td>Keep lines that do <em>not</em> match</td><td><code>grep -v PATTERN file</code></td></tr>
+    <tr><td>Pull out just the matching part</td><td><code>grep -oE 'code=[0-9]+' file</code></td></tr>
+    <tr><td>Print one whitespace-separated field</td><td><code>awk '{print $3}' file</code></td></tr>
+    <tr><td>Filter on a field's exact value</td><td><code>awk '$3 == "ERROR"' file</code></td></tr>
+    <tr><td>Remove a prefix / extract with a capture group</td><td><code>sed -E 's/^PREFIX//'</code><br><code>sed -nE 's/.*k=([0-9]+).*/\1/p'</code></td></tr>
+    <tr><td>Skip the CSV header</td><td><code>tail -n +2 file.csv</code><br><code>awk 'NR&gt;1' file.csv</code></td></tr>
+    <tr><td>Frequency table, biggest first</td><td><code>... | sort | uniq -c | sort -nr</code></td></tr>
+    <tr><td>Find duplicate lines</td><td><code>sort file | uniq -d</code></td></tr>
+    <tr><td>Sum a column per group (simple CSV)</td><td><code>awk -F, 'NR&gt;1 {s[$2]+=$3} END {for (k in s) print k, s[k]}' f | sort</code></td></tr>
+    <tr><td>Pretty-print / validate JSON</td><td><code>jq '.' file.json</code><br><code>jq empty file.json</code></td></tr>
+    <tr><td>Select JSON objects by condition</td><td><code>jq '.items[] | select(.status=="pending")'</code></td></tr>
+    <tr><td>JSON to quoted CSV rows</td><td><code>jq -r '.items[] | [.id, .name] | @csv'</code></td></tr>
+    <tr><td>Select columns / group a quoted CSV with Miller</td><td><code>mlr --icsv --opprint cut -f customer,amount f.csv</code><br><code>mlr --icsv --opprint stats1 -a sum -f amount -g category f.csv</code></td></tr>
+    <tr><td>Query a CSV with SQL</td><td><code>sqlite3 :memory: -cmd '.mode csv' -cmd '.import f.csv t' "SELECT ..."</code></td></tr>
+    <tr><td>Convert Windows-1252 to UTF-8</td><td><code>iconv -f WINDOWS-1252 -t UTF-8 in.csv &gt; out.csv</code></td></tr>
+  </tbody>
+</table>
+
+<h3>Common traps at a glance</h3>
+<table class="key-table">
+  <thead><tr><th>Trap</th><th>Symptom</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td><code>uniq</code> without <code>sort</code></td><td>Many counts of <code>1</code></td><td><code>sort</code> first</td></tr>
+    <tr><td><code>sort</code> without <code>-n</code></td><td><code>10</code> before <code>9</code></td><td><code>sort -n</code></td></tr>
+    <tr><td>Splitting quoted CSV on commas</td><td>Names cut in half, silently wrong totals</td><td>Miller / SQLite / CSV library</td></tr>
+    <tr><td><code>grep</code> matching substrings</td><td>Counts too high</td><td>Test the field with <code>awk</code></td></tr>
+    <tr><td>Greedy <code>.*</code></td><td>Substitution swallows too much</td><td><code>[^X]*</code> instead</td></tr>
+    <tr><td><code>sed</code> prints non-matching lines</td><td>Unrelated lines in extracted output</td><td><code>sed -n</code> with <code>p</code></td></tr>
+    <tr><td>Imported SQLite columns are <code>TEXT</code></td><td>Wrong sort order</td><td><code>CAST</code>, or define column types</td></tr>
+    <tr><td>Missing JSON key</td><td><code>null</code> values; objects silently dropped</td><td>Check with <code>has()</code> / <code>//</code></td></tr>
+    <tr><td>Pipeline hides an early failure</td><td>Empty report, exit status <code>0</code></td><td><code>set -o pipefail</code></td></tr>
+    <tr><td>Wrong grouping key</td><td>Every count is <code>1</code></td><td>Group on the thing you want to count</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-note">
+  <strong>The rule of thumb</strong>
+  Inspect first. Pick the tool that matches the data's <em>shape</em> (lines, table, tree). Build the pipeline one stage at a time, checking each. When the structure outgrows the tool &mdash; quoting in CSV, nesting in JSON, grouping across columns &mdash; switch tools early.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

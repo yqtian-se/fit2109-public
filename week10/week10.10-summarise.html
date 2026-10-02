@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.10 — Summarising and Reporting — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>10.10 Summarising and Reporting Results</h2>
+
+<p>Wrangling is only useful if it ends in a result a person can interpret: a count, a grouped total, a top-N list, a filtered extract, or a compact report. The command line is strong here because the same small tools that did the extraction extend naturally into summarisation. <code>sort | uniq -c</code> counts lines; <code>awk</code> accumulates totals; <code>jq</code> emits selected fields; SQL handles relational summaries.</p>
+
+<h3>The counting pattern, and choosing what to count</h3>
+<p>Suppose you want the most frequent error <em>code</em> in <code>app.log</code>. A pipeline built from tools you have now met:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'$3 == "ERROR" {print $5}' app.log | sort | uniq -c | sort -nr</span>
+<span class="out">   3 code=503</span>
+<span class="out">   1 code=504</span></code></pre>
+
+<ol>
+  <li><code>awk</code> narrows to <code>ERROR</code> records <em>and</em> extracts the one field to group on.</li>
+  <li><code>sort</code> clusters identical values together.</li>
+  <li><code>uniq -c</code> counts each cluster.</li>
+  <li><code>sort -nr</code> orders the counts numerically, largest first.</li>
+</ol>
+
+<p>Each step is easy to explain and inspect, which makes the report easier to trust. Add <code>| head -n 3</code> for a top-3 list.</p>
+
+<div class="callout callout-warn">
+  <strong>Common trap — grouping on the wrong thing</strong>
+  The pattern only counts what you put into <code>sort</code>. If you strip the timestamp and group on the <em>whole remaining line</em>, the user name is still part of every line:
+  <pre style="margin:10px 0 0;"><code><span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">ERROR app.log | sed -E 's/^[0-9-]+ [0-9:]+ ERROR //' |
+    sort | uniq -c | sort -nr</span>
+<span class="out">   1 user=erin code=503
+   1 user=dave code=503
+   1 user=carol code=504
+   1 user=bob code=503</span></code></pre>
+  Every line is "unique", so every count is <code>1</code> and the report says nothing. The grouping key has to be the thing you actually want to count &mdash; here, the code. Always ask <em>"what is the unit I am counting?"</em> before you write the pipeline.
+</div>
+
+<h3>Grouped totals</h3>
+<p>For tabular data a summary usually means grouped totals. With <code>sales.csv</code> loaded into SQLite (10.9), revenue by category is one readable query &mdash; clearer and safer than reproducing the same logic with fragile shell parsing:</p>
+
+<pre><code><span class="out">SELECT category, ROUND(SUM(amount), 2) AS total_revenue</span>
+<span class="out">FROM sales</span>
+<span class="out">GROUP BY category</span>
+<span class="out">ORDER BY total_revenue DESC;</span></code></pre>
+
+<p>The point is not that everything must stay as plain text all the way through. It is that your pipeline can <em>move between tools</em> &mdash; CSV imported, queried, exported again &mdash; while staying reproducible.</p>
+
+<h3>Changing representation</h3>
+<p>Reporting often means converting between shapes: nested JSON in, a compact table out.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">-r '.orders[] | select(.status=="pending") |</span>
+    <span class="arg">[.id, .total] | @csv' orders.json</span>
+<span class="out">101,49.95</span>
+<span class="out">103,15.00</span>
+<span class="out">104,220.00</span></code></pre>
+
+<p>A summary can quietly <em>change</em> the data it reports, so know what your tools do to values on the way through. <code>@csv</code> quotes strings but leaves numbers bare, and number formatting can differ between <code>jq</code> versions (older releases print <code>15.00</code> as <code>15</code>). If the exact format matters to your reader, check the output &mdash; or round and format explicitly with SQL <code>ROUND</code> or <code>printf</code>.</p>
+
+<h3>State your assumptions</h3>
+<p>A good report states, at least implicitly, the decisions behind it. Did you ignore malformed rows? Skip the CSV header? Treat blank values as missing? Assume UTF-8? The more real the dataset, the more these decisions matter &mdash; and a one-line command can encode all of them. Comments and command history are valuable for this reason: they turn "something I typed once" into a repeatable workflow.</p>
+
+<table class="key-table">
+  <thead><tr><th>Summary you want</th><th>Typical tool pattern</th></tr></thead>
+  <tbody>
+    <tr><td>Count of matching lines</td><td><code>grep -c PATTERN file</code></td></tr>
+    <tr><td>Frequency of each value</td><td><code>... | sort | uniq -c | sort -nr</code></td></tr>
+    <tr><td>Top <em>N</em></td><td><code>... | sort | uniq -c | sort -nr | head -n N</code></td></tr>
+    <tr><td>Sum or average of a column</td><td><code>awk -F, 'NR&gt;1 {t+=$3} END {print t}'</code> (simple CSV) or <code>SUM()</code>/<code>AVG()</code></td></tr>
+    <tr><td>Total per group</td><td><code>awk</code> with an array, or SQL <code>GROUP BY</code></td></tr>
+    <tr><td>Count of JSON objects meeting a condition</td><td><code>jq '[.[] | select(...)] | length'</code></td></tr>
+  </tbody>
+</table>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

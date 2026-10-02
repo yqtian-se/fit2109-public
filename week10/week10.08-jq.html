@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.8 — JSON with jq — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: jq</span>
+<h2>10.8 Structured Queries for JSON with jq</h2>
+
+<p>Text filters are excellent for line-oriented input; nested data is better handled by a <strong>structure-aware query</strong>. For JSON, the key command-line tool is <code>jq</code>. The jq manual describes a jq program as a <strong>filter</strong>: it takes JSON in and produces JSON out. Instead of treating JSON as a pile of lines, you navigate its objects and arrays directly. Here is <code>orders.json</code>:</p>
+
+<pre><code>{
+  "orders": [
+    {"id": 101, "status": "pending", "total": 49.95,
+     "customer": {"name": "Alice", "city": "Melbourne"}},
+    {"id": 102, "status": "shipped", "total": 99.50,
+     "customer": {"name": "Bob", "city": "Sydney"}},
+    {"id": 103, "status": "pending", "total": 15.00,
+     "customer": {"name": "Carol", "city": "Melbourne"}},
+    {"id": 104, "status": "pending", "total": 220.00,
+     "customer": {"name": "Dave", "city": "Perth"}}
+  ]
+}</code></pre>
+
+<h3>Build a query one filter at a time</h3>
+<p>The simplest filter, <code>.</code>, is the identity: it validates and pretty-prints. Filters join with <code>|</code>, just like shell pipes, but the data flowing through them is JSON rather than lines:</p>
+
+<pre><code><span class="comment"># validate + pretty-print:</span>
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">'.' orders.json</span>
+
+<span class="comment"># every element of the array:</span>
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">'.orders[]' orders.json</span>
+
+<span class="comment"># reshape each order:</span>
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">'.orders[] | {id: .id, status: .status}' orders.json</span>
+
+<span class="comment"># keep only pending orders:</span>
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">'.orders[] | select(.status == "pending")' orders.json</span></code></pre>
+
+<table class="key-table">
+  <thead><tr><th>Filter</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>.orders</code></td><td>The value of the key <code>orders</code></td></tr>
+    <tr><td><code>.orders[]</code></td><td>Each element of the array, one at a time</td></tr>
+    <tr><td><code>.orders[0]</code></td><td>The first element</td></tr>
+    <tr><td><code>.customer.city</code></td><td>Reach into a nested object</td></tr>
+    <tr><td><code>select(<em>condition</em>)</code></td><td>Pass the item through only if the condition is true</td></tr>
+    <tr><td><code>{id, total}</code></td><td>Build a new object with just those keys (shorthand for <code>{id: .id, total: .total}</code>)</td></tr>
+  </tbody>
+</table>
+
+<h3>Answering questions</h3>
+<p>That already answers the third question from 10.1 &mdash; <em>which orders are pending?</em> &mdash; and the rest follow the same pattern:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">-c '.orders[] | select(.status=="pending") | {id, total}' orders.json</span>
+<span class="out">{"id":101,"total":49.95}</span>
+<span class="out">{"id":103,"total":15.00}</span>
+<span class="out">{"id":104,"total":220.00}</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">'[.orders[] | select(.status=="pending")] | length' orders.json</span>
+<span class="out">3</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">-c '.orders | group_by(.status) |</span>
+    <span class="arg">map({status: .[0].status, n: length, sum: (map(.total) | add)})' orders.json</span>
+<span class="out">[{"status":"pending","n":3,"sum":284.95},{"status":"shipped","n":1,"sum":99.50}]</span></code></pre>
+
+<p><code>-c</code> prints compact one-line JSON. Wrapping a stream in <code>[ ... ]</code> collects it back into an array so <code>length</code> can count it. <code>group_by</code> and <code>add</code> do the grouping and totalling inside <code>jq</code> itself.</p>
+
+<h3>Getting text back out: <code>-r</code> and <code>@csv</code></h3>
+<p>By default <code>jq</code> prints JSON, so strings are wrapped in quotes. The <code>-r</code> (<strong>raw output</strong>) option prints strings without them, which is what you want when the output feeds another text command. For tabular output, <code>@csv</code> formats an array as a correctly <em>quoted</em> CSV row, which is safer than gluing fields together with commas by hand:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">-r '.orders[] | select(.status=="pending") | "\(.id),\(.total)"' orders.json</span>
+<span class="out">101,49.95</span>
+<span class="out">103,15.00</span>
+<span class="out">104,220.00</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">-r '.orders[] | select(.status=="pending") |</span>
+    <span class="arg">[.id, .customer.city, .total] | @csv' orders.json</span>
+<span class="out">101,"Melbourne",49.95</span>
+<span class="out">103,"Melbourne",15.00</span>
+<span class="out">104,"Perth",220.00</span></code></pre>
+
+<p>This is a nested-to-flat conversion: JSON in, a small CSV-style report out. Once the data is flat, line tools take over again &mdash; for example, pending orders per city:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">-r '.orders[] | select(.status=="pending") | .customer.city' orders.json |</span>
+    <span class="arg">sort | uniq -c | sort -nr</span>
+<span class="out">   2 Melbourne</span>
+<span class="out">   1 Perth</span></code></pre>
+
+<h3>Missing keys do not raise errors</h3>
+<p>Remember from 10.3 that JSON does not guarantee every object has the same keys. <code>jq</code> is forgiving: asking for a key that is absent gives <code>null</code>, not an error. That is convenient, and it can also hide a problem:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">'[{"id":1,"total":5},{"id":2}]' | jq -c '[.[].total]'</span>
+<span class="out">[5,null]</span>
+
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">'[{"id":1,"status":"pending"},{"id":2}]' |</span>
+    <span class="arg">jq -c '.[] | select(.status=="pending")'</span>
+<span class="out">{"id":1,"status":"pending"}</span></code></pre>
+
+<p>The second record has no <code>status</code> at all, so <code>select</code> quietly drops it &mdash; it is not counted as pending <em>or</em> as anything else. When completeness matters, count the objects that lack the key (<code>select(has("status") | not)</code>) or supply a default with <code>//</code> (for example <code>.status // "unknown"</code>).</p>
+
+<div class="callout callout-note">
+  <strong>Validate first</strong>
+  <code>jq empty file.json</code> prints nothing and exits <code>0</code> if the file is valid JSON, and exits non-zero with a parse error if not. It is a cheap first stage in any script that consumes JSON.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.1 — What Is Data Wrangling? — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+  .diagram { text-align: center; margin: 24px 0; }
+  .diagram svg { max-width: 100%; height: auto; }
+  .diagram figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>10.1 What Is Data Wrangling?</h2>
+
+<p>In software and systems work, raw data is rarely ready to use. Log files are full of noise, CSV exports mix useful values with missing or inconsistent fields, and a JSON response often contains far more structure than you need to answer one question. <strong>Data wrangling</strong> is the process of turning that raw material into something that answers a real question: <strong>filtering</strong> out irrelevant records, <strong>extracting</strong> the fields that matter, <strong>repairing</strong> common problems, and <strong>summarising</strong> the result.</p>
+
+<p>The aim is not just to "clean data". It is to produce <em>information</em> that supports debugging, monitoring, reporting, or a decision &mdash; and to produce it in a way you (and someone else) can check and repeat.</p>
+
+<h3>Three files, three different questions</h3>
+<p>Suppose three files arrive from different parts of one system:</p>
+
+<table class="key-table">
+  <thead><tr><th>File</th><th>Shape</th><th>Question you want answered</th><th>Natural tools</th></tr></thead>
+  <tbody>
+    <tr><td><code>app.log</code></td><td>Line-oriented text</td><td>How many <code>ERROR</code> lines occurred today?</td><td><code>grep</code>, <code>sed</code>, <code>awk</code>, <code>sort</code>, <code>uniq</code></td></tr>
+    <tr><td><code>sales.csv</code></td><td>Rows and columns, with quoting rules</td><td>Which product category earns the most revenue?</td><td><code>cut</code>/<code>awk</code> if simple; a CSV-aware tool or SQL if not</td></tr>
+    <tr><td><code>orders.json</code></td><td>Nested objects and arrays</td><td>Which orders are still pending?</td><td><code>jq</code></td></tr>
+  </tbody>
+</table>
+
+<p>These are all data-wrangling tasks, but they call for different tools because they have different <em>shapes</em>. A log is lines; a CSV is a table; JSON is a tree. <strong>The core skill is matching the processing model to the format in front of you</strong> rather than forcing every file through one favourite tool.</p>
+
+<h3>The four recurring stages</h3>
+<div class="diagram">
+<svg viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The four stages of a data-wrangling pipeline: inspect, filter or extract, transform, summarise">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#4361ee"/></marker></defs>
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" text-anchor="middle">
+    <rect x="8"   y="20" width="160" height="78" rx="10" fill="#eef0f8" stroke="#4361ee" stroke-width="1.5"/>
+    <rect x="208" y="20" width="160" height="78" rx="10" fill="#eef0f8" stroke="#4361ee" stroke-width="1.5"/>
+    <rect x="408" y="20" width="160" height="78" rx="10" fill="#eef0f8" stroke="#4361ee" stroke-width="1.5"/>
+    <rect x="608" y="20" width="144" height="78" rx="10" fill="#e8f5e9" stroke="#2e7d32" stroke-width="1.5"/>
+    <text x="88"  y="46" font-size="12" font-weight="700" fill="#4361ee">1 · INSPECT</text>
+    <text x="288" y="46" font-size="12" font-weight="700" fill="#4361ee">2 · FILTER / EXTRACT</text>
+    <text x="488" y="46" font-size="12" font-weight="700" fill="#4361ee">3 · TRANSFORM</text>
+    <text x="680" y="46" font-size="12" font-weight="700" fill="#2e7d32">4 · SUMMARISE</text>
+    <text x="88"  y="70" font-size="13" fill="#1a1a2e">What is in here?</text>
+    <text x="288" y="70" font-size="13" fill="#1a1a2e">Keep only what matters</text>
+    <text x="488" y="70" font-size="13" fill="#1a1a2e">Repair and reshape</text>
+    <text x="680" y="70" font-size="13" fill="#1a1a2e">Counts, totals, top-N</text>
+    <g font-family="'SF Mono','Fira Code',Consolas,monospace" font-size="12" fill="#d63031">
+      <text x="88"  y="124">head · jq .</text>
+      <text x="288" y="124">grep · awk · jq select</text>
+      <text x="488" y="124">sed · tr · iconv</text>
+      <text x="680" y="124">sort|uniq -c · SQL</text>
+    </g>
+    <line x1="170" y1="59" x2="204" y2="59" stroke="#4361ee" stroke-width="2" marker-end="url(#arr)"/>
+    <line x1="370" y1="59" x2="404" y2="59" stroke="#4361ee" stroke-width="2" marker-end="url(#arr)"/>
+    <line x1="570" y1="59" x2="604" y2="59" stroke="#4361ee" stroke-width="2" marker-end="url(#arr)"/>
+  </g>
+</svg>
+<figcaption>The same four-stage shape appears whatever the format. Only the tools in the second line change.</figcaption>
+</div>
+
+<p>For <code>app.log</code>, that might be: look at the first few lines with <code>head</code>; keep error lines with <code>grep</code>; pull out one field with <code>awk</code>; count repeated values with <code>sort | uniq -c</code>. For <code>sales.csv</code>: check the header and quoting, select columns, convert types if needed, then aggregate. For <code>orders.json</code>: pretty-print it, extract the relevant keys, then count or group. The tools change; the thinking pattern does not.</p>
+
+<p>Throughout this week, the examples use the same three small files so you can follow one dataset from slide to slide. Here is the log you will see most often:</p>
+
+<pre><code>2026-10-01 09:00:01 INFO  user=alice action=login
+2026-10-01 09:00:05 ERROR user=bob code=503
+2026-10-01 09:00:09 WARN  user=alice retry=1
+2026-10-01 09:00:13 ERROR user=carol code=504
+2026-10-01 09:00:20 ERROR user=dave code=503
+2026-10-01 09:00:31 INFO  user=bob action=login
+2026-10-01 09:00:42 ERROR user=erin code=503</code></pre>
+
+<h3>Real data is messy by default</h3>
+<p>Even when a file is technically well-formed, the data in it may be hard to use. Text can arrive in an unexpected encoding, dates can appear in several formats, identifiers can be inconsistent, and a missing value can be an empty string, <code>NULL</code>, <code>N/A</code>, or simply an absent key. A good wrangling workflow treats these as <strong>normal rather than exceptional</strong>: inspect carefully, make your assumptions explicit, and pick tools that match the structure of the data.</p>
+
+<div class="callout callout-note">
+  <strong>Why the command line?</strong>
+  Small tools that each do one job, joined by pipes, let you test one step at a time, see every intermediate result, and rerun the whole thing later. That is what makes a wrangling result <em>trustworthy</em>, not just fast. You met pipes in <a href="../week1/week1.11-pipes.html">Week 1</a>; this week they become an analysis technique.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

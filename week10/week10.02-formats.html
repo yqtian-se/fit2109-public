@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.2 — Common Data Formats — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>10.2 Common Data Formats in Practice</h2>
+
+<p>The first step in wrangling is recognising what you actually have. Three formats cover a huge share of everyday work: <strong>plain text</strong>, <strong>CSV</strong>, and <strong>JSON</strong>. All three are text, but they behave differently enough that you should not treat them as interchangeable.</p>
+
+<h3>Plain text: structure by convention</h3>
+<p>A log file is the classic line-oriented example. There is no schema file, but there is an informal pattern &mdash; a timestamp, a severity, then key=value details &mdash; and that consistency is enough for ordinary text tools to exploit:</p>
+
+<pre><code>2026-10-01 09:00:01 INFO  user=alice action=login
+2026-10-01 09:00:05 ERROR user=bob code=503
+2026-10-01 09:00:09 WARN  user=alice retry=1</code></pre>
+
+<h3>CSV: deceptively simple</h3>
+<p>CSV looks more structured. <a href="https://www.rfc-editor.org/rfc/rfc4180" target="_blank">RFC 4180</a> documents the common form: records separated by line breaks, fields by commas, with <strong>quoting rules</strong> so that commas, quotes, and even line breaks can appear <em>inside</em> a field.</p>
+
+<pre><code>date,customer,category,amount
+2026-10-01,"ACME, Inc.",hardware,1250.00
+2026-10-02,Globex,software,799.00</code></pre>
+
+<p>At a glance this is trivial to split on commas &mdash; until you reach <code>"ACME, Inc."</code>. That comma is part of the customer name, not a separator. Splitting on every comma is therefore unsafe for general CSV, and this is why CSV is easy right up until real-world quoting appears.</p>
+
+<div class="callout callout-note">
+  <strong>CSV has dialects</strong>
+  RFC 4180 is an informational description of common practice, not a strict standard that every exporter follows. In the wild you will meet tab-separated files (TSV), semicolon-separated files (common in locales where the comma is the decimal mark), files with a byte-order mark at the start, and files whose header row is missing. Always look before you parse.
+</div>
+
+<h3>JSON: a tree, not lines</h3>
+<p><a href="https://www.rfc-editor.org/rfc/rfc8259" target="_blank">RFC 8259</a> defines JSON as a lightweight, text-based, language-independent data-interchange format built from objects, arrays, strings, numbers, booleans, and <code>null</code>.</p>
+
+<pre><code>{
+  "orders": [
+    {"id": 101, "status": "pending", "total": 49.95},
+    {"id": 102, "status": "shipped", "total": 99.50}
+  ]
+}</code></pre>
+
+<p>JSON is not naturally line-oriented. The useful questions are structural: <em>"what is <code>orders[0].status</code>?"</em> or <em>"how many objects in <code>orders</code> have <code>status == "pending"</code>?"</em> Tools such as <code>jq</code> are designed around exactly that. The same document could be written on one line or fifty and mean the same thing &mdash; which is precisely why line-based tools are the wrong fit.</p>
+
+<h3>Format drives tool choice</h3>
+<table class="key-table">
+  <thead><tr><th>Format</th><th>Mental model</th><th>Reach for</th><th>Be careful about</th></tr></thead>
+  <tbody>
+    <tr><td>Plain text / logs</td><td>A stream of lines, each with a pattern</td><td><code>grep</code>, <code>sed</code>, <code>awk</code></td><td>Patterns that match more than you meant</td></tr>
+    <tr><td>Simple CSV (no quotes)</td><td>Lines split on a delimiter</td><td><code>cut</code>, <code>awk -F,</code>, <code>sort</code>, <code>uniq</code></td><td>The header row; any quoted comma</td></tr>
+    <tr><td>Real CSV (quotes, embedded commas/newlines)</td><td>A table with quoting rules</td><td>Miller (<code>mlr</code>), SQLite, a CSV library</td><td>Naive splitting on commas</td></tr>
+    <tr><td>JSON</td><td>A tree of objects and arrays</td><td><code>jq</code></td><td>Keys missing from some objects; inconsistent types</td></tr>
+  </tbody>
+</table>
+
+<h3>Inspect before you process</h3>
+<p>A good diagnostic habit is to look at the format first, using a command that suits it:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">head</span> <span class="arg">app.log</span>
+<span class="prompt-sym">$</span> <span class="cmd">head</span> <span class="arg">-n 3 sales.csv</span>
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">'.' orders.json</span></code></pre>
+
+<p><code>jq '.'</code> is the JSON equivalent of <code>head</code>: the identity filter <code>.</code> <strong>validates</strong> the file (it fails loudly if the JSON is broken) and <strong>pretty-prints</strong> it so nested structure is easy to read.</p>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Create the three-line CSV above as <code>sales.csv</code>, then run <code>cut -d',' -f2 sales.csv</code> and read the output carefully. What happens to the customer name <code>ACME, Inc.</code>? We come back to this in <a href="week10.07-tabular.html">10.7</a>.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
