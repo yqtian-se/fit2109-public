@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.9 — Choosing AI Development Tools — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-tool { background: #e3f2fd; color: #1565c0; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .ext-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 14px 0; }
+  .ext-link { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #d0d8f0; border-radius: 20px; padding: 5px 14px; font-size: 0.84rem; color: #4361ee; text-decoration: none; }
+  .ext-link:hover { background: #f0f4ff; text-decoration: none; }
+  .ext-link::before { content: "↗"; font-size: 0.8em; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Explore freely</span>
+<h2>12.9 Choosing AI Development Tools</h2>
+<p>Choose an interface based on the work you need done and the access you are willing to give it. Product names change; the difference between a chat, an API, an editor assistant, and an agent remains useful. <a href="week12.05-mcp.html">Section 12.5</a> explains how project instructions, skills, MCP connections, and the harness fit around these interfaces.</p>
+
+<h3>Match the interface to the task</h3>
+<table class="key-table">
+  <thead><tr><th>Task</th><th>Interface and examples</th><th>What you still decide</th></tr></thead>
+  <tbody>
+    <tr><td>Explain a snippet or compare design ideas</td><td>Chat interface: ChatGPT, Claude, Gemini</td><td>Which context to provide and whether the answer fits your code. A chat may also have agent features, so check what access is enabled.</td></tr>
+    <tr><td>Use a model inside your own program</td><td>GenAI API</td><td>Where a model helps, how to validate its output, and what happens when the call fails.</td></tr>
+    <tr><td>Suggest code while you type</td><td>IDE assistant: GitHub Copilot</td><td>Whether each suggestion meets the requirement and belongs in this codebase.</td></tr>
+    <tr><td>Explore or change a local repository</td><td>Coding agent: Codex CLI, Claude Code, Gemini CLI, Cline, Aider</td><td>Task scope, file and command permissions, checks, and which changes to accept. These products differ in their controls and interfaces.</td></tr>
+    <tr><td>Delegate an issue in a GitHub repository</td><td>GitHub-hosted agent: Copilot cloud agent; other supported agents may depend on plan and settings</td><td>Issue quality, repository access, and whether the resulting PR should be merged.</td></tr>
+  </tbody>
+</table>
+
+<h3>Where the other concepts fit</h3>
+<p>A product is the interface you use. Project instructions give it local conventions; a skill can provide a reusable procedure; an MCP connection can expose external tools or data; and the harness controls what actions are possible. These layers may be present together, but none removes the need for a person to set the goal and judge the result. For example, GitHub's <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task" target="_blank" rel="noopener noreferrer">issue-to-PR workflow</a> uses an issue as the task, repository instructions as context, and the PR as the result to review. The built-in GitHub connection does not require you to add an MCP server.</p>
+<p>In <a href="week12.10-demo.html">Section 12.10</a>, you will practise with an API example and an agent-produced change. As you work, ask which interface has the access the task needs, which action requires human review, and what evidence would convince you to accept the output.</p>
+
+<h3>Reference links</h3>
+<div class="ext-links">
+  <a class="ext-link" href="https://learn.chatgpt.com/docs/developer-commands?surface=cli" target="_blank">Codex CLI</a>
+  <a class="ext-link" href="https://platform.openai.com/docs" target="_blank">OpenAI API documentation</a>
+  <a class="ext-link" href="https://code.claude.com/docs/en/overview" target="_blank">Claude Code documentation</a>
+  <a class="ext-link" href="https://google-gemini.github.io/gemini-cli/" target="_blank">Gemini CLI documentation</a>
+  <a class="ext-link" href="https://github.com/cline/cline" target="_blank">Cline on GitHub</a>
+  <a class="ext-link" href="https://aider.chat/docs/usage.html" target="_blank">Aider usage guide</a>
+  <a class="ext-link" href="https://docs.github.com/en/copilot" target="_blank">GitHub Copilot docs</a>
+  <a class="ext-link" href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task" target="_blank">GitHub issue-to-PR agent</a>
+  <a class="ext-link" href="https://modelcontextprotocol.io" target="_blank">MCP documentation</a>
+</div>
+
+<div class="callout callout-note">
+  <strong>The landscape changes fast</strong>
+  These examples were reviewed in October 2026. Features and availability change frequently. Check official documentation before relying on a particular product or setting.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

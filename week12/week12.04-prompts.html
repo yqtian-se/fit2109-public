@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>12.4 — Prompt Engineering — FIT2109 Week 12</title>
+<title>12.4 — Give the Agent a Clear Task — FIT2109 Week 12</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
@@ -39,15 +39,15 @@
 <body>
 <div class="page">
 <span class="section-badge badge-concept">Core material</span>
-<h2>12.4 Prompt Engineering for Agent Tasks</h2>
+<h2>12.4 Give the Agent a Clear Task</h2>
 
-<p>The quality of what an agent produces is almost entirely determined by the quality of what you ask for. "Vague input → vague output" is not a rule of thumb — it is a near-guarantee. Learning to write a good prompt is the most immediately transferable skill in this week's material.</p>
+<p>A clear task, relevant context, and explicit boundaries help an agent produce a reviewable result. The prompt is one part of the workflow; tool access, repository state, and verification also matter.</p>
 
-<h3>The three ingredients of an effective prompt</h3>
+<h3>What the agent needs for this task</h3>
 <ol>
-  <li><strong>Task.</strong> What you want done. Be specific: name the function, file, or behaviour you want changed. "Fix the bug" is not a task — "In <code>parse.py</code>, <code>parse_date()</code> crashes on empty strings" is a task.</li>
-  <li><strong>Context.</strong> The language, framework, existing structure, and any relevant constraints the agent needs to understand your project. What it cannot see, it invents.</li>
-  <li><strong>Constraints.</strong> What the agent must <em>not</em> do. This is the most commonly omitted ingredient and the most common cause of runaway rewrites. "Do not change the function signature." "Do not add new dependencies." "Do not modify any file in <code>tests/</code>."</li>
+  <li><strong>Task.</strong> State the behaviour you want changed. "Fix the bug" is vague; "In <code>parse.py</code>, <code>parse_date()</code> crashes on empty strings" identifies a case to address.</li>
+  <li><strong>Context.</strong> Give the project facts the agent cannot infer reliably from the files it can see, such as a compatibility requirement or the test command.</li>
+  <li><strong>Checks and boundaries.</strong> Say how you will judge the result and name constraints that matter: "Add a test for empty input" and "Do not change the function signature."</li>
 </ol>
 
 <h3>Vague vs specific</h3>
@@ -55,27 +55,31 @@
   <div class="compare-card vague">
     <h4>Vague prompt</h4>
     <p>"Fix my code."</p>
-    <p>The agent has no idea which file, which function, what the expected behaviour is, or what "fix" means. It will make something up — typically by rewriting whatever it finds first in a way that seems plausible to it.</p>
+    <p>The agent does not know which behaviour you want changed. It may ask for clarification or guess at the scope, leaving you with a result that is hard to review.</p>
   </div>
   <div class="compare-card specific">
     <h4>Specific prompt</h4>
     <p>"<code>find_matches()</code> in <code>data.py</code> is O(n²) because it searches a list on every iteration. Rewrite it to use a set for the lookup. Do not change the function signature or modify any test files."</p>
-    <p>The agent knows exactly what to touch, why, how, and what to leave alone. The resulting diff is reviewable in under a minute.</p>
+    <p>The agent has a specific goal and a compatibility constraint. You still need to measure the result and inspect the diff.</p>
   </div>
 </div>
 
-<h3>The most common failure: missing constraints</h3>
-<p>When you give an agent a task with no constraints, it optimises for completeness. "Add error handling to my script" without constraints will often produce a full rewrite — because to the agent, the most thorough way to add error handling is to restructure the code. This is not malicious or stupid; it is the natural result of an agent trying to do a good job with incomplete instructions.</p>
-<p>The fix is to treat prompts like code specifications. If a function spec is missing edge-case handling, the implementation will be wrong. If a prompt is missing scope constraints, the agent output will exceed scope.</p>
+<h3>Choose constraints that matter</h3>
+<p>"Add error handling to my script" leaves the required behaviour unclear. Say which error to handle, how the program should respond, and what existing behaviour must remain. Add a constraint such as "do not change the public function signature" when it matters to callers. A long list of generic rules can distract from the actual task.</p>
+<p>Treat the prompt as a short specification with a way to check the result. For a CSV importer, you might ask the agent to preserve valid rows, report malformed rows, and add a test for both. Then inspect the change rather than assuming the wording alone guaranteed the outcome.</p>
+
+<h3>Put stable project facts in an instruction file</h3>
+<p>Your task prompt says what to do <em>this time</em>. A project instruction file records facts the agent should use across tasks: how to run tests, naming conventions, supported versions, and files it should leave alone. For example, put “fix <code>parse_date()</code> for empty strings” in the task prompt, and “run <code>make test</code>; use Python 3.11; do not edit generated files” in <code>AGENTS.md</code> or <code>CLAUDE.md</code>, depending on the tool. Check that the agent read the file. These instructions guide its work; permissions and sandbox settings control what it can access or change.</p>
+<p>When the same multi-step procedure is useful for several tasks, a <strong>skill</strong> can hold that workflow and load when needed. The <a href="week12.05-mcp.html">next page</a> shows how task prompts, project instructions, skills, tool connections, and the harness fit together.</p>
 
 <div class="callout callout-warn">
-  <strong>No constraints means no scope</strong>
-  An agent given "refactor this module" with no constraints may change the public API, rename functions, swap the data structures, add a dependency, and reorganise the file layout — all in one pass. Each change is individually reasonable; together they produce a diff you cannot review in an hour. Always say what must not change.
+  <strong>Keep the scope reviewable</strong>
+  An agent given "refactor this module" may change the public API, rename functions, add a dependency, and reorganise files in one pass. If you only need a faster lookup, name that goal and any compatibility requirement. Review the diff and reject changes that do not serve the goal.
 </div>
 
 <div class="callout callout-try">
   <strong>Try this</strong>
-  Take a task you would normally Google — looking up how to sort a dictionary by value, or how to read a CSV file — and instead write a properly constrained agent prompt for it. Include the task, the language and framework, and at least two constraints. Notice how the constraints force you to think more precisely about what you actually want.
+  Write a task prompt for the CSV importer: name the required behaviour for malformed rows, one compatibility constraint that matters, and one check that could reveal a wrong implementation. Keep it short enough that a teammate could review the request and the resulting diff.
 </div>
 
 <hr class="divider">

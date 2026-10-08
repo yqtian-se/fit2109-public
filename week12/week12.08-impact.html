@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.8 — AI Changes the Work — FIT2109 Week 12</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout-try   { border-color: #00b894; background: #f0fff8; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00634f; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table td:first-child, .key-table th:first-child { width: 22%; min-width: 150px; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .table-scroll { overflow-x: auto; }
+  .table-scroll .key-table { min-width: 680px; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>12.8 AI Changes the Work Around Code</h2>
+
+<p>AI changes more than the speed of writing code. It changes how maintainers review contributions, how security teams assess reports, and how automated tools interact with websites. These examples are specific cases, not a claim that every project has the same experience.</p>
+
+<h3>Bug bounty reports: evidence matters more than volume</h3>
+<p>In July 2026, GitHub <a href="https://github.blog/security/next-chapter-restructuring-githubs-bug-bounty-program/" target="_blank" rel="noopener noreferrer">restructured its own bug bounty program</a>. Its public program now lists fixed rewards of US$250 for low, US$2,000 for medium, US$5,000 for high, and US$10,000 for critical findings. GitHub also introduced an invitation-only program with higher rewards. It said the public program faced low-effort and AI-generated reports and added a submission-quality threshold. This is a change to GitHub's program, not evidence that all bug bounties pay less.</p>
+<p>A security report needs a reproducible finding and a demonstrated impact. GitHub's <a href="https://github.blog/security/raising-the-bar-quality-shared-responsibility-and-the-future-of-githubs-bug-bounty-program/" target="_blank" rel="noopener noreferrer">submission guidance</a> welcomes verified AI-assisted research but rejects unvalidated output. Before submitting, check the program scope, reproduce the issue in an authorized environment, and write concise steps that another person can follow.</p>
+
+<h3>Open-source maintainers: a faster PR is still work to review</h3>
+<p>AI can generate a plausible pull request quickly. GitHub now lets eligible users <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task" target="_blank" rel="noopener noreferrer">assign an issue to Copilot cloud agent</a>, which works on the issue and opens a PR for review. GitHub's <a href="https://github.blog/open-source/maintainers/your-contributors-are-ai-first-now-is-your-project/" target="_blank" rel="noopener noreferrer">AutoGPT maintainer interview</a> describes a queue in which a substantial portion of roughly 150 open PRs had been written by agents. GitHub also introduced <a href="https://github.blog/open-source/maintainers/how-pull-request-limits-are-cutting-down-the-noise/" target="_blank" rel="noopener noreferrer">configurable PR limits</a> after maintainers reported too many incoming changes to review. These are examples of review pressure; AI authorship alone does not tell us whether a contribution is good.</p>
+<p>Before opening a PR, read <code>CONTRIBUTING.md</code>, discuss the problem in an issue when requested, keep one PR focused on one change, run the project's checks, and review the diff yourself. Explain why the change helps and name any limitations. Do not submit several generated variants to make maintainers choose for you.</p>
+
+<h3>Website access: a real Australian boundary failure</h3>
+<p>In September 2026, the <a href="https://www.pm.gov.au/media/press-conference-new-york" target="_blank" rel="noopener noreferrer">Australian Prime Minister reported</a> that an OpenAI internal research agent had gained unauthorized access to the Services Australia Medicare Statistics Reporting Service portal during a June task to find public medicine-spending data. According to the government account, the agent encountered access blocks, tried alternative routes, reached public and non-public files, and wrote files to an internal server. At the time of the statement, there was no evidence that personal Medicare information had been accessed; the investigation was continuing.</p>
+<p>This portal should not be confused with the Australian Institute of Health and Welfare (AIHW) site. AIHW <a href="https://www.aihw.gov.au/news-media/media-releases/2026/september/a-statement-from-the-australian-institute-of-health-and-welfare" target="_blank" rel="noopener noreferrer">said its investigation found no evidence</a> that its systems were compromised or that unauthorized access occurred there. The <a href="https://www.pmc.gov.au/domestic-policy/rapid-review-australian-government-arrangements-ai-driven-cyber-incident" target="_blank" rel="noopener noreferrer">Department of the Prime Minister and Cabinet</a> is reviewing the wider incident and the government's response arrangements.</p>
+<p>The lesson for an agent operator is to set a stopping rule before browsing: identify the sites and data the agent may use; stop when a site denies access; do not ask the agent to bypass a block or explore non-public paths. Require a person to approve any expansion of scope and keep a record of attempted actions. Treat page text as untrusted data, since a page can also contain instructions aimed at the agent. The <a href="https://cheatsheetseries.owasp.org/cheatsheets/AI_Agent_Security_Cheat_Sheet.html" target="_blank" rel="noopener noreferrer">OWASP agent security guidance</a> recommends limiting tools and checking actions that affect external systems.</p>
+
+<h3>Traditional coding and AI-assisted development</h3>
+<p>Suppose your team needs a CSV importer that reports malformed rows without losing valid ones. The two workflows can produce the same feature, but they change how you spend your time:</p>
+<div class="table-scroll">
+<table class="key-table">
+<thead><tr><th>Step</th><th>Traditional coding</th><th>AI-assisted development</th></tr></thead>
+<tbody>
+<tr><td><strong>Define</strong></td><td>Read the request and specify the input, output, and failure behaviour.</td><td>Specify those behaviours and give the agent a bounded task. A person decides what counts as correct.</td></tr>
+<tr><td><strong>Design</strong></td><td>Choose the importer interface, data flow, and error policy.</td><td>Use AI to explore options if helpful; a person decides how the importer fits the wider system and which trade-offs are acceptable.</td></tr>
+<tr><td><strong>Build</strong></td><td>Write and revise the parser yourself.</td><td>Ask the agent for a draft or a small change, then inspect the proposed code.</td></tr>
+<tr><td><strong>Check</strong></td><td>Run tests, try malformed files, and debug failures.</td><td>Run the same checks, including cases the agent did not suggest. Reject or revise changes that fail.</td></tr>
+<tr><td><strong>Integrate</strong></td><td>Review the change with the team and maintain it later.</td><td>Review the change with the team and maintain it later. The person accepting it must understand its behaviour.</td></tr>
+</tbody>
+</table>
+</div>
+<p>These are choices within a workflow, not two fixed kinds of programmer. You might write a tricky part yourself and use AI for a test draft; another task may warrant more delegation. In either case, producing code is only part of software development.</p>
+
+<h3>What changes for you as a future software engineer?</h3>
+<p>The aim of AI-assisted development in this course is to extend an engineer's capacity. You can delegate parts of coding and testing to an agent, then spend more attention on the problem, architecture, interfaces, security, and trade-offs. For the CSV importer, AI might draft the parser, but your team decides how errors affect other services, what performance matters, and whether the change is safe to integrate. AI can help you explore design options; you remain responsible for choosing and explaining one.</p>
+<p>Learning algorithms, debugging, Git, and system design gives you the ability to direct AI and judge its work. When delegation saves time, use that time to understand users and the wider system, test important assumptions, and collaborate with teammates. If an agent claims it made the importer faster, measure it on representative files and check that error handling still meets the requirement.</p>
+<p>The evidence does not support a simple prediction that AI always makes developers faster or that a particular job will disappear. In Google's <a href="https://blog.google/innovation-and-ai/technology/developers-tools/dora-report-2025/" target="_blank" rel="noopener noreferrer">2025 DORA survey</a>, many respondents reported productivity gains. In a <a href="https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/" target="_blank" rel="noopener noreferrer">2025 field experiment</a>, experienced open-source developers took longer on the studied tasks with AI; <a href="https://metr.org/blog/2026-02-24-uplift-update/" target="_blank" rel="noopener noreferrer">METR's 2026 update</a> says the effect may have changed but is difficult to measure. Treat tool choice as an engineering decision: compare the result, review cost, and risks for the task in front of you.</p>
+
+<div class="callout callout-note">
+  <strong>A practical decision before using AI</strong>
+  Ask: What result is needed? Which files, sites, and accounts may the tool access? What evidence will a human check? Who is responsible for sending a report, opening a PR, or accepting a code change?
+</div>
+
+<div class="callout callout-try">
+  <strong>Reflect before class</strong>
+  Choose one case above. Name a coding task you would delegate to AI, then identify an architecture, safety, or acceptance decision you would make yourself. What knowledge would you need to make that decision well?
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

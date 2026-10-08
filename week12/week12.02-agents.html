@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>12.3 — Agents vs Chatbots — FIT2109 Week 12</title>
+<title>12.2 — From Chatbots to Agents — FIT2109 Week 12</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
@@ -43,9 +43,10 @@
 <body>
 <div class="page">
 <span class="section-badge badge-concept">Core material</span>
-<h2>12.3 Agents vs Chatbots, and the Read → Plan → Act Loop</h2>
+<h2>12.2 From Chatbots to Coding Agents</h2>
 
-<p>When people say "I use AI to help me code," they often mean different things. A student asking ChatGPT to explain a function is doing something fundamentally different from running Codex CLI, Claude Code, or Gemini CLI to refactor a module. The difference is not just the brand name — it is the nature of the interaction and what the tool can actually do to your project.</p>
+<p>Start with a familiar chatbot. You paste a function into a chat and ask why it fails on an empty file. The chatbot suggests a cause and perhaps a patch; you decide what to copy into your editor and which tests to run. This is a useful way to learn or brainstorm, but the chat has only the context and tools available in that session.</p>
+<p>Now imagine giving a coding agent the same question inside your repository. With permission, it can inspect the function, read the tests, run a failing case, propose an edit, and run the test again. The important distinction is the enabled tools and permissions: what can the system read, change, or send? A chat product may also offer an agent mode.</p>
 
 <div class="compare-grid">
   <div class="compare-card chatbot">
@@ -55,16 +56,16 @@
       <li>One turn at a time — you drive every step.</li>
       <li>In a basic chat workflow, it only sees the context you provide.</li>
       <li>You usually copy-paste its output into your editor manually.</li>
-      <li>No persistent state between turns (in most configurations).</li>
+      <li>Memory and connected tools depend on the product settings.</li>
     </ul>
   </div>
   <div class="compare-card agent">
     <h4>An agent</h4>
     <ul>
-      <li>You give it a <strong>goal</strong>, not just a prompt.</li>
+      <li>You give it a <strong>goal</strong> and access to selected tools.</li>
       <li>It reads your files, runs commands, and inspects the output.</li>
       <li>It loops through a read → plan → act cycle — until the goal is met or it is stuck.</li>
-      <li>It writes changes directly to your repository.</li>
+      <li>It may propose or write changes, depending on permissions.</li>
       <li>It can call external tools (search, databases, APIs) via protocols like MCP.</li>
     </ul>
   </div>
@@ -78,6 +79,9 @@
   <li><strong>Act and observe.</strong> The agent executes the action and gets back a result. That result becomes new context for the next iteration.</li>
 </ol>
 <p>The loop repeats until the agent judges that the goal has been met, or it runs out of steps, or it gets stuck and asks you for guidance. This is why agents can complete multi-step tasks that would require many back-and-forth exchanges with a chatbot.</p>
+
+<h3>Where the CLI and harness fit</h3>
+<p>A <strong>CLI</strong> is an interface for starting and guiding a coding agent from the terminal. It does not by itself make the model more reliable. The <strong>harness</strong> is the surrounding software that supplies context and tools, controls permissions and approvals, and records what happened. Those controls shape each pass through the agent's loop. Section 12.6 examines them in detail.</p>
 
 <h3>What actual CLI usage looks like</h3>
 <p>A CLI coding agent is normally used from inside a Git repository. The terminal command starts the conversation, but Git and tests are still your verification tools.</p>
@@ -93,35 +97,9 @@ git diff
 make test</code></pre>
 
 <p>The same workflow shape applies to other CLI agents such as <code>claude</code> or <code>gemini</code>: start in the right directory, give a narrow prompt, watch what the agent reads and runs, inspect the diff, then test before accepting the change.</p>
+<p>An agent does not have to run in your terminal. On GitHub, an eligible repository can <a href="https://docs.github.com/en/copilot/how-tos/copilot-on-github/use-copilot-agents/kick-off-a-task" target="_blank" rel="noopener noreferrer">assign an issue to Copilot cloud agent</a>. It works on the issue and opens a pull request for human review. The interface and execution environment differ from a local CLI, but the need to define the task and review the result remains. <a href="week12.09-tools.html">Section 12.9</a> compares these interfaces.</p>
 
-<h3>Codex commands worth recognising</h3>
-<table class="key-table">
-  <thead><tr><th>Command</th><th>Use it when</th></tr></thead>
-  <tbody>
-    <tr><td><code>codex</code></td><td>You want an interactive terminal session.</td></tr>
-    <tr><td><code>codex "prompt"</code></td><td>You want to start the session with a specific request.</td></tr>
-    <tr><td><code>codex --cd DIR "prompt"</code></td><td>You want Codex to work from a particular repository or subdirectory.</td></tr>
-    <tr><td><code>codex exec "prompt"</code></td><td>You want a non-interactive run that can fit into scripts or automation.</td></tr>
-    <tr><td><code>codex review</code></td><td>You want Codex to review a diff rather than edit files.</td></tr>
-    <tr><td><code>codex doctor</code></td><td>You need to diagnose installation, authentication, configuration, or runtime issues.</td></tr>
-    <tr><td><code>AGENTS.md</code></td><td>You want durable project instructions: commands, conventions, files not to touch, and review expectations.</td></tr>
-  </tbody>
-</table>
-
-<h3>The current landscape</h3>
-<table class="key-table">
-  <thead><tr><th>Tool</th><th>Interface</th><th>Key characteristic</th></tr></thead>
-  <tbody>
-    <tr><td><strong>ChatGPT / Claude / Gemini</strong></td><td>Chat app</td><td>Best for explanation, brainstorming, and small snippets when you provide the context explicitly.</td></tr>
-    <tr><td><strong>Codex CLI</strong></td><td>CLI — <code>codex</code> in terminal</td><td>OpenAI's terminal coding agent. Works close to shell commands, diffs, tests, and repository context.</td></tr>
-    <tr><td><strong>Claude Code</strong></td><td>CLI — <code>claude</code> in terminal</td><td>Anthropic's official coding agent. Full shell and file access. Configurable with CLAUDE.md and --allowedTools.</td></tr>
-    <tr><td><strong>Gemini CLI</strong></td><td>CLI — <code>gemini</code> in terminal</td><td>Google's open-source terminal agent. Useful for code understanding, file operations, command execution, and automation.</td></tr>
-    <tr><td><strong>Cline</strong></td><td>VS Code extension</td><td>Open-source and model-agnostic. Every file read and command run is shown in the UI before it happens.</td></tr>
-    <tr><td><strong>Aider</strong></td><td>CLI — Git-native</td><td>Open-source. Changes are committed to Git automatically by default, giving you a clean undo path.</td></tr>
-    <tr><td><strong>GitHub Copilot</strong></td><td>IDE autocomplete + chat</td><td>Inline suggestion in the editor. Closed, subscription-based. The most widely deployed tool in industry.</td></tr>
-    <tr><td><strong>OpenClaw</strong></td><td>Self-hosted agent framework</td><td>A broader personal/autonomous-agent example. It shows why tool access, memory, permissions, and audit logs matter beyond coding.</td></tr>
-  </tbody>
-</table>
+<p>In this example, the working directory limits the project context, the sandbox and approval settings constrain actions, and the diff and tests help you check the result. For commands and product options, use the <a href="week12.09-tools.html">tool reference page</a>.</p>
 
 <div class="callout callout-try">
   <strong>Try this</strong>

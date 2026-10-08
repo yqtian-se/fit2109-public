@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12.5 — How Agent Instructions and Tools Fit Together — FIT2109 Week 12</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 52px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-concept { background: #e8f5e9; color: #2e7d32; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-note  { border-color: #fdcb6e; background: #fffbee; }
+  .callout-warn  { border-color: #e17055; background: #fff4f2; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-note strong { color: #b8860b; }
+  .callout-warn strong { color: #c0392b; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .table-scroll { overflow-x: auto; }
+  .table-scroll .key-table { min-width: 650px; }
+  .tool-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+  .tool-card { background: #fff; border: 1px solid #e0e0f0; border-radius: 10px; padding: 18px; transition: box-shadow 0.15s; }
+  .tool-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tool-card .name { font-weight: 700; color: #4361ee; font-size: 1rem; }
+  .tool-card .desc { font-size: 0.88rem; color: #555; margin-top: 6px; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .tool-grid { grid-template-columns: 1fr; } .page { padding: 24px 16px 60px; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>12.5 How Agent Instructions and Tools Fit Together</h2>
+
+<p>Imagine asking a coding agent to fix a CSV importer after reading a GitHub issue. The model is one part of that workflow. Different layers tell the agent what to do, give it relevant context, connect it to data, and limit its actions.</p>
+
+<div class="table-scroll">
+<table class="key-table">
+  <thead><tr><th>Question</th><th>Layer</th><th>In this example</th></tr></thead>
+  <tbody>
+    <tr><td>What is the task now?</td><td><strong>Task prompt</strong></td><td>Fix malformed-row handling in the importer; keep the public API unchanged.</td></tr>
+    <tr><td>What is always true of this project?</td><td><strong>Project instructions</strong></td><td><code>AGENTS.md</code> in Codex or <code>CLAUDE.md</code> in Claude Code records the test command and project conventions.</td></tr>
+    <tr><td>Is there a repeatable way to do this?</td><td><strong>Skill</strong></td><td>A <code>SKILL.md</code> could describe a bug-fix workflow: reproduce, add a failing test, make a small change, and report evidence.</td></tr>
+    <tr><td>How can the agent reach the issue?</td><td><strong>Tool connection</strong></td><td>A configured GitHub MCP server can provide issue data and actions. Local file and shell tools need no MCP server.</td></tr>
+    <tr><td>Which actions are allowed?</td><td><strong>Harness and permissions</strong></td><td>The agent's runtime controls file access, tool use, and approvals. Connecting a tool does not authorize every possible action.</td></tr>
+    <tr><td>Is the fix acceptable?</td><td><strong>Human verification</strong></td><td>A developer reads the diff, runs relevant tests, and checks the malformed-row requirement.</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Skill and MCP solve different problems</h3>
+<p>A <strong>skill</strong> is reusable guidance for a task. Codex and Claude Code can load skills from folders containing <code>SKILL.md</code>; a skill may include instructions, reference files, or scripts. A skill can tell an agent <em>how</em> to review a bug report. It does not, by itself, give access to GitHub.</p>
+<p><strong>Model Context Protocol (MCP)</strong> is a way for a client to connect to external tools and data. A configured MCP server can let an agent read the GitHub issue or query another service. It does not tell the agent what a good bug fix looks like. The agent can use a skill and an MCP connection together: one supplies a workflow, the other supplies the connection. For work entirely inside a local repository, the agent's built-in tools may be enough.</p>
+<p>Some products already include the connection they need. GitHub's own Copilot cloud agent can receive an issue directly on GitHub; you do not need to add an MCP server for that built-in flow. If you are using an agent elsewhere and need an external service, MCP is one possible connection.</p>
+
+<div class="callout callout-note">
+  <strong>Where Codex and Claude Code fit</strong>
+  Both can use project instructions, skills, and MCP connections. Their interfaces and file locations differ: Codex commonly uses <code>AGENTS.md</code> and repo-scoped skills under <code>.codex/skills/</code>; Claude Code uses <code>CLAUDE.md</code> and project skills under <code>.claude/skills/</code>. You do not need to create every layer for every task. Add a skill when a workflow repeats; add an MCP connection when the task needs an external system.
+</div>
+
+<p>You can ask Codex to use a named skill with <code>$skill-name</code>; in Claude Code, you can invoke one with <code>/skill-name</code>. Both can also select a relevant skill from its description. Other extensions exist, such as subagents for separate pieces of work, hooks for event-based automation, and plugins that package related capabilities. They fit around the same workflow; they do not replace a clear task, appropriate permissions, or verification. The next page examines the harness and security boundaries in detail.</p>
+
+<p><small>Current references: <a href="https://developers.openai.com/blog/eval-skills" target="_blank" rel="noopener noreferrer">OpenAI on Codex skills</a>, <a href="https://developers.openai.com/plugins/concepts/skills" target="_blank" rel="noopener noreferrer">OpenAI on skills with MCP</a>, <a href="https://code.claude.com/docs/en/features-overview" target="_blank" rel="noopener noreferrer">Claude Code extension guide</a>, and <a href="https://code.claude.com/docs/en/skills" target="_blank" rel="noopener noreferrer">Claude Code skills guide</a>.</small></p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 12 · Monash University · by <a href="https://yqtian.com" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Yongqiang Tian</a></p>
+</div>
+</body>
+</html>

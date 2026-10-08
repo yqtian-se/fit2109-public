@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>12.2 — Capabilities and Limitations — FIT2109 Week 12</title>
+<title>12.3 — Capabilities and Limitations — FIT2109 Week 12</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
@@ -36,9 +36,9 @@
 <body>
 <div class="page">
 <span class="section-badge badge-concept">Core material</span>
-<h2>12.2 What AI Agents Do Well — and Where They Fail</h2>
+<h2>12.3 What AI Agents Do Well — and Where They Fail</h2>
 
-<p>The most useful mental model for working with AI coding tools is not "this is smart" or "this is unreliable." It is more precise than that: <strong>AI predicts likely text, not correct logic.</strong> That distinction explains both its genuine strengths and its consistent failure modes.</p>
+<p>AI coding tools can propose code, inspect files, and sometimes run checks. Their output is useful, but a fluent explanation or a passing test is not enough to show that the code meets your requirement. This page separates useful capabilities from the evidence needed to trust a result.</p>
 
 <div class="compare-grid">
   <div class="compare-card good">
@@ -52,29 +52,29 @@
     </ul>
   </div>
   <div class="compare-card bad">
-    <h4>Reliably fails at</h4>
+    <h4>Cannot guarantee by itself</h4>
     <ul>
-      <li><strong>Guaranteeing correctness.</strong> The model has no way to verify that its output is logically correct — it produces what looks right.</li>
-      <li><strong>Novel algorithms or proofs.</strong> Tasks that require genuine reasoning from first principles, not pattern completion.</li>
+      <li><strong>Guaranteeing correctness.</strong> A generated answer alone is not proof that a program is logically correct.</li>
+      <li><strong>Novel algorithms or proofs.</strong> Novel work may need additional reasoning, external evidence, and human review.</li>
       <li><strong>Knowing your specific codebase.</strong> Without being given relevant context, the model invents plausible but wrong assumptions about your project.</li>
-      <li><strong>Persistent memory.</strong> By default, there is no memory between sessions — the model starts fresh every time.</li>
-      <li><strong>Security awareness.</strong> It will produce code with known vulnerability patterns unless explicitly told not to.</li>
+      <li><strong>Persistent memory.</strong> Memory depends on the product and its configuration.</li>
+      <li><strong>Security awareness.</strong> Security claims require review and appropriate tests.</li>
     </ul>
   </div>
 </div>
 
-<h3>The key insight: prediction vs. correctness</h3>
-<p>A language model is trained to predict what text is likely to follow a given input. When the input is a coding task, it predicts what code would most plausibly appear next — based on billions of examples of similar tasks in its training data.</p>
-<p>This is genuinely useful because most code tasks are variations on patterns that have been solved before. But it means the model has no internal check for logical correctness. It cannot run its own output in its head. It cannot guarantee that an algorithm terminates, that a boundary condition is handled, or that a function does what its name implies.</p>
-<p>The result is <em>hallucination with confidence</em>: the model produces a function name, a library import, or a flag that does not exist — in fluent, well-formatted code with no indication that anything is wrong.</p>
+<h3>Fluent output is not evidence of correctness</h3>
+<p>A model can produce code that follows familiar patterns. A tool-connected agent can go further: it can inspect the repository, run a test, observe a failure, and revise its code. Those steps provide evidence, but only for the cases the agent actually checked.</p>
+<p>For example, an agent may change a CSV importer and run tests for valid rows. All tests pass, but no test checks a malformed row, so the agent has not established that the importer handles errors as required. A person needs to compare the change with the requirement and add a test for the missing case.</p>
+<p>Another failure is a plausible but nonexistent function name, library import, or command flag. The explanation may sound confident even when the detail is wrong.</p>
 
 <div class="callout callout-warn">
   <strong>Hallucination looks like confidence</strong>
-  AI-generated code can reference functions that do not exist in the library, use API flags that were deprecated years ago, or call methods with the wrong number of arguments — all while formatting the code perfectly and writing a plausible docstring. The code runs; it just crashes at that line. Always check that library calls you did not already know about actually exist in the version you are using.
+  AI-generated code can reference functions that do not exist in the library, use API flags that were deprecated years ago, or call methods with the wrong number of arguments — all while formatting the code perfectly and writing a plausible docstring. It may look valid until execution reaches that line. Check unfamiliar library calls against the version you are using.
 </div>
 
 <h3>What this means in practice</h3>
-<p>The failure modes above are not bugs that will be fixed in the next model release. They are structural: they follow directly from how the models work. This means your workflow needs to account for them permanently, not temporarily. Verification is not optional extra work — it is the cost of using the tool.</p>
+<p>Model and tool capabilities change, but generated code still needs verification against the task and environment. Verification is not optional extra work — it is the cost of using the tool.</p>
 
 <div class="callout callout-warn">
   <strong>Strong coding knowledge is the control system</strong>
