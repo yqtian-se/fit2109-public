@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.13 — Check Your Understanding — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+  .quiz-q { background: #fff; border: 1px solid #dde; border-radius: 10px; padding: 20px 22px; margin: 18px 0; }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label { display: block; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0; }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-quiz">Quiz — 10 questions</span>
+<h2>10.13 Check Your Understanding</h2>
+
+<p>These questions check concepts, not syntax recall. Think through each one &mdash; and commit to an answer &mdash; before opening the answer key at the bottom.</p>
+
+<div class="quiz-q">
+  <div class="qnum">Question 1</div>
+  <div class="qtext"><code>orders.json</code> is a minified API response: the whole document is on a single line, shaped like <code>{"orders":[{"id":101,"status":"pending",&hellip;},&hellip;]}</code>. Which command lists only the orders whose <code>status</code> is <code>pending</code>?</div>
+  <div class="options">
+    <label><input type="radio" name="q1"> <code>grep pending orders.json</code>, because it prints the lines that contain the word</label>
+    <label><input type="radio" name="q1"> <code>cut -d',' -f2 orders.json</code>, because it prints the second field</label>
+    <label><input type="radio" name="q1"> <code>jq '.orders[] | select(.status=="pending")' orders.json</code>, because it selects objects by the value of a key</label>
+    <label><input type="radio" name="q1"> <code>sed 's/pending//' orders.json</code>, because it finds the word in the text</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 2</div>
+  <div class="qtext">A row of <code>sales.csv</code> is <code>2026-10-01,"ACME, Inc.",hardware,1250.00</code>. What does <code>cut -d',' -f2</code> print for that row?</div>
+  <div class="options">
+    <label><input type="radio" name="q2"> <code>"ACME</code></label>
+    <label><input type="radio" name="q2"> <code>"ACME, Inc."</code></label>
+    <label><input type="radio" name="q2"> <code> Inc."</code></label>
+    <label><input type="radio" name="q2"> An error message about malformed CSV</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 3</div>
+  <div class="qtext">You run <code>awk '{print $3}' app.log | uniq -c</code> and get six lines, with <code>ERROR</code> and <code>INFO</code> each listed more than once, instead of one line per severity. What is the problem?</div>
+  <div class="options">
+    <label><input type="radio" name="q3"> The log file must be converted to UTF-8 before counting</label>
+    <label><input type="radio" name="q3"> <code>awk</code> cannot print the third field of a log file</label>
+    <label><input type="radio" name="q3"> <code>uniq -c</code> counts characters rather than lines</label>
+    <label><input type="radio" name="q3"> <code>uniq</code> only collapses <em>adjacent</em> duplicates, so the input needs <code>sort</code> first</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 4</div>
+  <div class="qtext">On a larger log, <code>grep -c ERROR app.log</code> reports <code>5</code>, but <code>awk '$3=="ERROR"' app.log | wc -l</code> reports <code>4</code>. What is the most likely explanation?</div>
+  <div class="options">
+    <label><input type="radio" name="q4"> <code>awk</code> skips the first line of every file</label>
+    <label><input type="radio" name="q4"> One line has <code>ERROR</code> somewhere other than the third field, such as in a user name, and <code>grep</code> matches it anywhere</label>
+    <label><input type="radio" name="q4"> <code>grep -c</code> counts each matching line twice</label>
+    <label><input type="radio" name="q4"> <code>wc -l</code> ignores lines that contain digits</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 5</div>
+  <div class="qtext">You open an exported CSV and every <code>é</code> shows as <code>&#xFFFD;</code>. <code>file --mime-encoding</code> reports <code>iso-8859-1</code>. What is the best next step?</div>
+  <div class="options">
+    <label><input type="radio" name="q5"> Run <code>jq '.'</code> on the file to repair the characters</label>
+    <label><input type="radio" name="q5"> Nothing &mdash; the file is valid CSV, so the characters must be correct</label>
+    <label><input type="radio" name="q5"> Edit each affected line by hand in the original file</label>
+    <label><input type="radio" name="q5"> Convert it with <code>iconv -f ISO-8859-1 -t UTF-8</code> and use the converted copy</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 6</div>
+  <div class="qtext">What does <code>echo '&lt;b&gt;x&lt;/b&gt; &lt;b&gt;y&lt;/b&gt;' | sed -E 's/&lt;.*&gt;//'</code> print?</div>
+  <div class="options">
+    <label><input type="radio" name="q6"> <code>x y</code></label>
+    <label><input type="radio" name="q6"> <code>x&lt;/b&gt; &lt;b&gt;y</code></label>
+    <label><input type="radio" name="q6"> An empty line</label>
+    <label><input type="radio" name="q6"> <code>&lt;b&gt;x&lt;/b&gt; &lt;b&gt;y&lt;/b&gt;</code>, unchanged</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 7</div>
+  <div class="qtext"><code>sed -E 's/.*code=([0-9]+).*/\1/' app.log</code> prints the status codes, but also prints the full <code>INFO</code> and <code>WARN</code> lines unchanged. How do you print only the extracted codes?</div>
+  <div class="options">
+    <label><input type="radio" name="q7"> Add <code>-n</code> and end the substitution with <code>p</code></label>
+    <label><input type="radio" name="q7"> Add the <code>g</code> flag at the end of the substitution</label>
+    <label><input type="radio" name="q7"> Add <code>-i</code> so the file is edited in place</label>
+    <label><input type="radio" name="q7"> Replace <code>-E</code> with <code>-e</code></label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 8</div>
+  <div class="qtext">You import <code>nums.csv</code> into SQLite with <code>.mode csv</code> and <code>.import</code>, letting SQLite create the table. The file is a header <code>v</code> followed by the values <code>9</code>, <code>10</code>, and <code>100</code>. What order does <code>SELECT v FROM nums ORDER BY v</code> return?</div>
+  <div class="options">
+    <label><input type="radio" name="q8"> <code>9, 10, 100</code>, because they are numbers</label>
+    <label><input type="radio" name="q8"> The query fails until the column types are declared</label>
+    <label><input type="radio" name="q8"> <code>100, 10, 9</code>, because SQLite sorts descending by default</label>
+    <label><input type="radio" name="q8"> <code>10, 100, 9</code>, because the columns were created as text</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 9</div>
+  <div class="qtext">What does <code>echo '[{"id":1,"total":5},{"id":2}]' | jq -c '[.[].total]'</code> print?</div>
+  <div class="options">
+    <label><input type="radio" name="q9"> <code>[5]</code></label>
+    <label><input type="radio" name="q9"> <code>[5,null]</code></label>
+    <label><input type="radio" name="q9"> <code>[5,0]</code></label>
+    <label><input type="radio" name="q9"> A jq error about the missing key</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 10</div>
+  <div class="qtext">A script runs <code>grep ERROR "$1" | sort | uniq -c</code> and is given a file name that does not exist. <code>grep</code> prints an error message. Without <code>set -o pipefail</code>, what exit status does the pipeline report, and why?</div>
+  <div class="options">
+    <label><input type="radio" name="q10"> Zero, because a pipeline reports the exit status of its last command</label>
+    <label><input type="radio" name="q10"> Non-zero, because <code>grep</code> failed</label>
+    <label><input type="radio" name="q10"> Non-zero, because <code>sort</code> received no input</label>
+    <label><input type="radio" name="q10"> Zero, because <code>grep</code> ignores files that do not exist</label>
+  </div>
+</div>
+
+<details style="margin-top:32px;background:#fff;border:1px solid #e0e0f0;border-radius:8px;padding:16px 20px;">
+  <summary style="cursor:pointer;font-weight:700;color:#4361ee;">Answer key — open only after committing to your answers</summary>
+
+  <ol style="margin:14px 0 4px 24px;">
+    <li style="margin-bottom:14px;"><strong><code>jq '.orders[] | select(.status=="pending")' orders.json</code>, because it selects objects by the value of a key</strong><br>
+    JSON is a tree, not a list of lines: the same data could be written on one line or fifty and mean the same thing. Here the whole document <em>is</em> one line, so <code>grep pending</code> prints the entire document, every order included. <code>cut</code> splits that line at commas and would show only a fragment such as the first order's <code>"status":"pending"</code>, and <code>sed 's/pending//'</code> prints the whole document with the word deleted. <code>jq</code> steps through each order in the array and keeps those whose <code>status</code> equals <code>"pending"</code> (10.2, 10.8).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>"ACME</code></strong><br>
+    <code>cut</code> splits at <em>every</em> comma, including the one inside the quoted name, so field 2 is the first half of the name along with its opening quote. The most dangerous part is that there is no error: the output looks plausible and any total built on it is quietly wrong. This is exactly why real CSV needs a CSV-aware tool (Miller, SQLite, or a CSV library) instead of comma-splitting (10.7).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>uniq</code> only collapses <em>adjacent</em> duplicates, so the input needs <code>sort</code> first</strong><br>
+    <code>uniq -c</code> counts runs of identical neighbouring lines. In the unsorted stream <code>INFO</code>, <code>ERROR</code>, <code>WARN</code>, <code>ERROR</code>, <code>ERROR</code>, <code>INFO</code>, <code>ERROR</code>, the only adjacent pair is the two <code>ERROR</code> lines in the middle, so you get six separate runs instead of three totals. <code>sort</code> brings equal values together, and then <code>uniq -c</code> has something to count. That is why the idiom is always <code>sort | uniq -c</code> (10.7, 10.10).</li>
+
+    <li style="margin-bottom:14px;"><strong>One line has <code>ERROR</code> somewhere other than the third field, such as in a user name, and <code>grep</code> matches it anywhere</strong><br>
+    <code>grep ERROR</code> is a substring search over the whole line, so a line like <code>INFO user=ERROR_handler started</code> counts. The <code>awk</code> pattern <code>$3=="ERROR"</code> tests only the severity field, for an exact match. When a value lives in a particular field, test the field. <code>awk</code> does not skip lines, and <code>grep -c</code> counts each matching line once (10.4, 10.6).</li>
+
+    <li style="margin-bottom:14px;"><strong>Convert it with <code>iconv -f ISO-8859-1 -t UTF-8</code> and use the converted copy</strong><br>
+    The file is syntactically fine; the bytes are just not UTF-8, so a tool that assumes UTF-8 shows a replacement character. Converting once, to a new file, makes everything downstream consistent and keeps the original intact. Remember that <code>file</code> only <em>guesses</em> the encoding, so check that accented names look right after converting. <code>jq</code> is for JSON, not for repairing encodings (10.3).</li>
+
+    <li style="margin-bottom:14px;"><strong>An empty line</strong><br>
+    <code>.*</code> is greedy: it matches as much as it can. The pattern <code>&lt;.*&gt;</code> therefore starts at the first <code>&lt;</code> and runs to the <em>last</em> <code>&gt;</code> in the line, so the substitution removes everything and leaves an empty line. To strip each tag individually, use a negated class such as <code>s/&lt;[^&gt;]*&gt;//g</code>, which stops at the nearest <code>&gt;</code> and produces <code>x y</code> (10.5).</li>
+
+    <li style="margin-bottom:14px;"><strong>Add <code>-n</code> and end the substitution with <code>p</code></strong><br>
+    <code>sed</code> prints every line by default, whether or not the substitution matched, which is why the <code>INFO</code> and <code>WARN</code> lines come through untouched. <code>-n</code> switches off that automatic printing, and the <code>p</code> flag prints a line only when the substitution succeeded. The <code>g</code> flag is about repeated matches within one line, and <code>-i</code> would edit the original file, which is not what you want here (10.5).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>10, 100, 9</code>, because the columns were created as text</strong><br>
+    When <code>.import</code> creates the table, every column is <code>TEXT</code>, and text compares character by character: <code>1</code> sorts before <code>9</code>, so <code>10</code> and <code>100</code> come first. Use <code>ORDER BY CAST(v AS INTEGER)</code> or declare the column type before importing. Nothing fails, which is what makes this trap easy to miss (10.9).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>[5,null]</code></strong><br>
+    Asking <code>jq</code> for a key an object does not have gives <code>null</code> rather than an error. That is convenient, but it means a missing key can slip into a result unnoticed, and an object lacking a key can be silently dropped by <code>select</code>. When completeness matters, check with <code>has("total")</code> or supply a default with <code>//</code> (10.3, 10.8).</li>
+
+    <li style="margin-bottom:14px;"><strong>Zero, because a pipeline reports the exit status of its last command</strong><br>
+    <code>grep</code> does print an error and exit non-zero (it does not ignore the missing file), but <code>sort</code> and <code>uniq</code> then run on empty input and exit <code>0</code>, and by default <code>0</code> is what the pipeline reports. A script using <code>set -e</code> alone would carry on, producing an empty report that looks successful. <code>set -o pipefail</code> makes the pipeline fail if any stage fails (10.11).</li>
+  </ol>
+</details>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

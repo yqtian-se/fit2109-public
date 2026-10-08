@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.11 — Designing Reliable Pipelines — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>10.11 Designing Reliable Data-Wrangling Pipelines</h2>
+
+<p>A good pipeline is not just a clever chain of commands. It is a sequence of steps whose <strong>purpose is understandable</strong>, whose <strong>assumptions are visible</strong>, and whose <strong>output can be checked</strong>. That matters because data wrangling usually fails <em>quietly</em>: a wrong delimiter assumption, an encoding mismatch, a header row counted as data, or a regex that matches more than intended all produce plausible-looking output. The best defence is to build the pipeline incrementally and verify each stage before trusting the end.</p>
+
+<p>The command line makes this practical: each tool reads standard input and writes standard output, so every intermediate result can be inspected. <code>sed</code> is literally a stream editor and <code>jq</code> is documented as filter-based JSON processing &mdash; both reinforce the pipeline mindset.</p>
+
+<h3>A reliable workflow</h3>
+<ol>
+  <li><strong>Inspect a small sample</strong> (<code>head</code>, <code>jq .</code>, <code>file</code>).</li>
+  <li><strong>Write the simplest working extraction.</strong></li>
+  <li><strong>Validate the intermediate output</strong> &mdash; does it look the way you expected?</li>
+  <li><strong>Add transformation and summarisation</strong> one step at a time.</li>
+  <li><strong>Rerun on the full dataset</strong>, and sanity-check the totals.</li>
+  <li><strong>Save it as a script</strong> if it is worth repeating.</li>
+</ol>
+
+<p>For a CSV export, do not begin with a ten-stage pipeline. Look at the header and check whether quoting is present. If the file is simple, <code>cut</code> and <code>awk</code> are fine; if not, switch <em>early</em> to Miller or SQLite rather than patching around CSV complexity with a fragile regex. This is not tool purity &mdash; it is reliability.</p>
+
+<h3>Build up, checking as you go</h3>
+<pre><code><span class="comment"># 1. does the filter keep the right lines?</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">ERROR app.log | head -n 3</span>
+
+<span class="comment"># 2. does the extraction give codes?</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">ERROR app.log | awk '{print $5}' | head -n 3</span>
+<span class="out">code=503</span>
+<span class="out">code=504</span>
+<span class="out">code=503</span>
+
+<span class="comment"># 3. now summarise:</span>
+<span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">ERROR app.log | awk '{print $5}' | sort | uniq -c | sort -nr</span>
+<span class="out">   3 code=503</span>
+<span class="out">   1 code=504</span></code></pre>
+
+<p>If step 2 had printed the wrong column, you would have found out one command in, not after a ten-stage pipeline had produced a confident wrong answer.</p>
+
+<h3>Match the pipeline to the data's structure</h3>
+<p>Consider: <em>"How many pending orders are there per customer city, from a JSON API dump?"</em> A sensible pipeline stays structure-aware as long as it can:</p>
+
+<ol>
+  <li>Inspect with <code>jq '.' orders.json</code>.</li>
+  <li>Extract just what you need with <code>jq</code> (<code>.customer.city</code> of each pending order).</li>
+  <li>Once the result is flat, hand it to <code>sort | uniq -c</code> &mdash; or import it into SQLite if you need richer grouping.</li>
+</ol>
+
+<p>That is much safer than forcing the original JSON through line-oriented tools immediately. Conversely, "<em>which error code appears most often this week?</em>" can stay in text tools the whole way. Reliability starts with matching the pipeline to the structure.</p>
+
+<h3>Validate early, fail loudly</h3>
+<p>Syntax validity and analytical usefulness are not the same, so validation is a first stage, not an afterthought. Some cheap checks:</p>
+
+<pre><code><span class="comment"># does it parse at all?</span>
+<span class="prompt-sym">$</span> <span class="cmd">jq</span> <span class="arg">empty orders.json &amp;&amp; echo "valid JSON"</span>
+
+<span class="comment"># is the header what I expect?</span>
+<span class="prompt-sym">$</span> <span class="cmd">head</span> <span class="arg">-n 1 sales.csv</span>
+
+<span class="comment"># rows with the wrong field count (simple CSV):</span>
+<span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">-F, 'NF != 3 {print NR": "$0}' scores.csv</span>
+
+<span class="comment"># duplicated lines:</span>
+<span class="prompt-sym">$</span> <span class="cmd">sort</span> <span class="arg">sales.csv | uniq -d</span></code></pre>
+
+<div class="callout callout-warn">
+  <strong>Common trap — a pipeline reports only its last command</strong>
+  By default, the exit status of a pipeline is the exit status of its <em>last</em> command. If the first command fails, the pipeline can still "succeed":
+  <pre style="margin:10px 0 0;"><code><span class="prompt-sym">$</span> <span class="cmd">grep</span> <span class="arg">ERROR nope.log | sort | uniq -c</span>
+<span class="out">grep: nope.log: No such file or directory</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$?</span>
+<span class="out">0</span></code></pre>
+  An empty report and an exit status of <code>0</code>: a script would carry on as if nothing was wrong. In a script, add <code>set -o pipefail</code> (with <code>set -eu</code>) so a failure anywhere in the pipeline fails the whole thing &mdash; the reliable-scripts habits from <a href="../week2/week2.10-safety.html">Week 2 (2.10)</a>.
+</div>
+
+<h3>Design for re-running</h3>
+<p>A pipeline you expect to use again belongs in a commented script, so that when next week's data differs slightly you know exactly where to adjust. Here is the error-code report from 10.10 as a small script, with an argument check, a readability check, and the field layout documented:</p>
+
+<pre><code>#!/usr/bin/env bash
+# error-report.sh — count ERROR lines per status code in a log
+set -euo pipefail
+
+log="${1:?usage: error-report.sh app.log}"
+[ -r "$log" ] || { echo "cannot read $log" &gt;&amp;2; exit 1; }
+
+# fields: 1=date 2=time 3=LEVEL 4=user=... 5=code=...
+awk '$3 == "ERROR" { print $5 }' "$log" | sort | uniq -c | sort -nr</code></pre>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">./error-report.sh</span> <span class="arg">app.log</span>
+<span class="out">   3 code=503</span>
+<span class="out">   1 code=504</span>
+<span class="prompt-sym">$</span> <span class="cmd">./error-report.sh</span> <span class="arg">nope.log</span>
+<span class="out">cannot read nope.log</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">$?</span>
+<span class="out">1</span></code></pre>
+
+<p>Prefer <strong>transparency over cleverness</strong>. A five-step pipeline you can explain is usually better than a one-liner nobody understands &mdash; including your future self. Data wrangling in the shell is powerful not because it is obscure, but because it lets you assemble understandable steps that can be rerun, inspected, revised, and shared.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

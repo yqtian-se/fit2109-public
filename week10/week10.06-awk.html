@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.6 — Fields and Aggregation with awk — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: awk</span>
+<h2>10.6 Fields and Aggregation with awk</h2>
+
+<p><code>sed</code> thinks in <em>characters</em>; <code>awk</code> thinks in <strong>records and fields</strong>. The GNU Awk User's Guide explains that input is divided into records (by default, lines), and each record into fields (by default, runs of whitespace). Fields are named <code>$1</code>, <code>$2</code>, &hellip;, <code>$NF</code> is the <em>last</em> field, and <code>$0</code> is the whole line. That field model makes <code>awk</code> the bridge between filtering and summarising.</p>
+
+<p>Every <code>awk</code> program is built from <code>pattern { action }</code> pairs: for each record, if the pattern is true, run the action. Omit the pattern and the action runs for every record; omit the action and matching records are printed.</p>
+
+<h3>Extracting fields</h3>
+<pre><code>2026-10-01 09:00:01 INFO  user=alice action=login
+2026-10-01 09:00:05 ERROR user=bob code=503
+...</code></pre>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'{print $3}' app.log          # the severity of every line</span>
+<span class="out">INFO</span>
+<span class="out">ERROR</span>
+<span class="out">WARN</span>
+<span class="out">...</span>
+<span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'{print $3, $4}' app.log     # severity and user</span>
+<span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'{print $NF}' app.log        # last field on each line</span></code></pre>
+
+<h3>Filtering on a field, not on a substring</h3>
+<p>Here is the field-level test promised in <a href="week10.04-grep.html">10.4</a>. A pattern such as <code>$3 == "ERROR"</code> is true only when the <em>third field</em> equals <code>ERROR</code> exactly, so a line like <code>INFO user=ERROR_handler</code> is not matched:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'$3 == "ERROR"' app.log | wc -l</span>
+<span class="out">4</span>
+<span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'$3 == "ERROR" &amp;&amp; $5 == "code=503"' app.log | wc -l</span>
+<span class="out">3</span>
+<span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'$3 == "ERROR" {print $5}' app.log</span>
+<span class="out">code=503</span>
+<span class="out">code=504</span>
+<span class="out">code=503</span>
+<span class="out">code=503</span></code></pre>
+
+<h3>Summarising: counting and totalling with arrays</h3>
+<p>Because <code>awk</code> is a small programming language, it can keep running totals. An <strong>associative array</strong> is indexed by a string, which is exactly what grouping needs. A <code>BEGIN</code> block runs before any input and an <code>END</code> block runs after the last record:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">'{n[$3]++} END {for (level in n) print level, n[level]}' app.log | sort</span>
+<span class="out">ERROR 4</span>
+<span class="out">INFO 2</span>
+<span class="out">WARN 1</span></code></pre>
+
+<p>For each line, <code>n[$3]++</code> adds one to the counter named by the severity; the <code>END</code> block prints every counter. The same idea sums a numeric column. With <code>-F,</code> to set the field separator, and <code>NR&gt;1</code> to skip the header row, here is the total score by city for the small <code>scores.csv</code> from 10.7:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">-F, 'NR&gt;1 {s[$2] += $3} END {for (c in s) print c, s[c]}' scores.csv | sort</span>
+<span class="out">Melbourne 173</span>
+<span class="out">Perth 75</span>
+<span class="out">Sydney 75</span></code></pre>
+
+<p><code>NR</code> is the current record number, so <code>NR&gt;1</code> means "everything after line 1".</p>
+
+<div class="callout callout-note">
+  <strong>Array order is unspecified</strong>
+  <code>for (key in array)</code> visits keys in no guaranteed order, and the order can differ between <code>awk</code> implementations. If order matters in your report, pipe the output through <code>sort</code>, as above.
+</div>
+
+<div class="callout callout-warn">
+  <strong>awk -F, still cannot read quoted CSV</strong>
+  <code>-F,</code> splits on <em>every</em> comma, quoted or not, exactly like <code>cut -d,</code>. It is fine for the simple <code>scores.csv</code>, and wrong for a row such as <code>2026-10-01,"ACME, Inc.",hardware,1250.00</code>. The next slide shows what to do instead.
+</div>
+
+<table class="key-table">
+  <thead><tr><th>Pattern</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>$3 == "ERROR"</code></td><td>Third field is exactly <code>ERROR</code></td></tr>
+    <tr><td><code>$3 ~ /ERR/</code></td><td>Third field <em>matches the regex</em> <code>ERR</code></td></tr>
+    <tr><td><code>NR &gt; 1</code></td><td>Skip the header line</td></tr>
+    <tr><td><code>NF != 3</code></td><td>Lines that do not have exactly three fields (a malformed-row check)</td></tr>
+    <tr><td><code>$2 &gt; 100</code></td><td>Numeric comparison on the second field</td></tr>
+  </tbody>
+</table>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

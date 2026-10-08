@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.9 — SQL on the Command Line — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: SQLite</span>
+<h2>10.9 SQL on the Command Line with SQLite</h2>
+
+<p>Some questions are not about extracting a field but about <em>relationships</em>: group these rows, total that column, rank the results. You could build that out of <code>awk</code> arrays, but SQL is a language designed for exactly this, and <strong>SQLite</strong> brings it to the command line with no server to install or manage. The SQLite command-line shell can read a CSV file into a table, and it follows CSV quoting rules while doing so &mdash; which makes it a practical bridge between a raw CSV file and a real query.</p>
+
+<p>Here is <code>sales.csv</code> again, including the quoted <code>"ACME, Inc."</code> that defeated <code>cut</code> in 10.7:</p>
+
+<pre><code>date,customer,category,amount
+2026-10-01,"ACME, Inc.",hardware,1250.00
+2026-10-02,Globex,software,799.00
+2026-10-03,Initech,software,500.00
+2026-10-03,"ACME, Inc.",software,300.00
+2026-10-04,Globex,hardware,450.00</code></pre>
+
+<h3>Import the CSV, then query it</h3>
+<p>Start the shell with a database file name (it is created if it does not exist). The dot-commands such as <code>.mode</code> and <code>.import</code> configure the shell itself; everything else is ordinary SQL, ending with a semicolon.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">sqlite3</span> <span class="arg">sales.db</span>
+<span class="out">sqlite&gt; .mode csv</span>
+<span class="out">sqlite&gt; .import sales.csv sales</span>
+<span class="out">sqlite&gt; .headers on</span>
+<span class="out">sqlite&gt; .mode column</span>
+<span class="out">sqlite&gt; SELECT category, ROUND(SUM(amount), 2) AS total_revenue</span>
+<span class="out">   ...&gt; FROM sales</span>
+<span class="out">   ...&gt; GROUP BY category</span>
+<span class="out">   ...&gt; ORDER BY total_revenue DESC;</span>
+<span class="out">category  total_revenue</span>
+<span class="out">--------  -------------</span>
+<span class="out">hardware  1700.0</span>
+<span class="out">software  1599.0</span></code></pre>
+
+<p>That is the second question from 10.1 &mdash; <em>which category earns the most revenue?</em> &mdash; answered with a relational question rather than by counting commas. <code>.mode csv</code> before <code>.import</code> tells SQLite to parse the file as CSV; because the table does not exist yet, SQLite creates it and uses the <strong>header row as the column names</strong>. A grouping query on the quoted customer behaves correctly too: <code>"ACME, Inc."</code> is one customer with two orders.</p>
+
+<h3>One-shot queries for scripts</h3>
+<p>In a script you rarely want an interactive session. <code>sqlite3</code> accepts a database, optional setup commands, and a query on the command line; <code>:memory:</code> uses a throwaway in-memory database, and <code>-csv</code> or <code>-column</code> select the output format:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">sqlite3</span> <span class="arg">-header -csv :memory: -cmd '.import sales.csv sales' \</span>
+    <span class="arg">"SELECT customer, SUM(amount) AS total FROM sales</span>
+    <span class="arg"> GROUP BY customer ORDER BY total DESC;"</span>
+<span class="out">customer,total</span>
+<span class="out">"ACME, Inc.",1550.0</span>
+<span class="out">Globex,1249.0</span>
+<span class="out">Initech,500.0</span></code></pre>
+
+<p>Note that the <em>output</em> is correctly quoted CSV as well &mdash; the round trip CSV &rarr; SQL &rarr; CSV does not corrupt the awkward field.</p>
+
+<div class="callout callout-warn">
+  <strong>Common trap — imported columns are text</strong>
+  When <code>.import</code> creates the table for you, <strong>every column is <code>TEXT</code></strong>. You can see it with <code>.schema</code>: <code>"amount" TEXT</code>. Sums happen to work because SQLite converts numeric-looking text, but <em>comparisons and sorting use text rules</em>: ordering the values <code>9</code>, <code>10</code>, <code>100</code> gives <code>10, 100, 9</code>. When a number must behave like a number, convert it explicitly:
+  <pre style="margin:10px 0 0;"><code><span class="cmd">SELECT</span> <span class="arg">score</span> <span class="cmd">FROM</span> <span class="arg">scores</span> <span class="cmd">ORDER BY</span> <span class="arg">CAST(score AS INTEGER) DESC;</span></code></pre>
+  Alternatively, create the table first with the types you want, then import with <code>.import --skip 1 file.csv table</code> (the <code>--skip 1</code> stops the header row being loaded as data).
+</div>
+
+<h3>Choosing SQL or line tools</h3>
+<table class="key-table">
+  <thead><tr><th>Question shape</th><th>Better fit</th></tr></thead>
+  <tbody>
+    <tr><td>Pull one field out of every line</td><td><code>awk</code>, <code>cut</code>, <code>grep -o</code></td></tr>
+    <tr><td>Count how often each value occurs</td><td><code>sort | uniq -c</code> (or <code>GROUP BY</code>)</td></tr>
+    <tr><td>Several groupings, totals, ranking, or joining two files</td><td>SQL</td></tr>
+    <tr><td>The data is already a table with quoting you cannot rule out</td><td>SQL or Miller, not line tools</td></tr>
+  </tbody>
+</table>
+
+<p>Structured queries become more valuable as structure increases. For nested JSON use <code>jq</code>; for tabular analysis with grouping and aggregation, SQLite is an excellent lightweight option. Good wranglers do not force every problem into regex.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

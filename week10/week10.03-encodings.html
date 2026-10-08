@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.3 — Encodings and Schemas — FIT2109 Week 10</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Core material</span>
+<h2>10.3 Encodings, Line Endings, and Schemas</h2>
+
+<p>A data <strong>format</strong> tells you how data is <em>represented</em>. A <strong>schema</strong> tells you what the fields are expected to <em>mean</em>: column names, value types, which fields are required or optional, and sometimes constraints such as "this must be unique" or "this must be a date". CSV does not enforce a schema, and neither does JSON &mdash; RFC 8259 says what counts as valid JSON, not which keys any particular dataset must contain. That gap is why schema thinking matters: it separates a file that is <em>syntactically valid</em> from a dataset that is <em>usable</em>.</p>
+
+<h3>Valid format, doubtful data</h3>
+<p>Consider this CSV:</p>
+
+<pre><code>date,customer,amount
+2026-10-01,ACME,1250.00
+01/10/26,Globex,799
+,Initech,500.00</code></pre>
+
+<p>Every parser will read it, but the data quality is already questionable: the date format is inconsistent (and <code>01/10/26</code> is ambiguous &mdash; 1 October, or 10 January?), one row has no date, and the amounts mix decimal styles. None of these are CSV <em>syntax</em> problems; they are <em>data-quality</em> problems, and a parser will happily accept them while your analysis quietly becomes misleading.</p>
+
+<p>You can find such rows with the same tools you will use for analysis. Here is a quick check for rows whose date is missing or not in <code>YYYY-MM-DD</code> form:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">-F, 'NR&gt;1 &amp;&amp; $1 !~ /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/ {print NR": "$0}' \</span>
+    <span class="arg">messy.csv</span>
+<span class="out">3: 01/10/26,Globex,799</span>
+<span class="out">4: ,Initech,500.00</span></code></pre>
+
+<div class="callout callout-fun">
+  <strong>Fun fact</strong>
+  The ISO 8601 form <code>YYYY-MM-DD</code> is not just unambiguous &mdash; it also sorts correctly as plain text, because the biggest unit comes first. That is why log files and filenames use it, and why <code>sort</code> works on dates without any date parsing.
+</div>
+
+<h3>Encodings</h3>
+<p>A second major source of trouble is <strong>encoding</strong>: how characters are stored as bytes. <strong>UTF-8</strong> is the dominant encoding today; it preserves the full ASCII range while supporting far more characters. But not every file you receive is UTF-8. If a file was exported as Windows-1252 or ISO-8859-1 and you read it as UTF-8, accented characters come out as <code>&#xFFFD;</code> or other garbage.</p>
+
+<p>First <em>diagnose</em> the encoding, then <em>convert</em> it. <code>file</code> makes an educated guess; <code>iconv</code> converts between encodings, with <code>-f</code> for the input encoding and <code>-t</code> for the output encoding:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">file</span> <span class="arg">--mime-encoding raw.csv</span>
+<span class="out">raw.csv: iso-8859-1</span>
+<span class="prompt-sym">$</span> <span class="cmd">iconv</span> <span class="arg">-f WINDOWS-1252 -t UTF-8 raw.csv &gt; cleaned.csv</span>
+<span class="prompt-sym">$</span> <span class="cmd">cat</span> <span class="arg">cleaned.csv</span>
+<span class="out">name</span>
+<span class="out">José</span></code></pre>
+
+<p><code>iconv</code> is only as good as your knowledge of the original encoding, and <code>file</code> is a guess, not a guarantee &mdash; but the principle matters: some wrangling happens <em>before</em> any filtering or summarising, simply to make the text readable and consistent.</p>
+
+<h3>Two invisible troublemakers</h3>
+<ul>
+  <li><strong>Windows line endings (CRLF).</strong> A file exported on Windows ends each line with <code>\r\n</code>. The invisible <code>\r</code> becomes part of the <em>last field</em> on every line, so comparisons that look correct silently fail. Check with <code>file</code>; fix with <code>tr -d '\r'</code> (or <code>dos2unix</code> where installed).</li>
+  <li><strong>A byte-order mark (BOM).</strong> Some exporters put three invisible bytes at the very start of a UTF-8 file. The first header then reads <code>\xEF\xBB\xBFdate</code> rather than <code>date</code>, so a lookup by column name mysteriously fails.</li>
+</ul>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">file</span> <span class="arg">crlf.csv</span>
+<span class="out">crlf.csv: ASCII text, with CRLF line terminators</span>
+<span class="prompt-sym">$</span> <span class="cmd">awk</span> <span class="arg">-F, 'NR==2 {print ($2=="ERROR") ? "match" : "NO MATCH"}' crlf.csv</span>
+<span class="out">NO MATCH</span>
+<span class="prompt-sym">$</span> <span class="cmd">tr</span> <span class="arg">-d '\r' &lt; crlf.csv |</span>
+    <span class="arg">awk -F, 'NR==2 {print ($2=="ERROR") ? "match" : "NO MATCH"}'</span>
+<span class="out">match</span></code></pre>
+
+<h3>A checklist of everyday quality problems</h3>
+<table class="key-table">
+  <thead><tr><th>Problem</th><th>Typical symptom</th><th>First check</th></tr></thead>
+  <tbody>
+    <tr><td>Missing values (empty, <code>NULL</code>, <code>N/A</code>, absent key)</td><td>Totals too small; <code>null</code> appearing in output</td><td><code>awk -F, '$1==""'</code>; <code>jq</code> with <code>// "missing"</code></td></tr>
+    <tr><td>Inconsistent date/time formats</td><td>Sorting and filtering by date misbehave</td><td>A regex for the one format you expect</td></tr>
+    <tr><td>Duplicated rows</td><td>Counts inflated</td><td><code>sort | uniq -d</code></td></tr>
+    <tr><td>Inconsistent units or capitalisation</td><td><code>ACME</code> and <code>acme</code> counted separately</td><td><code>tr 'A-Z' 'a-z'</code>, <code>sort -u</code></td></tr>
+    <tr><td>Leading/trailing whitespace</td><td>Values that look equal but are not</td><td><code>sed -E 's/^ +| +$//g'</code></td></tr>
+    <tr><td>Malformed quoting or mixed delimiters</td><td>Rows with the wrong number of fields</td><td><code>awk -F, 'NF!=3'</code> (simple files only)</td></tr>
+    <tr><td>Unexpected encoding, CRLF, BOM</td><td>Garbled text; comparisons silently failing</td><td><code>file --mime-encoding</code>, <code>file</code></td></tr>
+  </tbody>
+</table>
+
+<h3>The same issue in JSON</h3>
+<p>A JSON document can be perfectly valid and still awkward: keys present in some objects and absent in others, numbers sometimes written as strings, nested arrays that appear only for certain records. Nothing in the format guarantees every object in an array has the same shape, so inspect a few representative records before you write a pipeline.</p>
+
+<h3>Two separate questions</h3>
+<p>Always ask both, and keep them apart:</p>
+<ol>
+  <li><strong>Can my tools parse this file?</strong> &mdash; syntax and encoding.</li>
+  <li><strong>Is the data consistent enough for the question I want to answer?</strong> &mdash; schema and quality.</li>
+</ol>
+<p>A "yes" to the first says nothing about the second. Good wrangling needs both.</p>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 10 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
