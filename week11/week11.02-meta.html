@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.2 — Metaprogramming in Everyday Development — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Concept</span>
+<h2>11.2 Metaprogramming in Everyday Development</h2>
+
+<p>The word <em>metaprogramming</em> sounds abstract, but in this unit it means something practical: writing code, commands, or configuration that help <strong>generate, control, or organise other code or commands</strong>. Instead of performing each step yourself, you write something that produces those steps. In Bash this shows up as <em>shell expansion</em>; in Make it shows up as rules and patterns.</p>
+
+<h3>Brace expansion: one word becomes several</h3>
+<p>Suppose you want a project layout with three directories. You could type three <code>mkdir</code> commands, or one:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mkdir</span> <span class="arg">-p project/{src,tests,docs}</span>
+<span class="prompt-sym">$</span> <span class="cmd">ls</span> <span class="arg">project</span>
+<span class="out">docs  src  tests</span></code></pre>
+
+<p>Bash performs <strong>brace expansion</strong> <em>before</em> the command runs. It is purely textual: the shell rewrites <code>project/{src,tests,docs}</code> into three separate words, <code>project/src project/tests project/docs</code>, and only then starts <code>mkdir</code>. By the time <code>mkdir</code> runs, the braces are gone: it receives three ordinary arguments.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">project/{src,tests,docs}</span>
+<span class="out">project/src project/tests project/docs</span>
+<span class="prompt-sym">$</span> <span class="cmd">echo</span> <span class="arg">"project/{src,tests,docs}"</span>
+<span class="out">project/{src,tests,docs}</span></code></pre>
+
+<p>The second command shows a catch: brace expansion does not happen inside quotes, so the braces are printed literally. Other expansions behave differently: as the next example shows, variables and <code>$(&hellip;)</code> are still expanded inside double quotes.</p>
+
+<h3>Variables and command substitution</h3>
+<p>Two more expansions let a command be partly generated from data:</p>
+
+<pre><code>name="week11-demo"
+echo "Project: ${name}"
+echo "Created on $(date +%F)"</code></pre>
+
+<p><code>${name}</code> is <strong>parameter expansion</strong>, and <code>$(date +%F)</code> is <strong>command substitution</strong>: the shell runs <code>date</code>, captures its output, and splices it into the command line. The command you type is therefore not literally the command that executes. The shell first rewrites it into a more concrete form, and that rewriting is one of the simplest everyday examples of metaprogramming.</p>
+
+<table class="key-table">
+  <thead><tr><th>Expansion</th><th>Looks like</th><th>Becomes</th></tr></thead>
+  <tbody>
+    <tr><td>Brace expansion</td><td><code>file.{c,h}</code></td><td><code>file.c file.h</code></td></tr>
+    <tr><td>Parameter expansion</td><td><code>${name}</code></td><td>The value of the variable <code>name</code></td></tr>
+    <tr><td>Command substitution</td><td><code>$(date +%F)</code></td><td>The output of <code>date +%F</code>, e.g. <code>2026-10-08</code></td></tr>
+  </tbody>
+</table>
+
+
+<div class="callout callout-warn">
+  <strong>Brace expansion is not portable</strong>
+  Brace expansion is a Bash feature that is not specified by POSIX. A portable POSIX <code>sh</code> script must not rely on <code>{a,b}</code> being expanded. If a script uses Bash-specific features such as brace expansion, it should declare Bash as its interpreter &mdash; for example, with <code>#!/usr/bin/env bash</code> rather than <code>#!/bin/sh</code>.<br><br>On macOS, <code>/bin/sh</code> has traditionally been Bash running in compatibility mode, and it may still perform brace expansion, making the script appear portable. On Debian and Ubuntu, <code>/bin/sh</code> normally points to <code>dash</code>, which treats <code>{a,b}</code> literally. Consequently, the script may behave differently on a teammate&rsquo;s machine.
+</div>
+
+
+<h3>Why bother?</h3>
+<p>Many automation tasks are well-organised repetition: creating similar files, running similar commands, deriving one filename from another. If you can express the pattern <em>once</em>, the shell applies it many times, consistently. Compare:</p>
+
+<pre><code>for unit in 1 2 3; do
+  mkdir -p "week${unit}"/{notes,examples,solutions}
+done</code></pre>
+
+<p>This is not just fewer keystrokes. The <em>structure</em> of the task is described once: the loop runs <code>mkdir</code> three times, and brace expansion gives each run three directory names, so nine directories are created. Change the list of units or subfolders and the same script produces a different, equally consistent result.</p>
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  In a scratch directory, run the loop above, then <code>ls -d week*/*</code>. Then change <code>1 2 3</code> to <code>1 2 3 4</code> and run it again. Because of <code>mkdir -p</code>, the second run adds week 4 and does not complain about the rest &mdash; a first hint of the <em>idempotence</em> idea in <a href="week11.05-depgraph.html">11.5</a>.
+</div>
+
+
+<p>A useful mental model: ordinary programming tells the computer <em>what to do with data</em>; metaprogramming tells it <em>how to generate or organise the commands, files, or workflows themselves</em>. The same idea reappears in shell templates, Makefiles, and CI configuration for the rest of the week.</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.4 — Pattern Rules and Automatic Variables in Make — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: Make</span>
+<h2>11.4 Pattern Rules and Automatic Variables in Make</h2>
+
+<p>If Bash shows metaprogramming at the level of commands and small files, <strong>Make</strong> shows it at the level of whole builds. Make reads a file called a <strong>Makefile</strong> that describes how the files of a project are produced from one another, and then runs only the commands that are needed. This page first gives a little background on building a C program, then shows how a Makefile writes one rule that covers many files.</p>
+
+<h3>Background: how a C program is built</h3>
+<p>Make works with any language, but its classic use is building <strong>C</strong> programs, so this page and the next two use C. If you have not used C before, the picture below is all you need. A C project is made of several kinds of file:</p>
+
+<table class="key-table">
+  <thead><tr><th>File type</th><th>Extension</th><th>What it is</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td>Source file</td><td><code>.c</code></td><td>C code written by a programmer</td><td><code>main.c</code>, <code>util.c</code></td></tr>
+    <tr><td>Header file</td><td><code>.h</code></td><td>Declarations (names and types of functions) that source files share by writing <code>#include "util.h"</code></td><td><code>util.h</code></td></tr>
+    <tr><td>Object file</td><td><code>.o</code></td><td>The compiled machine code for <em>one</em> source file. It cannot be run on its own</td><td><code>main.o</code>, <code>util.o</code></td></tr>
+    <tr><td>Executable</td><td>(none)</td><td>The runnable program, made by joining object files together</td><td><code>app</code></td></tr>
+  </tbody>
+</table>
+
+
+<p>The tool that does the work is <code>gcc</code>, the GNU C compiler. Building takes two kinds of step: <strong>compiling</strong> each source file into an object file, then <strong>linking</strong> the object files into one executable.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">gcc</span> <span class="arg">-c main.c -o main.o       # compile: main.c  -&gt; main.o</span>
+<span class="prompt-sym">$</span> <span class="cmd">gcc</span> <span class="arg">-c util.c -o util.o       # compile: util.c  -&gt; util.o</span>
+<span class="prompt-sym">$</span> <span class="cmd">gcc</span> <span class="arg">-o app main.o util.o      # link:    main.o + util.o -&gt; app</span></code></pre>
+
+<p>In these commands, <code>-c</code> means "compile only, do not link" and <code>-o</code> names the output file. Because each source file is compiled separately, changing one <code>.c</code> file means only that file has to be compiled again. (A changed header is different, because every source file that includes it is affected; pitfall 2 below returns to this.) Deciding <em>which</em> steps are needed is exactly the job Make takes over. Languages such as Python, which run the source directly, do not have these compile and link steps.</p>
+
+<h3>A first Make rule</h3>
+<p>A Makefile is a plain text file, usually named <code>Makefile</code>, in the project folder. It is made of <strong>rules</strong>. Each rule names a <strong>target</strong> (the file to produce), its <strong>prerequisites</strong> (the files it is built from), and a <strong>recipe</strong> (the command that builds it):</p>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>main.o: main.c
+	gcc -c main.c -o main.o</code></pre></div>
+
+<p>Read it as: "<code>main.o</code> is built from <code>main.c</code>, by running this command". When you type <code>make main.o</code>, Make runs the recipe only if <code>main.o</code> is missing or older than <code>main.c</code>.</p>
+
+<div class="callout callout-warn">
+  <strong>Recipe lines start with a tab</strong>
+  Every recipe line must begin with a <b>tab character</b>, not spaces. A Makefile indented with spaces fails with <code>missing separator</code>. Configure your editor to insert real tabs in Makefiles.
+</div>
+
+
+<p>Writing one such rule for every object file in a large project would be repetitive, which is where patterns come in.</p>
+
+<h3>Pattern rules: one rule for every object file</h3>
+<p>GNU Make lets a rule use <code>%</code> as a placeholder for a "stem", the part of the name that changes. This is a <strong>pattern rule</strong>, and it goes in the same Makefile:</p>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>%.o: %.c
+	gcc -c $&lt; -o $@</code></pre></div>
+
+<p>It describes how to make <em>any</em> <code>.o</code> file from the matching <code>.c</code> file, not just <code>main.o</code>. The target pattern <code>%.o</code> means "any object file", and the prerequisite pattern <code>%.c</code> means "the C source file with the same stem". This is metaprogramming: the rule is not one concrete build step, but a description from which many concrete steps are generated.</p>
+
+<h3>Automatic variables: <code>$@</code>, <code>$&lt;</code>, and <code>$^</code></h3>
+<p>A pattern rule cannot write a fixed filename in its recipe, because the filename changes each time it is used. Instead it uses <strong>automatic variables</strong>, which Make fills in for the rule it is currently running: <code>$@</code> is the target and <code>$&lt;</code> is the first prerequisite. When Make is building <code>main.o</code>, the recipe above becomes, in effect:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">gcc</span> <span class="arg">-c main.c -o main.o</span></code></pre>
+
+<p>and when it is building <code>util.o</code> it becomes <code>gcc -c util.c -o util.o</code>. One compact rule generates the right concrete command for every file.</p>
+
+<p>A third variable, <code>$^</code>, means <em>all</em> the prerequisites. It is useful for the linking step:</p>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>app: main.o util.o
+	gcc -o $@ $^</code></pre></div>
+
+<p>Here <code>$@</code> is <code>app</code> and <code>$^</code> is <code>main.o util.o</code>, so the effective command is <code>gcc -o app main.o util.o</code>. Add a third object file to the prerequisites and the recipe adapts by itself.</p>
+
+<table class="key-table">
+  <thead><tr><th>Variable</th><th>Meaning</th><th>Value in <code>app: main.o util.o</code></th></tr></thead>
+  <tbody>
+    <tr><td><code>$@</code></td><td>The target being built</td><td><code>app</code></td></tr>
+    <tr><td><code>$&lt;</code></td><td>The first prerequisite</td><td><code>main.o</code></td></tr>
+    <tr><td><code>$^</code></td><td>All prerequisites</td><td><code>main.o util.o</code></td></tr>
+  </tbody>
+</table>
+
+
+<p>This matters most in larger projects. If a repository has ten C files, you do not want ten near-identical compile rules. A single pattern rule plus automatic variables expresses the shared structure <strong>once</strong>. That reduces repetition, and it reduces mistakes: if the compile command changes, you edit one place instead of ten.</p>
+
+<h3>Two pitfalls with patterns and recipes</h3>
+
+<div class="callout callout-warn">
+  <strong>1. Make reads <code>$</code> before the shell does</strong>
+  Because <code>$@</code> and <code>$&lt;</code> are Make syntax, Make expands every <code>$</code> in a recipe before handing the line to the shell. So in a recipe, <code>$(date +%F)</code> is read as a <em>Make</em> variable called <code>date +%F</code>, which does not exist and expands to nothing. Write <code>$$(date +%F)</code> to pass a literal <code>$(...)</code> through to the shell:
+</div>
+
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>show:
+	echo "Today is $(date +%F)"<span class="comment">      # prints: Today is</span>
+	echo "Today is $$(date +%F)"<span class="comment">     # prints: Today is 2026-10-08</span></code></pre></div>
+
+<div class="callout callout-warn">
+  <strong>2. A pattern rule does not know about headers</strong>
+  <code>%.o: %.c</code> says each object depends on its <code>.c</code> file, and nothing else. If <code>main.c</code> includes <code>util.h</code> and you edit only <code>util.h</code>, Make sees no changed prerequisite, reports that everything is up to date, and you may keep running a program built from the old header. Add the header dependency explicitly:
+</div>
+
+
+<div class="codefile"><div class="file-label">Makefile (added line)</div><pre><code>main.o util.o: util.h</code></pre></div>
+
+<p>A rule written without a recipe only adds prerequisites to the named targets; Make still takes the recipe from the pattern rule.</p>
+
+<h3>Phony targets: actions, not files</h3>
+<p>So far every target has been a <em>file</em> that Make creates, such as <code>main.o</code> or <code>app</code>. A <strong>phony target</strong> is different: it names an <strong>action</strong> to run rather than a file to produce. Targets such as <code>clean</code>, <code>test</code>, and <code>install</code> usually describe commands, not outputs.</p>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>.PHONY: clean
+
+clean:
+	rm -f app *.o</code></pre></div>
+
+<p>Run it with <code>make clean</code>. Make prints the recipe and runs it:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">make</span> <span class="arg">clean</span>
+<span class="out">rm -f app *.o</span></code></pre>
+
+<h4>Why <code>.PHONY</code> is needed</h4>
+<p>Make normally treats every target name as a <strong>filename</strong>. Without the <code>.PHONY</code> line, the rule above still works &mdash; until a file or directory named <code>clean</code> appears in the project. Make then sees that "the target <code>clean</code>" already exists, has no prerequisites that could be newer, and concludes there is nothing to do:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">touch</span> <span class="arg">clean</span>
+<span class="prompt-sym">$</span> <span class="cmd">make</span> <span class="arg">clean</span>
+<span class="out">make: 'clean' is up to date.</span></code></pre>
+
+<p>The <code>rm</code> command never runs. The line <code>.PHONY: clean</code> prevents this by telling Make: <em><code>clean</code> is an action, not a file; run its recipe whenever it is requested</em>, regardless of what files exist.</p>
+
+<h3>Putting it together</h3>
+<p>Here is everything from this page combined into one Makefile for the C project with <code>main.c</code>, <code>util.c</code>, and <code>util.h</code>:</p>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>app: main.o util.o
+	gcc -o $@ $^
+
+%.o: %.c
+	gcc -c $&lt; -o $@
+
+main.o util.o: util.h
+
+.PHONY: clean
+clean:
+	rm -f app *.o</code></pre></div>
+
+<table class="key-table">
+  <thead><tr><th>Line(s)</th><th>Role</th></tr></thead>
+  <tbody>
+    <tr><td><code>app: main.o util.o</code></td><td>The first target, so a bare <code>make</code> builds it; links the objects with <code>$@</code> and <code>$^</code></td></tr>
+    <tr><td><code>%.o: %.c</code></td><td>Pattern rule: compiles any object file from its source, using <code>$&lt;</code> and <code>$@</code></td></tr>
+    <tr><td><code>main.o util.o: util.h</code></td><td>Extra prerequisite, so editing the header rebuilds both objects</td></tr>
+    <tr><td><code>.PHONY: clean</code></td><td><code>clean</code> is an action, so it always runs when asked</td></tr>
+  </tbody>
+</table>
+
+
+<p>Together these rules describe which file is built from which. Those relationships form a <strong>dependency graph</strong>, the topic of the next section. Bash metaprogramming often generates <em>commands</em> directly; Make metaprogramming generates <em>build logic</em> from patterns, variables, and rules. Both describe reusable structure instead of repeating concrete steps by hand.</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

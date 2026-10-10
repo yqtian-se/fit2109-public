@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 11 Pre-Reading: Metaprogramming & Automation — FIT2109</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+  .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%); color: #e0e0f8; padding: 40px 36px; border-radius: 12px; margin-bottom: 36px; }
+  .hero h1 { color: #fff; font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+  .hero .sub { color: #a0b0d0; margin-top: 8px; font-size: 0.95rem; margin-bottom: 0; }
+  .hero .goals { margin-top: 20px; background: rgba(255,255,255,0.07); border-radius: 8px; padding: 16px 20px; }
+  .hero .goals li { color: #c8d8f0; margin-bottom: 6px; }
+  .hero .quote { margin-top: 16px; font-style: italic; color: #8090b0; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<div class="page">
+<div class="hero">
+  <h1>Week 11: Metaprogramming &amp; Automation</h1>
+  <p class="sub">Pre-reading · FIT2109 · Monash University</p>
+  <p class="quote">"A good project can explain how to build, test, and run itself &mdash; without anyone having to remember."</p>
+  <div class="goals">
+    <p style="color:#a6e3a1;font-size:0.82rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;">By the end of this week you should be able to</p>
+    <ol class="goals">
+      <li>Explain why repetitive project tasks should be automated, and what automation gives a team.</li>
+      <li>Describe metaprogramming and recognise it in shell commands, Makefiles, and build files.</li>
+      <li>Read and write simple Makefiles for building and running projects.</li>
+      <li>Explain how build tools use dependencies to rebuild only what has changed.</li>
+      <li>Automate common workflows for C, Python, and Java projects.</li>
+      <li>Describe how continuous integration runs these workflows automatically.</li>
+    </ol>
+  </div>
+</div>
+
+<h3>A scenario</h3>
+<p>You join a small team that has a C project, a Python script, and a Java service. Each has a "how to build it" answer, but none of those answers is written anywhere you can run. The C build lives in someone's shell history. The Python setup is a paragraph in a chat message from last term. The Java service builds fine on one laptop and fails on another. You can read the code, but you cannot yet <em>trust</em> a build.</p>
+<p>A teammate adds three small files: a <code>Makefile</code>, a <code>scripts/bootstrap.sh</code>, and a <code>pom.xml</code>. Suddenly a newcomer can type <code>make</code>, <code>./scripts/bootstrap.sh</code>, or <code>mvn test</code> and get the same result as everyone else. A fourth file, <code>.gitlab-ci.yml</code>, makes the server run those same commands on every push, so a broken change can be caught before anyone merges it.</p>
+<p>None of those files is "the program". Each one is a description of how to <em>produce, check, or run</em> the program &mdash; a program about programs. That is the sense of <strong>metaprogramming</strong> we use this week: you start small, with the shell rewriting your own commands before they run, and finish with a repository that knows how to build and verify itself.</p>
+
+<div class="callout callout-note">
+  <strong>Concept check — before you start</strong>
+  Run <code>echo project/{src,tests,docs}</code> in a Bash terminal and look at the output. You typed a single word containing braces, yet the output shows three separate paths. What did the shell do between your keystrokes and <code>echo</code>? Keep the answer in mind &mdash; it is the smallest example of this whole week, and section <a href="week11.02-meta.html">11.2</a> explains it.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

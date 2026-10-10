@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.5 — Dependency Graphs, Build Rules, and Idempotence — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+  .fig { margin: 24px 0; text-align: center; }
+  .fig img { max-width: 100%; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.10); background: #fff; }
+  .fig figcaption { font-size: 0.82rem; color: #666; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Concept</span>
+<h2>11.5 Dependency Graphs, Build Rules, and Idempotence</h2>
+
+<p>A central idea in build automation is the <strong>dependency graph</strong>. GNU Make expresses it through rules made of a <em>target</em>, its <em>prerequisites</em>, and the <em>recipe</em> that updates it. A target is <strong>out of date</strong> if it does not exist, or if it is older than any of its prerequisites. So the build tool does not have to rebuild everything every time: it compares the files' modification times along those relationships and reruns only the steps that are actually needed.</p>
+
+<h3>A small C example</h3>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>app: main.o util.o
+	gcc -o app main.o util.o
+
+main.o: main.c util.h
+	gcc -c main.c
+
+util.o: util.c util.h
+	gcc -c util.c</code></pre></div>
+
+<p>This defines a graph, drawn below. The executable <code>app</code> depends on two object files; each object file depends on its own source file <em>and</em> on the shared header.</p>
+
+<div class="fig">
+  <img src="images/week11-dependency-graph.png" alt="Dependency graph: main.c and util.h feed main.o; util.h and util.c feed util.o; main.o and util.o feed the app executable.">
+  <figcaption>Arrows point from a prerequisite to the target built from it. <code>util.h</code> feeds both object files; each <code>.c</code> file feeds only its own.</figcaption>
+</div>
+
+<p>The graph answers "what must be redone?" for any edit. The syntax of C is not the point; the point is that automation can describe <em>relationships between files</em> and let the tool decide.</p>
+
+<table class="key-table">
+  <thead><tr><th>You edit…</th><th>Rebuilt, in order</th><th>Untouched</th></tr></thead>
+  <tbody>
+    <tr><td><code>main.c</code></td><td><code>main.o</code> → <code>app</code></td><td><code>util.o</code></td></tr>
+    <tr><td><code>util.c</code></td><td><code>util.o</code> → <code>app</code></td><td><code>main.o</code></td></tr>
+    <tr><td><code>util.h</code></td><td><code>main.o</code> and <code>util.o</code> → <code>app</code></td><td>Nothing</td></tr>
+    <tr><td>Nothing</td><td>Nothing</td><td>Everything</td></tr>
+  </tbody>
+</table>
+
+
+<div class="callout callout-try">
+  <strong>Try this</strong>
+  Create the three small files (for example, <code>util.h</code> declaring <code>int add(int a, int b);</code>, <code>util.c</code> defining <code>add</code>, and <code>main.c</code> calling it from <code>main</code>), save the Makefile above, and build once with <code>make</code>. Then run <code>touch util.h</code> and <code>make</code> again, and compare with <code>touch main.c</code> and <code>make</code>. The commands Make prints should match the rows of the table above. (If you use a pattern rule, remember the missing header dependency from <a href="week11.04-patterns.html">11.4</a>.)
+</div>
+
+
+<h3>Idempotence: running it again should not cause harm</h3>
+<p>In practical automation, an <strong>idempotent</strong> workflow is one where running it several times leaves the project in the same state as running it once: repeating it causes no inconsistent or progressively worse outcomes. Build systems aim for this. If nothing relevant has changed, running <code>make</code> again should do little or nothing. If only one source file changed, only the necessary steps happen. The result <em>stabilises</em> instead of drifting each time you rerun.</p>
+
+<table class="key-table">
+  <thead><tr><th>Step</th><th>Safe to re-run?</th><th>Why</th></tr></thead>
+  <tbody>
+    <tr><td><code>mkdir -p build</code></td><td>Yes</td><td>Does nothing if the directory already exists</td></tr>
+    <tr><td><code>make</code> after a successful build</td><td>Yes</td><td>Every target is up to date, so no recipe runs</td></tr>
+    <tr><td><code>python3 -m venv .venv</code></td><td>Yes</td><td>Reuses the existing environment; installed packages are kept</td></tr>
+    <tr><td><code>echo 'export X=1' &gt;&gt; ~/.profile</code></td><td>No</td><td>Appends another copy of the line every run</td></tr>
+    <tr><td><code>cat &gt; README.md &lt;&lt;EOF …</code></td><td>Not if the file was edited</td><td>Overwrites the file, replacing any edits made since the last run</td></tr>
+  </tbody>
+</table>
+
+
+<p>This matters beyond your own laptop. In CI the same workflow runs over and over on fresh machines, and a setup step that degrades with each run, or only works the first time, can break someone's build.</p>
+
+<div class="callout callout-note">
+  <strong>The big picture</strong>
+  Build automation is a structured way to encode <em>what depends on what</em>, <em>when something is out of date</em>, and <em>how to restore a correct project state</em>.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.9 — Continuous Integration and Repository-Based Automation — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Concept</span>
+<h2>11.9 Continuous Integration and Repository-Based Automation</h2>
+
+<p>So far the automation has run on one developer's machine: <code>make</code>, <code>mvn test</code>, <code>python -m unittest</code>. Each check only helps if someone remembers to run it. <strong>Continuous integration (CI)</strong> moves those same commands onto a server, which runs them automatically whenever new code is pushed. The name comes from the practice it supports: team members <em>integrate</em> their changes into the shared code often, and each pushed change can be checked automatically.</p>
+
+<p>This page uses <strong>GitLab CI/CD</strong>, which is configured by a file named <code>.gitlab-ci.yml</code> at the root of the repository. CI itself is not tied to a language or a service: a CI job just runs shell commands, so the same idea works for C, Python, or Java. Other services, such as GitHub Actions, use a different file format for the same idea.</p>
+
+<h3>Background: the vocabulary</h3>
+<table class="key-table">
+  <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Pipeline</strong></td><td>One complete run of the CI configuration, usually triggered by a push</td></tr>
+    <tr><td><strong>Job</strong></td><td>A named unit of work inside a pipeline: a list of shell commands to run</td></tr>
+    <tr><td><strong>Stage</strong></td><td>A group of jobs. Stages run in order; jobs within a stage may run at the same time</td></tr>
+    <tr><td><strong>Runner</strong></td><td><em>GitLab Runner</em> is the application that picks up jobs and executes them. It can run on a server, a cloud machine, or even a developer's computer; GitLab.com also provides shared runners</td></tr>
+    <tr><td><strong>Image</strong></td><td>A container image (<a href="../week6/week6.05-containers.html">Week 6, 6.5</a>) that provides the job's operating system and tools, such as <code>gcc</code> or Python. With a container-based runner (see below), each job runs in a fresh container created from it</td></tr>
+  </tbody>
+</table>
+
+
+<h3>Background: reading YAML</h3>
+<p><code>.gitlab-ci.yml</code> is written in <strong>YAML</strong>, a format for structured settings. Three rules cover everything on this page:</p>
+<ul>
+  <li><code>key: value</code> sets a value, for example <code>stage: build</code>.</li>
+  <li>Indentation shows nesting: lines indented under a key belong to it. Indent with <strong>spaces</strong>, never tabs &mdash; the opposite of a Makefile.</li>
+  <li>A line starting with a dash and a space (<code>-</code>) is one item in a list, such as one command under <code>script</code>.</li>
+</ul>
+
+<h3>A Make-based C project</h3>
+<div class="callout callout-note">
+  <strong>Assumption for the examples</strong>
+  Runners can execute jobs in different ways, called <em>executors</em>: directly in a shell on the runner machine, in Docker containers, on Kubernetes, and others. The examples on this page assume a Linux runner using the <b>Docker executor</b>, which is how GitLab.com's hosted Linux runners work. With this executor, the <code>image</code> setting chooses the container each job runs in; with a plain shell executor, <code>image</code> has no effect and the tools must already be installed on the runner machine.
+</div>
+
+
+<p>For the C project from <a href="week11.06-make.html">11.6</a>, whose <code>Makefile</code> has an <code>app</code> target and a <code>test</code> target that depends on it:</p>
+
+<div class="codefile"><div class="file-label">.gitlab-ci.yml</div><pre><code>stages:
+  - build
+  - test
+
+build_app:
+  stage: build
+  image: gcc:14
+  script:
+    - make app
+
+test_app:
+  stage: test
+  image: gcc:14
+  script:
+    - make test</code></pre></div>
+
+<table class="key-table">
+  <thead><tr><th>Line</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>stages:</code></td><td>The stages, in the order they run: <code>build</code>, then <code>test</code></td></tr>
+    <tr><td><code>build_app:</code>, <code>test_app:</code></td><td>Job names, chosen by you</td></tr>
+    <tr><td><code>stage: build</code></td><td>Which stage the job belongs to</td></tr>
+    <tr><td><code>image: gcc:14</code></td><td>Run the job in the official <code>gcc</code> container image, which provides <code>gcc</code> and <code>make</code></td></tr>
+    <tr><td><code>script:</code></td><td>The commands to run. If any command fails, the job stops and is marked as failed</td></tr>
+  </tbody>
+</table>
+
+
+<h3>What happens when you push</h3>
+<ol>
+  <li>You push commits to GitLab. GitLab finds <code>.gitlab-ci.yml</code> and creates a pipeline.</li>
+  <li>For each job in the first stage, a runner starts a fresh container from the job's image, checks out the repository's code into it, and runs the <code>script</code> commands.</li>
+  <li>If every job in a stage succeeds, the next stage starts. By default, if a job fails, the later stages do not run (GitLab can be configured to let particular jobs fail, or to run jobs only after a failure).</li>
+  <li>The result appears in GitLab: a success or failure status on the commit, on the project's pipelines page, and on any merge request (GitLab's equivalent of a pull request, <a href="../week5/week5.02-workflows.html">Week 5</a>). Each job's full terminal output is kept as a log, so you can see exactly which command failed.</li>
+</ol>
+<p>By default, a pipeline runs on every push. Pipelines can also be configured to run for merge requests, on a schedule, or manually from the GitLab web page; those need extra settings not covered here.</p>
+
+<div class="callout callout-warn">
+  <strong>Jobs run in separate environments</strong>
+  With the Docker executor, each job runs in a separate container, so files created by one job are <em>not</em> automatically available to another. The executable <code>app</code> created by <code>build_app</code> is not there when <code>test_app</code> starts. The example still works because <code>make test</code> lists <code>app</code> as a prerequisite, so Make builds it again. To hand files from one job to a later one instead, declare them as <b>artifacts</b> of the job that creates them. By default, jobs in later stages automatically download the artifacts produced by jobs in earlier stages:
+</div>
+
+
+<div class="codefile"><div class="file-label">.gitlab-ci.yml (build_app with artifacts)</div><pre><code>build_app:
+  stage: build
+  image: gcc:14
+  script:
+    - make app
+  artifacts:
+    paths:
+      - app</code></pre></div>
+
+<h3>A Python project</h3>
+
+<div class="codefile"><div class="file-label">.gitlab-ci.yml</div><pre><code>stages:
+  - test
+
+python_tests:
+  stage: test
+  image: python:3.12
+  script:
+    - python -m pip install -r requirements.txt
+    - python -m unittest</code></pre></div>
+
+<p>These are the install and test steps of the bootstrap script in <a href="week11.07-python.html">11.7</a>, run in the official <code>python</code> image. There is no virtual environment here: the job's container is already a throwaway environment used only by this project, so isolating packages a second time is unnecessary. (Running <code>bash scripts/bootstrap.sh</code> as the script line would also work, and would keep CI identical to local development.) Because the container is new for every pipeline, the packages are installed from scratch each time, which helps reveal dependencies missing from <code>requirements.txt</code>. It cannot catch every one: a package imported only by code that the tests never run can still be missing.</p>
+
+<p>Unlike the lines of a Makefile recipe, the lines of a job's <code>script</code> run one after another in the same shell, so a variable set or a directory changed on one line still applies on the next.</p>
+
+<h3>A Maven project</h3>
+
+<div class="codefile"><div class="file-label">.gitlab-ci.yml</div><pre><code>stages:
+  - build
+  - test
+
+maven_build:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn compile
+
+maven_test:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - mvn test</code></pre></div>
+
+<p>The image provides Maven and Java 17 (Eclipse Temurin is a free build of Java). As with the Make example, <code>maven_test</code> starts in a fresh container, so <code>mvn test</code> compiles the code again before testing; the lifecycle (<a href="week11.08-maven.html">11.8</a>) makes that automatic. This intentionally repeats compilation, so that a compile error and a failing test show up as different failed jobs. A small project could instead use a single job that runs <code>mvn test</code>. If <code>mvn test</code> fails in the pipeline for a merge request's branch, the team sees the failure before the code is merged.</p>
+
+<h3>From personal convenience to a shared contract</h3>
+<p>A local script helps you on one machine. A CI pipeline defines the project's expected behaviour for <em>everyone</em> who touches the repository, and it runs in a clean, controlled environment. That reduces the "works on my machine" problem: a build that only succeeds because of something installed on one laptop is likely to fail in CI, where the problem is visible to everyone.</p>
+
+<table class="key-table">
+  <thead><tr><th>Local command</th><th>The same command in CI</th></tr></thead>
+  <tbody>
+    <tr><td><code>make app</code>, <code>make test</code></td><td><code>script:</code> lines in <code>build_app</code> and <code>test_app</code></td></tr>
+    <tr><td><code>python -m unittest</code></td><td>The last <code>script:</code> line of <code>python_tests</code></td></tr>
+    <tr><td><code>mvn compile</code>, <code>mvn test</code></td><td><code>script:</code> lines in <code>maven_build</code> and <code>maven_test</code></td></tr>
+  </tbody>
+</table>
+
+
+<p>CI is not a separate topic from Make, Python environments, or Maven: it builds on them. The commands you run locally often become the commands in the pipeline, which is a strong reason to automate them locally first. Continuous integration then moves those workflows into a shared, automated, repository-driven context &mdash; automation maturing from personal convenience into collaborative software practice.</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
