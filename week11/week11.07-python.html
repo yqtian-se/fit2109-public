@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.7 — Python Automation Workflows — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: Python</span>
+<h2>11.7 Python Automation Workflows</h2>
+
+<p>Python programs are usually run by an <em>interpreter</em>: <code>python app.py</code> executes the source directly, with no separate compile-and-link step like the one in C (<a href="week11.04-patterns.html">11.4</a>). Python projects therefore need little "building", but they still need automation. The repeated work is mostly about the <strong>environment</strong>: making sure the right Python packages are installed before the code is run and tested.</p>
+
+<h3>Background: virtual environments and packages</h3>
+<p><a href="../week6/week6.03-venv.html">Week 6 (6.3)</a> introduced virtual environments; here is the short version you need for this page.</p>
+<ul>
+  <li><strong>Packages.</strong> Most Python projects use third-party libraries (packages) such as <code>requests</code>. They are installed with <code>pip</code>, Python's package installer.</li>
+  <li><strong>The problem.</strong> If every project installs packages into the one system-wide Python, two projects that need different versions of the same package can break each other.</li>
+  <li><strong>The fix.</strong> A <strong>virtual environment</strong> is a folder (by convention <code>.venv</code>) holding its own <code>python</code> and <code>pip</code> commands (the <code>python</code> is usually a link to the Python it was created from) and its own package directory. Packages installed there belong to this project only. <code>venv</code>, the module that creates it, is part of Python's standard library.</li>
+  <li><strong>Activating.</strong> On macOS and Linux, <code>source .venv/bin/activate</code> mainly puts <code>.venv/bin</code> at the front of your <code>PATH</code>, so that typing <code>python</code> or <code>pip</code> runs the environment's copies. <code>deactivate</code> undoes it. Activation is a convenience: running <code>.venv/bin/python</code> directly uses the environment without activating it.</li>
+</ul>
+
+<p>A project lists the packages it needs in a plain text file, conventionally called <code>requirements.txt</code>, one per line, often with an exact version:</p>
+
+<div class="codefile"><div class="file-label">requirements.txt</div><pre><code>requests==2.32.3
+python-dateutil==2.9.0</code></pre></div>
+
+<h3>The starting workflow</h3>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">python3</span> <span class="arg">-m venv .venv</span>
+<span class="prompt-sym">$</span> <span class="cmd">source</span> <span class="arg">.venv/bin/activate</span>
+<span class="prompt-sym">$</span> <span class="cmd">python</span> <span class="arg">-m pip install -r requirements.txt</span>
+<span class="prompt-sym">$</span> <span class="cmd">python</span> <span class="arg">app.py</span></code></pre>
+
+<table class="key-table">
+  <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td><code>python3 -m venv .venv</code></td><td>Creates the virtual environment in the folder <code>.venv</code>. (<code>-m</code> runs a Python module, here <code>venv</code>, as a program. Before activation, many systems only have the command <code>python3</code>, not <code>python</code>.)</td></tr>
+    <tr><td><code>source .venv/bin/activate</code></td><td>Activates the environment in the current shell</td></tr>
+    <tr><td><code>python -m pip install -r requirements.txt</code></td><td>Installs every package listed in the file. <code>python -m pip</code> runs the pip that belongs to <em>this</em> <code>python</code>, so packages land in the environment you meant</td></tr>
+    <tr><td><code>python app.py</code></td><td>Runs the program with the environment's Python and packages</td></tr>
+  </tbody>
+</table>
+
+
+<p>This is already a small automation workflow: create a local environment, install what the project needs, then run inside that environment instead of depending on whatever happens to be installed globally. The problem is that it lives in someone's memory or a README. The next step is to make it executable.</p>
+
+<h3>Making it executable: a bootstrap script</h3>
+<p>Suppose the repository looks like this:</p>
+
+<pre><code>.
+├── app.py
+├── requirements.txt
+├── scripts/
+│   └── bootstrap.sh
+└── tests/
+    ├── __init__.py
+    └── test_app.py</code></pre>
+
+<p>Instead of describing the setup steps in a README, put them in <code>scripts/bootstrap.sh</code>. <code>bootstrap.sh</code> is not a Python feature: it is an ordinary shell script, and "bootstrap" is just a common name for "get a fresh clone ready to work". It is Python-specific only because of its <em>contents</em>; a Java project would have different contents, or none.</p>
+
+<div class="codefile"><div class="file-label">scripts/bootstrap.sh</div><pre><code><span class="comment">#!/usr/bin/env bash</span>
+set -e
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m unittest</code></pre></div>
+
+<p>The first line (the <em>shebang</em> line) asks for the script to be run by Bash (<a href="week11.02-meta.html">11.2</a>). <code>set -e</code> tells the script to exit as soon as a command fails (with some exceptions, such as commands tested by <code>if</code>), so a failed install does not carry on to run tests against a half-built environment. The last line runs the tests with <code>unittest</code>, the testing framework built into Python's standard library.</p>
+
+<p>Run the script from the top folder of the repository, because its paths (<code>requirements.txt</code>, <code>.venv</code>) are relative to where you run it:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">bash</span> <span class="arg">scripts/bootstrap.sh</span>
+<span class="comment"># or, after making it executable once:</span>
+<span class="prompt-sym">$</span> <span class="cmd">chmod</span> <span class="arg">+x scripts/bootstrap.sh</span>
+<span class="prompt-sym">$</span> <span class="cmd">./scripts/bootstrap.sh</span></code></pre>
+
+<p>Now the setup <em>and</em> test workflow are executable. If another student clones the repository and runs the script, the same environment and checks are attempted in the same order.</p>
+
+<div class="callout callout-note">
+  <strong>How <code>python -m unittest</code> finds tests</strong>
+  With no arguments, <code>unittest</code> searches from the current folder for files whose names start with <code>test</code> (such as <code>test_app.py</code>). It only looks inside a sub-folder like <code>tests/</code> if that folder contains an <code>__init__.py</code> file, which may be empty. Without it, <code>unittest</code> prints <code>NO TESTS RAN</code>, and in Python 3.12 and later it exits with an error status, so <code>set -e</code> stops the script.
+</div>
+
+
+<div class="callout callout-warn">
+  <strong>Activation inside a script does not last</strong>
+  A script runs in its own child shell. The <code>source .venv/bin/activate</code> line activates the environment for the rest of <em>the script</em> only; when the script ends, your own terminal is not activated. To keep working in the environment afterwards, run <code>source .venv/bin/activate</code> yourself.
+</div>
+
+
+<div class="callout callout-note">
+  <strong>Idempotence check</strong>
+  Running <code>bootstrap.sh</code> twice should be safe: <code>venv</code> reuses the existing <code>.venv</code> (installed packages are kept), and <code>pip</code> sees that the packages are already installed. Contrast this with a script that appended lines to a config file each time (<a href="week11.05-depgraph.html">11.5</a>).
+</div>
+
+
+<h3>Make as a lightweight task runner</h3>
+<p>Python does not need Make, and Make knows nothing about Python, but Make's phony targets (<a href="week11.04-patterns.html">11.4</a>) can give any project short, memorable commands. Add this <code>Makefile</code> to the repository:</p>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>.PHONY: setup test run
+
+VENV_PYTHON := .venv/bin/python
+
+setup:
+	python3 -m venv .venv
+	$(VENV_PYTHON) -m pip install -r requirements.txt
+
+test:
+	$(VENV_PYTHON) -m unittest discover
+
+run:
+	$(VENV_PYTHON) app.py</code></pre></div>
+
+<p>Teammates now type <code>make setup</code> once, and then <code>make test</code> or <code>make run</code>, instead of remembering a long command sequence. All three targets are phony because they name actions, not files.</p>
+
+<table class="key-table">
+  <thead><tr><th>Line</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>VENV_PYTHON := .venv/bin/python</code></td><td>Defines a Make variable holding the path of the environment's Python, so it is written once (like <code>CC = gcc</code> in <a href="week11.06-make.html">11.6</a>)</td></tr>
+    <tr><td><code>$(VENV_PYTHON) -m pip install …</code></td><td>Make replaces <code>$(VENV_PYTHON)</code> with <code>.venv/bin/python</code>, so pip installs into the environment</td></tr>
+    <tr><td><code>$(VENV_PYTHON) -m unittest discover</code></td><td>Runs the tests with the environment's Python. <code>discover</code> asks for test discovery explicitly; plain <code>python -m unittest</code> does the same</td></tr>
+  </tbody>
+</table>
+
+
+<p>The Makefile never <em>activates</em> the environment. It does not need to: activation mainly puts <code>.venv/bin</code> at the front of <code>PATH</code>, so calling <code>.venv/bin/python</code> by its path has the same effect, and is clearer.</p>
+
+<div class="callout callout-warn">
+  <strong>Why activation does not work across recipe lines</strong>
+  Make normally runs each recipe line in a <em>separate</em> shell. So this version looks reasonable but does not work:
+</div>
+
+
+<div class="codefile"><div class="file-label">Makefile (does not work)</div><pre><code>setup:
+	python3 -m venv .venv
+	. .venv/bin/activate
+	python -m pip install -r requirements.txt</code></pre></div>
+
+<p>The activation happens in the shell that runs the second line, and that shell exits before the third line starts. The third line therefore runs <code>python</code> outside the environment and installs the packages in the wrong place. Activating <em>can</em> be made to work by keeping everything in one shell: join the commands with <code>&amp;&amp;</code> ("run the next command only if this one succeeded") and continue the line with a backslash (<code>&#92;</code>), as in <code>. .venv/bin/activate &amp;&amp; &#92;</code>. Calling <code>$(VENV_PYTHON)</code> directly avoids the issue altogether.</p>
+
+<h4>Things to know about this Makefile</h4>
+<ul>
+  <li><strong>Run <code>make setup</code> first.</strong> <code>make test</code> and <code>make run</code> fail until the environment exists, with an error such as <code>make: .venv/bin/python: No such file or directory</code>.</li>
+  <li><strong>Re-running <code>make setup</code> is harmless.</strong> Because <code>setup</code> is phony, its recipe runs every time. <code>venv</code> reuses the existing <code>.venv</code>, and pip checks the requirements again but skips packages that are already installed (<code>Requirement already satisfied</code>).</li>
+  <li><strong>The path is for macOS and Linux.</strong> On native Windows, the environment's Python is <code>.venv&#92;Scripts&#92;python.exe</code> instead.</li>
+  <li><strong>Make is one option among several.</strong> Many Python developers use Make as a task runner, especially in projects that also involve shell commands, containers, documentation, or compiled parts. Python-specific tools such as <code>tox</code>, <code>nox</code>, Poetry, Hatch, and <code>uv</code> cover similar ground.</li>
+</ul>
+
+<p>Python automation centres on <strong>environment reproducibility, dependency installation, and task orchestration</strong>. The runner may be a shell script, a Makefile, or another tool, but the goals are the same: define the environment, install dependencies, run checks, and make the workflow repeatable for others.</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

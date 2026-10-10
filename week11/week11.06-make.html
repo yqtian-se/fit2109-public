@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.6 — Make and Build Automation for Compiled Projects — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: Make</span>
+<h2>11.6 Make and Build Automation for Compiled Projects</h2>
+
+<p>For compiled languages such as C and C++, GNU Make is one of the classic ways to automate a build. (The Makefile below is for a C program built with <code>gcc</code>; <code>-Wall -Wextra</code> turn on extra compiler warnings and <code>-O2</code> turns on optimisation.) A Makefile is a collection of rules explaining <em>when</em> and <em>how</em> to remake files, which suits projects where derived files (objects, executables, generated code) depend on sources and headers.</p>
+
+<h3>A complete Makefile</h3>
+
+<div class="codefile"><div class="file-label">Makefile</div><pre><code>CC = gcc
+CFLAGS = -Wall -Wextra -O2
+
+app: main.o math_utils.o
+	$(CC) $(CFLAGS) -o app main.o math_utils.o
+
+main.o: main.c math_utils.h
+	$(CC) $(CFLAGS) -c main.c
+
+math_utils.o: math_utils.c math_utils.h
+	$(CC) $(CFLAGS) -c math_utils.c
+
+.PHONY: clean
+clean:
+	rm -f app *.o</code></pre></div>
+
+<p>Several ideas appear together:</p>
+<ul>
+  <li><strong>Variables</strong> (<code>CC</code>, <code>CFLAGS</code>) hold details once. To add a flag, or switch compiler, you change one line.</li>
+  <li>The <strong>first target</strong> in the file (<code>app</code>) is the default goal that a bare <code>make</code> builds.</li>
+  <li><code>app</code> depends on object files, and each object depends on its source <em>and</em> header (the graph from <a href="week11.05-depgraph.html">11.5</a>).</li>
+  <li><code>.PHONY: clean</code> marks <code>clean</code> as a task rather than a file, so its recipe runs even if a file called <code>clean</code> exists.</li>
+</ul>
+
+<h3>A typical session</h3>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">make</span>
+<span class="out">gcc -Wall -Wextra -O2 -c main.c</span>
+<span class="out">gcc -Wall -Wextra -O2 -c math_utils.c</span>
+<span class="out">gcc -Wall -Wextra -O2 -o app main.o math_utils.o</span>
+<span class="prompt-sym">$</span> <span class="cmd">./app</span>
+<span class="prompt-sym">$</span> <span class="cmd">make</span>
+<span class="out">make: 'app' is up to date.</span>
+<span class="prompt-sym">$</span> <span class="cmd">make</span> <span class="arg">clean</span>
+<span class="out">rm -f app *.o</span>
+<span class="prompt-sym">$</span> <span class="cmd">make</span>
+<span class="out">(rebuilds everything from source)</span></code></pre>
+
+<p>The first <code>make</code> builds the project. Running it again immediately should find nothing to do, because every target is up to date. <code>make clean</code> removes the build artifacts, and the next <code>make</code> rebuilds them from source. Make echoes each recipe line before it runs it, so the build log doubles as a record of what was run.</p>
+
+<h3>Make as a task runner</h3>
+<p>Make is useful well beyond compilation. Many projects use it for formatting, linting, testing, or packaging, and the concept does not change: whether the target is <code>app</code>, <code>test</code>, or <code>clean</code>, the Makefile is a structured description of project tasks. A <code>test</code> target that depends on the build looks like this:</p>
+
+<div class="codefile"><div class="file-label">Makefile (added target)</div><pre><code>.PHONY: test
+test: app
+	./app</code></pre></div>
+
+<p>Because <code>test</code> lists <code>app</code> as a prerequisite, <code>make test</code> builds the program first if it is missing or out of date, then runs it. That "build before you test" guarantee is the kind of knowledge that otherwise lives in someone's head.</p>
+
+<div class="callout callout-warn">
+  <strong>Common first-day errors</strong>
+  <code>missing separator</code>: a recipe line is indented with spaces instead of a tab. <code>No rule to make target 'x.o'</code>: a prerequisite names a file that does not exist and that Make has no rule to build, often because of a typo. <code>make: 'app' is up to date</code> (or <code>Nothing to be done</code>, for a target with no recipe): not an error &mdash; nothing needed rebuilding.
+</div>
+
+
+<p>In short, <code>make</code> expresses <strong>build relationships and reusable project tasks</strong> in a form that lives in the repository and that anyone with <code>make</code> installed can run. The exact syntax matters, but the bigger lesson is the build model it conveys: declare relationships, and let the tool work out the steps.</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

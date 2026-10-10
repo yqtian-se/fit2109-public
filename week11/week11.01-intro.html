@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.1 — Why Automate and What Is Metaprogramming? — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-concept">Concept</span>
+<h2>11.1 Why Automate and What Is Metaprogramming?</h2>
+
+<p>A large share of software work is not writing new logic. It is the same supporting tasks, repeated until they become muscle memory:</p>
+
+<table class="key-table">
+  <thead><tr><th>Recurring task</th><th>Done by hand, it looks like…</th></tr></thead>
+  <tbody>
+    <tr><td>Compile the code</td><td>Retyping a long <code>gcc</code> (C compiler) line, with flags you half-remember</td></tr>
+    <tr><td>Run the tests</td><td>Hoping you remembered which test command this project uses</td></tr>
+    <tr><td>Set up the environment</td><td>Following install steps from a chat message or a stale README</td></tr>
+    <tr><td>Launch the program</td><td>Exporting the same three variables before every run</td></tr>
+    <tr><td>Clean old artifacts</td><td>Deleting compiled <code>.o</code> (object) files by eye, and missing one</td></tr>
+    <tr><td>Prepare the repo for others</td><td>Telling each newcomer what you did on your laptop</td></tr>
+  </tbody>
+</table>
+
+
+<p>With a small project this is merely annoying. As the project grows, doing these steps by hand becomes slow, error-prone, and hard to reproduce on someone else's machine. <strong>Automation</strong> turns those informal habits into explicit, repeatable workflows.</p>
+
+<h3>The same four questions, in every language</h3>
+<p>Imagine three projects: a small C program, a Python script with dependencies, and a Java project built with Maven. The "real program" differs each time, but the surrounding questions are identical:</p>
+<ul>
+  <li>How do I <strong>build</strong> it?</li>
+  <li>How do I <strong>test</strong> it?</li>
+  <li>How do I <strong>rerun</strong> it reliably?</li>
+  <li>How do I make <strong>another person get the same result</strong>?</li>
+</ul>
+<p>Automation answers those questions by encoding them in scripts, Makefiles, build files, or CI configuration, instead of leaving them in memory or scattered across messages.</p>
+
+<h3>Which tools belong to which kind of language?</h3>
+<p>The examples this week use three languages on purpose, because they need different kinds of automation. Some tools are tied to one language; others work with anything. Watch for the label on each page.</p>
+
+<table class="key-table">
+  <thead><tr><th>Tool / file</th><th>Works with</th><th>Why it is language-specific (or not)</th></tr></thead>
+  <tbody>
+    <tr><td><code>gcc</code>, <code>.c</code> / <code>.h</code> / <code>.o</code> files</td><td><strong>C</strong> (a <em>compiled</em> language)</td><td><code>gcc</code> is the GNU C compiler. C source must be compiled into machine code before it can run, so a C build has several steps to automate</td></tr>
+    <tr><td><code>venv</code>, <code>pip</code>, <code>requirements.txt</code>, <code>unittest</code></td><td><strong>Python</strong> (usually run by an <em>interpreter</em>)</td><td>Python source is run directly with <code>python</code>, with no separate compile-and-link build step as in C. Automation is mostly about the <em>environment</em>: installing packages, then running and testing</td></tr>
+    <tr><td><code>mvn</code>, <code>pom.xml</code>, JAR, JUnit</td><td><strong>Java</strong> (compiled to bytecode)</td><td>Maven is a build tool used mainly for Java. Java is compiled and packaged into a <code>.jar</code>, and its libraries are declared and downloaded by Maven</td></tr>
+    <tr><td>Bash, <code>make</code>, <code>.gitlab-ci.yml</code></td><td><strong>Any language</strong></td><td>These run commands and track files, so they are not tied to any one language. Make is classically used with C, but it can drive anything</td></tr>
+  </tbody>
+</table>
+
+
+<h3>Metaprogramming: a program-like description of other work</h3>
+<p>This week also introduces <strong>metaprogramming</strong>. We do not mean language features that generate code at runtime. We mean tools that <em>describe how other program-related actions should happen</em>. A Makefile is not the program being built; it is a program-like description of how source files, object files, tests, and cleanup steps relate to each other. GNU Make's manual describes a rule as saying <em>when</em> and <em>how</em> to remake files, by listing targets, prerequisites, and a recipe. In that sense a Makefile is a <strong>meta-level artifact</strong>: it controls how the real program is produced and maintained.</p>
+
+<table class="key-table">
+  <thead><tr><th>File in the repository</th><th>What it describes</th></tr></thead>
+  <tbody>
+    <tr><td><code>scripts/bootstrap.sh</code></td><td>A shell script ("bootstrap" is just a common name): how to prepare an environment and run the checks. In this week's example it sets up a Python project</td></tr>
+    <tr><td><code>Makefile</code></td><td>How files are built from other files, and which project tasks exist</td></tr>
+    <tr><td><code>pom.xml</code></td><td>A Java project's coordinates, dependencies, and build configuration</td></tr>
+    <tr><td><code>.gitlab-ci.yml</code></td><td>Which jobs GitLab's CI system runs on each push, and in what order</td></tr>
+  </tbody>
+</table>
+
+
+<div class="callout callout-fun">
+  <strong>More than convenience</strong>
+  Notice what a repository gains when these files exist: other people can <em>read</em> how the project is built. A <code>Makefile</code> or <code>pom.xml</code> is documentation that is much harder to let drift out of date, because the build actually uses it. That supports reproducibility, shortens onboarding, and makes a failed build easier to explain &mdash; the workflow is now explicit rather than hidden.
+</div>
+
+
+<p>The rest of the week climbs a ladder: the shell rewriting commands (<a href="week11.02-meta.html">11.2</a>&ndash;<a href="week11.03-templates.html">11.3</a>), Make describing builds (<a href="week11.04-patterns.html">11.4</a>&ndash;<a href="week11.06-make.html">11.6</a>), Python and Maven workflows (<a href="week11.07-python.html">11.7</a>&ndash;<a href="week11.08-maven.html">11.8</a>), and CI moving it all into the repository (<a href="week11.09-ci.html">11.9</a>).</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

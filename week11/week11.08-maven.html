@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.8 — Java Automation Workflows: Maven Lifecycle and Dependency-Driven Builds — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: Maven</span>
+<h2>11.8 Java Automation Workflows: Maven Lifecycle and Dependency-Driven Builds</h2>
+
+<p>This page automates a <strong>Java</strong> project with <strong>Apache Maven</strong>. Maven is primarily used for Java and other projects that run on the Java Virtual Machine (JVM); other ecosystems have their own equivalents, such as <code>npm</code> for JavaScript or <code>cargo</code> for Rust.</p>
+
+<h3>Background: what building Java involves</h3>
+<ul>
+  <li><strong>Classes and packages.</strong> Java code is written in <em>classes</em>. A <code>.java</code> file may contain several classes, but at most one of them can be public, and the file must be named after it: the public class <code>App</code> lives in <code>App.java</code>. Classes are grouped into <em>packages</em> with dotted names such as <code>edu.monash.fit2109</code>, and the folder path mirrors the package name: <code>edu/monash/fit2109/App.java</code>.</li>
+  <li><strong>Compiling.</strong> The Java compiler, <code>javac</code>, turns each class into a <code>.class</code> file of <em>bytecode</em>. Bytecode is not machine code for your processor; it is run by a <strong>Java Virtual Machine</strong> (JVM), launched by the <code>java</code> command. That is why the same compiled program can run on any operating system, provided a compatible JVM is installed and the program does not rely on platform-specific features.</li>
+  <li><strong>Packaging.</strong> The <code>.class</code> files are usually bundled into one <strong>JAR</strong> file (<code>.jar</code>, a ZIP-format archive) to share or run.</li>
+  <li><strong>Libraries.</strong> Third-party libraries are also distributed as JARs. To compile or run, Java must be told where they are, via a list of locations called the <strong>classpath</strong>.</li>
+</ul>
+<p>Done by hand, that means downloading the right JARs, then typing long <code>javac</code> and <code>java</code> commands with the classpath spelled out. Maven automates all of it: it downloads libraries, compiles, runs tests, and packages, driven by one file, <code>pom.xml</code>.</p>
+
+<h3>Three ideas to separate</h3>
+<table class="key-table">
+  <thead><tr><th>Idea</th><th>What it is</th><th>Why it helps</th></tr></thead>
+  <tbody>
+    <tr><td><strong>The POM</strong></td><td><code>pom.xml</code>, the <em>Project Object Model</em>: the project's identity, its dependencies, and plugin configuration</td><td>One declarative file describes the project</td></tr>
+    <tr><td><strong>Standard layout</strong></td><td>Fixed folders for main code, test code, and resources</td><td>By convention, Maven projects look alike, so Maven already knows where to find files</td></tr>
+    <tr><td><strong>Build lifecycle</strong></td><td>An ordered list of build <em>phases</em>, such as <code>compile</code>, <code>test</code>, <code>package</code></td><td>A predictable shape for every build</td></tr>
+  </tbody>
+</table>
+
+
+<h3>The standard layout</h3>
+
+<pre><code>week11-demo/
+├── pom.xml
+├── src/
+│   ├── main/java/edu/monash/fit2109/App.java
+│   └── test/java/edu/monash/fit2109/AppTest.java
+└── target/                 # created by Maven</code></pre>
+
+<p>Main code goes under <code>src/main/java</code>, tests under <code>src/test/java</code>, and anything Maven produces goes into <code>target/</code>, which is safe to delete (<code>mvn clean</code> does that). Because projects that follow Maven's standard layout use these locations, the POM does not have to list source files at all. (A POM <em>can</em> override the locations, but most projects keep the defaults.) The two Java files used on this page are:</p>
+
+<div class="codefile"><div class="file-label">src/main/java/edu/monash/fit2109/App.java</div><pre><code>package edu.monash.fit2109;
+
+public class App {
+    public static int add(int a, int b) { return a + b; }
+
+    public static void main(String[] args) {
+        System.out.println("2 + 3 = " + add(2, 3));
+    }
+}</code></pre></div>
+
+<div class="codefile"><div class="file-label">src/test/java/edu/monash/fit2109/AppTest.java</div><pre><code>package edu.monash.fit2109;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
+
+class AppTest {
+    @Test
+    void addsNumbers() { assertEquals(5, App.add(2, 3)); }
+}</code></pre></div>
+
+<p><code>main</code> is where a Java program starts. The test uses <strong>JUnit</strong>, a widely used Java testing framework (a third-party library, not part of Java itself): <code>@Test</code> marks a test method, and <code>assertEquals</code> fails the test if the two values differ.</p>
+
+<h3>A small <code>pom.xml</code></h3>
+<p>The POM is written in <strong>XML</strong>: information is held between matching opening and closing tags, such as <code>&lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;</code>, and tags nest inside one another.</p>
+
+<div class="codefile"><div class="file-label">pom.xml</div><pre><code>&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+  &lt;groupId&gt;edu.monash.fit2109&lt;/groupId&gt;
+  &lt;artifactId&gt;week11-demo&lt;/artifactId&gt;
+  &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+
+  &lt;properties&gt;
+    &lt;maven.compiler.release&gt;17&lt;/maven.compiler.release&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+  &lt;/properties&gt;
+
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;org.junit.jupiter&lt;/groupId&gt;
+      &lt;artifactId&gt;junit-jupiter&lt;/artifactId&gt;
+      &lt;version&gt;5.11.0&lt;/version&gt;
+      &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;</code></pre></div>
+
+<table class="key-table">
+  <thead><tr><th>Part</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>&lt;project&gt;</code> attributes, <code>&lt;modelVersion&gt;</code></td><td>Standard boilerplate that identifies the file as a Maven POM; copy it as is</td></tr>
+    <tr><td><code>groupId</code>, <code>artifactId</code>, <code>version</code></td><td>The project's <strong>coordinates</strong>: the group or organisation that publishes it (often written as a reversed domain name), the project's name, and its version. Together they identify one particular version of a project, whose build produces <em>artifacts</em> (published files such as a JAR). <code>SNAPSHOT</code> marks a version still in development</td></tr>
+    <tr><td><code>&lt;properties&gt;</code></td><td>Settings for the build: compile for Java 17, and read source files as UTF-8 text. Without an explicit release setting, the compiler plugin falls back to Java 8 compatibility, which current Java compilers warn is obsolete. Declaring <code>17</code> makes the intended Java version explicit</td></tr>
+    <tr><td><code>&lt;dependency&gt;</code></td><td>A library this project needs, named by <em>its</em> coordinates: here, JUnit</td></tr>
+    <tr><td><code>&lt;scope&gt;test&lt;/scope&gt;</code></td><td>The library is needed only to compile and run the tests, not by the program itself</td></tr>
+  </tbody>
+</table>
+
+
+<p>The project is not just storing code; it is <em>declaring which external libraries it needs and when</em>. On the first build, Maven downloads each dependency, and the plugins the build uses, from a public online repository, <strong>Maven Central</strong>, and keeps a copy in a cache in your home folder (<code>~/.m2/repository</code>), so later builds work without downloading again.</p>
+
+<h3>The lifecycle: later phases include earlier ones</h3>
+<p>Maven's default lifecycle is an ordered list of phases. These are the main ones (Maven has a few finer-grained phases in between):</p>
+
+<table class="key-table">
+  <thead><tr><th>Phase</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr><td><code>validate</code></td><td>Checks that the project is correctly set up</td></tr>
+    <tr><td><code>compile</code></td><td>Compiles the main code in <code>src/main/java</code> into <code>target/classes</code></td></tr>
+    <tr><td><code>test</code></td><td>Compiles the test code, then runs the tests</td></tr>
+    <tr><td><code>package</code></td><td>Bundles the compiled code into a JAR in <code>target/</code></td></tr>
+    <tr><td><code>verify</code></td><td>Runs configured checks to confirm that the package is valid. (Integration tests, if a project has them, run in an <code>integration-test</code> phase just before <code>verify</code>)</td></tr>
+    <tr><td><code>install</code></td><td>Copies the JAR into your local cache <code>~/.m2/repository</code>, so <em>other projects on your machine</em> can use it as a dependency</td></tr>
+    <tr><td><code>deploy</code></td><td>Uploads the JAR to a shared remote repository for other people; used for releases</td></tr>
+  </tbody>
+</table>
+
+
+<p>Asking for a phase runs <strong>every phase before it</strong> too. So <code>mvn package</code> does not merely "make a JAR": it validates, compiles, runs the tests, and then packages.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mvn</span> <span class="arg">compile        # validate → compile</span>
+<span class="prompt-sym">$</span> <span class="cmd">mvn</span> <span class="arg">test           # validate → compile → test</span>
+<span class="prompt-sym">$</span> <span class="cmd">mvn</span> <span class="arg">package        # validate → compile → test → package</span></code></pre>
+
+<p>If a test fails during <code>mvn package</code>, Maven stops at the <code>test</code> phase with <code>BUILD FAILURE</code>, before reaching <code>package</code>, so no JAR is produced. (Tests can be skipped deliberately with <code>-DskipTests</code>, and passing tests do not prove a program is free of bugs.) Because the layout, POM, and lifecycle follow conventions, you do not need to tell Maven where the Java files are.</p>
+
+<div class="callout callout-note">
+  <strong><code>clean</code> is a separate lifecycle</strong>
+  <code>clean</code> is not a phase of the default lifecycle above; it belongs to its own small <em>clean</em> lifecycle. Maven does <em>not</em> clean the project before every build, so files left in <code>target/</code> by an earlier build stay there. To start from scratch, ask for it explicitly, for example <code>mvn clean package</code>, which deletes <code>target/</code> and then runs the default lifecycle up to <code>package</code>.
+</div>
+
+
+<div class="callout callout-note">
+  <strong>Who actually does the work: plugins</strong>
+  Maven is built around <b>plugins</b>: lifecycle phases coordinate the build, while plugin <b>goals</b> perform operations such as compiling, testing, and packaging. For a JAR project, Maven binds plugin goals to the relevant phases (not every phase has one): <code>compile</code> runs the compiler plugin, <code>test</code> runs the Surefire plugin (which runs JUnit tests), and <code>package</code> runs the JAR plugin. That is why a small POM with no plugins listed can still build, test, and package.
+</div>
+
+
+<h3>Running the program from Maven</h3>
+<p>Running a class normally means typing <code>java</code> with the right classpath. The <strong>Exec Maven Plugin</strong> adds a goal, <code>exec:java</code>, that runs a chosen class with the project's dependencies already on the classpath. To use it, add a <code>&lt;build&gt;</code> section inside <code>&lt;project&gt;</code>, after <code>&lt;/dependencies&gt;</code>:</p>
+
+<div class="codefile"><div class="file-label">pom.xml (added section)</div><pre><code>&lt;build&gt;
+  &lt;plugins&gt;
+    &lt;plugin&gt;
+      &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+      &lt;artifactId&gt;exec-maven-plugin&lt;/artifactId&gt;
+      &lt;version&gt;3.6.3&lt;/version&gt;
+      &lt;configuration&gt;
+        &lt;mainClass&gt;edu.monash.fit2109.App&lt;/mainClass&gt;
+      &lt;/configuration&gt;
+    &lt;/plugin&gt;
+  &lt;/plugins&gt;
+&lt;/build&gt;</code></pre></div>
+
+<p>A plugin is identified by coordinates, like a dependency. <code>&lt;mainClass&gt;</code> gives the <em>fully qualified</em> name of the class to run: its package name plus its class name.</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">mvn</span> <span class="arg">compile exec:java</span>
+<span class="out">2 + 3 = 5</span></code></pre>
+
+<div class="callout callout-note">
+  <strong>Phases vs. goals</strong>
+  <code>compile</code> is a lifecycle <b>phase</b>; <code>exec:java</code> is a plugin <b>goal</b>, written <code>plugin:goal</code>. One command line can mix them, and Maven runs them left to right: first the lifecycle up to <code>compile</code>, then the <code>exec:java</code> goal. Running <code>mvn exec:java</code> on its own would not compile first.
+</div>
+
+
+<p>Now the repository defines not just how to compile and test the code, but how to run it. Maven is more than "a tool that downloads Java libraries". It is a <strong>declarative automation system</strong>: the POM declares the project and its dependencies, the standard layout reduces guesswork, and the lifecycle gives the build a predictable shape. Like a Makefile, it encodes how a project should be built and run in a form that other tools and developers can execute consistently.</p>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

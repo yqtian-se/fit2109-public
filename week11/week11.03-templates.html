@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.3 — Shell Templates and Parameter Expansion — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Tool focus: Bash</span>
+<h2>11.3 Shell Templates and Parameter Expansion</h2>
+
+<p>One of the most useful forms of metaprogramming is <strong>generating files from templates</strong>. Real projects often need a README, a config file, a starter script, or a repeated folder structure. Instead of writing each by hand every time, let the shell generate it. Bash supports this with <em>here-documents</em>, which supply a block of text to a command, and with parameter expansion and command substitution, which fill in the parts that change. Setup becomes repeatable and less error-prone.</p>
+
+<h3>Here-documents: a block of text for a command</h3>
+<p>A <strong>here-document</strong> feeds several lines of text to a command's standard input. You choose a <em>delimiter</em> word after <code>&lt;&lt;</code>, write the text, and end it with a line containing only that delimiter:</p>
+
+<pre><code>cat &lt;&lt;END
+Hello, $USER
+END</code></pre>
+
+<p>The shell, not <code>cat</code>, processes the here-document:</p>
+<ol>
+  <li>It sees <code>&lt;&lt;END</code> (or <code>&lt;&lt;'END'</code>) and notes the delimiter.</li>
+  <li>It reads lines until it finds a line containing exactly that delimiter.</li>
+  <li>If the delimiter was <em>unquoted</em>, it performs expansions on the text (details below).</li>
+  <li>It sends the resulting text to the command through standard input.</li>
+</ol>
+<p><code>EOF</code> ("end of file") is only a popular name for the delimiter; <code>END</code> works equally well. Any word is fine, provided the closing line repeats it.</p>
+
+<h3>A project scaffold</h3>
+
+<pre><code>project="demo_app"
+mkdir -p "$project"/{src,tests,docs}
+
+cat &gt; "$project/README.md" &lt;&lt;EOF
+<span class="comment"># $project</span>
+
+Created on $(date +%F)
+
+<span class="comment">## Structure</span>
+- src/
+- tests/
+- docs/
+EOF</code></pre>
+
+<p>Three ideas combine here. The variable <code>$project</code> avoids repeating the name. Brace expansion creates the directories in one step. And the here-document, written to <code>README.md</code> by <code>cat &gt;</code>, has <code>$project</code> and <code>$(date +%F)</code> filled in before the file is written. The script does not merely make directories; it writes a document whose contents are partly generated.</p>
+
+<h3>A generated configuration file</h3>
+
+<pre><code>app_name="inventory-service"
+port="8080"
+
+cat &gt; config.env &lt;&lt;EOF
+APP_NAME=$app_name
+APP_PORT=$port
+EOF</code></pre>
+
+<p>File generation is not an advanced trick reserved for large systems. You already do it whenever you copy, edit, and rename similar text files; here-documents make that process reusable.</p>
+
+<h3>Quoting the delimiter: expansion on or off</h3>
+<p>The quotes do <strong>not</strong> change the delimiter's name: in both forms below, the closing line is plain <code>EOF</code>. What the quotes change is whether the shell expands the text <em>before</em> <code>cat</code> receives it.</p>
+
+<p><strong><code>&lt;&lt;EOF</code> &mdash; expansion enabled.</strong> The shell expands variables (<code>$HOME</code>), command substitutions (<code>$(date +%F)</code>), and arithmetic (<code>$((2 + 3))</code>):</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">cat</span> <span class="arg">&lt;&lt;EOF</span>
+home=$HOME
+today=$(date +%F)
+result=$((2 + 3))
+EOF
+<span class="out">home=/Users/alice</span>
+<span class="out">today=2026-10-10</span>
+<span class="out">result=5</span></code></pre>
+
+<p><strong><code>&lt;&lt;'EOF'</code> &mdash; expansion disabled.</strong> The text reaches <code>cat</code> exactly as written:</p>
+
+<pre><code><span class="prompt-sym">$</span> <span class="cmd">cat</span> <span class="arg">&lt;&lt;'EOF'</span>
+home=$HOME
+today=$(date +%F)
+result=$((2 + 3))
+EOF
+<span class="out">home=$HOME</span>
+<span class="out">today=$(date +%F)</span>
+<span class="out">result=$((2 + 3))</span></code></pre>
+
+<p>The shell removes the single quotes when it works out the delimiter, so the closing line is still written <code>EOF</code>, not <code>'EOF'</code>.</p>
+
+<table class="key-table">
+  <thead><tr><th>Opening line</th><th>Delimiter on the closing line</th><th>Contents of the here-document</th></tr></thead>
+  <tbody>
+    <tr><td><code>&lt;&lt;EOF</code></td><td><code>EOF</code></td><td>Expanded by the shell: variables, <code>$(&hellip;)</code>, <code>$((&hellip;))</code></td></tr>
+    <tr><td><code>&lt;&lt;'EOF'</code></td><td><code>EOF</code></td><td>Passed through literally</td></tr>
+  </tbody>
+</table>
+
+
+<div class="callout callout-note">
+  <strong>When to quote</strong>
+  Use <code>&lt;&lt;EOF</code> for a <em>template</em>, where you want the shell to fill values in. Use <code>&lt;&lt;'EOF'</code> when you are generating <em>another</em> script or a Makefile that contains its own <code>$</code> signs, which must be written into the file untouched.
+</div>
+
+
+<div class="callout callout-warn">
+  <strong>The closing delimiter must stand alone</strong>
+  The closing line must contain only the delimiter: no leading text, trailing spaces, or comment. A line such as <code>EOF  # done</code> is not recognised as the end. Bash then keeps reading to the end of the input and warns that the here-document was delimited by end-of-file. Put explanations outside the here-document.
+</div>
+
+
+<h3>Deriving one filename from another</h3>
+<p>Templates also need <em>names</em> that follow a pattern. Bash <strong>parameter expansion</strong> can transform strings without calling any external tool:</p>
+
+<pre><code>src="main.c"
+obj="${src%.c}.o"
+echo "$obj"</code></pre>
+
+<p>This prints <code>main.o</code>. The pattern <code>${src%.c}</code> removes the shortest matching <em>suffix</em> <code>.c</code>, then <code>.o</code> is appended. Build automation constantly converts source names into output names, and this tiny example prepares you for the same logic in Make's pattern rules (<a href="week11.04-patterns.html">11.4</a>).</p>
+
+<table class="key-table">
+  <thead><tr><th>Form</th><th>Meaning</th><th>Example result for <code>src=lib/main.c</code></th></tr></thead>
+  <tbody>
+    <tr><td><code>${src%.c}</code></td><td>Remove the shortest matching suffix</td><td><code>lib/main</code></td></tr>
+    <tr><td><code>${src#lib/}</code></td><td>Remove the shortest matching prefix</td><td><code>main.c</code></td></tr>
+    <tr><td><code>${src%.c}.o</code></td><td>Swap an extension</td><td><code>lib/main.o</code></td></tr>
+  </tbody>
+</table>
+
+
+<p>Extended into a small generator (<code>*.c</code> means "C source files", a stand-in for whatever files your project has):</p>
+
+<pre><code>for src in src/*.c; do
+  obj="${src%.c}.o"
+  echo "Would compile $src into $obj"
+done</code></pre>
+
+<p>Even though this only prints messages, it shows the core automation pattern: <strong>derive output names systematically</strong> rather than inventing them one at a time. Once names are generated consistently, they can be handed to compilers, linkers, test runners, or reporting scripts.</p>
+
+<div class="callout callout-warn">
+  <strong>Watch for overwriting</strong>
+  <code>cat &gt; file</code> replaces whatever was there. A scaffold script that is run twice will silently overwrite a README you have since edited. A careful generator checks first, for example <code>[ -e &quot;$f&quot; ] || cat &gt; &quot;$f&quot; &lt;&lt;EOF ...</code>, where <code>$f</code> holds the file name: the file is written only if it does not already exist &mdash; a theme that returns in <a href="week11.05-depgraph.html">11.5</a>.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

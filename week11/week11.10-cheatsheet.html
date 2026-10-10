@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.10 — Automation at a Glance — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+  .tools-table td { vertical-align: top; }
+  .tools-table td:first-child { font-weight: 600; white-space: nowrap; width: 1%; }
+  .tools-table td code { white-space: nowrap; }
+  @media (max-width: 600px) { .tools-table td:first-child { white-space: normal; } }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-tool">Reference</span>
+<h2>11.10 Automation at a Glance</h2>
+
+<p>A one-page reference for the whole week. Keep it open during the workshop.</p>
+
+<h3>The same workflow in each ecosystem</h3>
+<p>C is compiled with <code>gcc</code> and driven by Make; Python has no separate compile step, so its automation is mostly about the environment; Java is built with Maven. Bash, Make, and CI are not tied to any one language.</p>
+<table class="key-table tools-table">
+  <thead><tr><th>Task</th><th>C</th><th>Python</th><th>Java</th></tr></thead>
+  <tbody>
+    <tr><td>Described in</td><td><code>Makefile</code></td><td><code>requirements.txt</code>, <code>bootstrap.sh</code>, optional <code>Makefile</code></td><td><code>pom.xml</code></td></tr>
+    <tr><td>Set up</td><td>&mdash;</td><td><code>python3 -m venv .venv</code><br><code>source .venv/bin/activate</code><br><code>python -m pip install -r requirements.txt</code></td><td>Maven downloads dependencies</td></tr>
+    <tr><td>Build</td><td><code>make</code></td><td>&mdash; (no compile step)</td><td><code>mvn compile</code><br><code>mvn package</code></td></tr>
+    <tr><td>Test</td><td><code>make test</code></td><td><code>python -m unittest</code></td><td><code>mvn test</code></td></tr>
+    <tr><td>Run</td><td><code>./app</code></td><td><code>python app.py</code></td><td><code>mvn compile exec:java</code></td></tr>
+  </tbody>
+</table>
+
+
+<p>For any of the three, a <code>.gitlab-ci.yml</code> can run the build and test commands as CI jobs on every push.</p>
+
+<h3>Bash expansions</h3>
+<table class="key-table">
+  <thead><tr><th>Syntax</th><th>Result</th></tr></thead>
+  <tbody>
+    <tr><td><code>mkdir -p p/{src,tests}</code></td><td>Brace expansion: <code>p/src p/tests</code> (not inside quotes; not part of POSIX <code>sh</code>)</td></tr>
+    <tr><td><code>${name}</code></td><td>Parameter expansion: the variable's value</td></tr>
+    <tr><td><code>$(cmd)</code></td><td>Command substitution: the output of <code>cmd</code></td></tr>
+    <tr><td><code>${f%.c}.o</code></td><td>Strip a suffix, then append one</td></tr>
+    <tr><td><code>cat &gt; f &lt;&lt;EOF</code> … <code>EOF</code></td><td>Here-document: expands variables, <code>$(…)</code>, and <code>$((…))</code> inside; <code>&lt;&lt;'EOF'</code> passes the text literally. The closing <code>EOF</code> must be alone on its line</td></tr>
+  </tbody>
+</table>
+
+
+<h3>Make syntax</h3>
+<table class="key-table">
+  <thead><tr><th>Syntax</th><th>Meaning</th></tr></thead>
+  <tbody>
+    <tr><td><code>target: prerequisites</code></td><td>A rule; the next lines, indented with a <strong>tab</strong>, are the recipe. Each recipe line runs in its own shell</td></tr>
+    <tr><td><code>make</code> (no target)</td><td>Builds the first target in the file, the default goal</td></tr>
+    <tr><td><code>%.o: %.c</code></td><td>Pattern rule: any <code>.o</code> from the matching <code>.c</code></td></tr>
+    <tr><td><code>$@</code> · <code>$&lt;</code> · <code>$^</code></td><td>Target · first prerequisite · all prerequisites</td></tr>
+    <tr><td><code>CC = gcc</code> … <code>$(CC)</code></td><td>Define and use a Make variable (<code>:=</code> also works, as in <a href="week11.07-python.html">11.7</a>)</td></tr>
+    <tr><td><code>$$(date)</code></td><td>A literal <code>$(date)</code> passed to the shell</td></tr>
+    <tr><td><code>.PHONY: clean</code></td><td><code>clean</code> is an action, not a file, so its recipe runs whenever requested</td></tr>
+    <tr><td><code>main.o: util.h</code></td><td>Extra prerequisite with no recipe, e.g. header dependencies</td></tr>
+  </tbody>
+</table>
+
+
+<h3>Maven lifecycle (default)</h3>
+<p><code>validate</code> → <code>compile</code> → <code>test</code> → <code>package</code> → <code>verify</code> → <code>install</code> → <code>deploy</code>. Asking for a phase runs every earlier one. <code>clean</code> is a separate lifecycle and is never run automatically: use <code>mvn clean package</code> to rebuild from scratch.</p>
+
+<h3>I want to… → Do this</h3>
+<table class="key-table tools-table">
+  <thead><tr><th>I want to…</th><th>Do this</th></tr></thead>
+  <tbody>
+    <tr><td>Make a task repeatable for my team</td><td>Put it in a script, a Makefile target, or the POM; commit it</td></tr>
+    <tr><td>Rebuild only what changed</td><td>Declare prerequisites in the Makefile and let <code>make</code> compare timestamps</td></tr>
+    <tr><td>Make sure a header change triggers a rebuild</td><td>Add <code>main.o util.o: util.h</code> (or list headers in each rule)</td></tr>
+    <tr><td>Run a setup script twice without harm</td><td>Use <code>mkdir -p</code>, <code>venv</code>, and checks like <code>[ -e f ] ||</code>; avoid appending to config files with <code>&gt;&gt;</code></td></tr>
+    <tr><td>Use <code>$(date)</code> in a Makefile recipe</td><td>Write <code>$$(date)</code></td></tr>
+    <tr><td>Use a venv from a Make recipe</td><td>Call its Python directly: <code>.venv/bin/python -m unittest</code></td></tr>
+    <tr><td>Let <code>python -m unittest</code> find tests in <code>tests/</code></td><td>Add an (empty) <code>tests/__init__.py</code> and name files <code>test_*.py</code></td></tr>
+    <tr><td>Run the checks on every push</td><td>Add <code>.gitlab-ci.yml</code> with build and test jobs, each with a suitable <code>image</code></td></tr>
+    <tr><td>Hand a built file to a later CI job</td><td>List it under <code>artifacts: paths:</code> in the job that creates it</td></tr>
+  </tbody>
+</table>
+
+
+<div class="callout callout-fun">
+  <strong>The through-line</strong>
+  Shell expansion, a Make pattern rule, a Maven phase, and a CI job are all the same move: <em>describe the work once, let a tool generate and run the concrete steps</em>. When you meet a new build tool, ask what it treats as targets, what as prerequisites, and what it uses to decide something is out of date.
+</div>
+
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>

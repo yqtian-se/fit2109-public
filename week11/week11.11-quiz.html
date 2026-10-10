@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11.11 — Check Your Understanding — FIT2109 Week 11</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 16px; line-height: 1.7; color: #1a1a2e; background: #f9f9fb; }
+  .page { max-width: 860px; margin: 0 auto; padding: 48px 32px 80px; }
+  h2 { font-size: 1.45rem; font-weight: 700; color: #0f0f23; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e0e0f0; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin: 32px 0 12px; }
+  h4 { font-size: 1rem; font-weight: 600; color: #1a1a2e; margin: 24px 0 10px; }
+  p  { margin-bottom: 14px; }
+  ul, ol { margin: 12px 0 16px 24px; }
+  li { margin-bottom: 6px; }
+  a  { color: #4361ee; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-badge { display: inline-block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; }
+  .badge-history  { background: #fff3e0; color: #e65100; }
+  .badge-concept  { background: #e8f5e9; color: #2e7d32; }
+  .badge-tool     { background: #e3f2fd; color: #1565c0; }
+  .badge-quiz     { background: #f3e5f5; color: #6a1b9a; }
+  code { font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.88em; background: #eef0f8; padding: 2px 6px; border-radius: 4px; color: #d63031; }
+  pre { background: #1e1e2e; color: #cdd6f4; padding: 18px 20px; border-radius: 10px; overflow-x: auto; margin: 16px 0; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.9em; line-height: 1.6; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+  .prompt-sym { color: #a6e3a1; }
+  .cmd { color: #89dceb; }
+  .arg { color: #fab387; }
+  .comment { color: #6c7086; }
+  .out { color: #8b93b4; }
+  .key-table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  .key-table th { background: #1e1e2e; color: #a6e3a1; padding: 10px 14px; text-align: left; font-size: 0.85rem; }
+  .key-table td { padding: 10px 14px; border-bottom: 1px solid #e8e8f0; vertical-align: top; font-size: 0.92rem; }
+  .key-table tr:last-child td { border-bottom: none; }
+  .key-table td code { white-space: nowrap; }
+  .key-table tr:nth-child(even) td { background: #f4f4fb; }
+  .callout { border-left: 4px solid; padding: 14px 18px; border-radius: 0 8px 8px 0; margin: 20px 0; }
+  .callout-warn { border-color: #e17055; background: #fff4f2; }
+  .callout-try  { border-color: #00b894; background: #f0fdf8; }
+  .callout-fun  { border-color: #a29bfe; background: #f6f5ff; }
+  .callout-note { border-color: #fdcb6e; background: #fffbee; }
+  .callout strong { display: block; margin-bottom: 6px; font-size: 0.88rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .callout-warn strong { color: #c0392b; }
+  .callout-try strong { color: #00856a; }
+  .callout-fun strong { color: #6c5ce7; }
+  .callout-note strong { color: #b8860b; }
+  .codefile { margin: 16px 0; }
+  .codefile .file-label { display: inline-block; background: #313244; color: #a6e3a1; font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace; font-size: 0.78rem; padding: 3px 14px; border-radius: 8px 8px 0 0; }
+  .codefile pre { margin: 0; border-top-left-radius: 0; }
+  .divider { border: none; border-top: 1px solid #e0e0f0; margin: 40px 0; }
+  @media (max-width: 600px) { .page { padding: 24px 16px 60px; } .key-table { font-size: 0.8rem; display: block; overflow-x: auto; } }
+  .quiz-q { background: #fff; border: 1px solid #dde; border-radius: 10px; padding: 20px 22px; margin: 18px 0; }
+  .quiz-q .qnum { font-size: 0.78rem; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.06em; }
+  .quiz-q .qtext { font-weight: 600; margin: 6px 0 14px; }
+  .quiz-q .options label { display: block; padding: 8px 12px; border-radius: 6px; margin-bottom: 6px; cursor: pointer; border: 1px solid #e8e8f0; }
+  .quiz-q .options label:hover { background: #f0f4ff; border-color: #b0c0f0; }
+  .quiz-q .options input { margin-right: 10px; }
+  .quiz-q .options pre { margin: 0; display: inline-block; vertical-align: top; padding: 6px 10px; }
+</style>
+</head>
+<body>
+<div class="page">
+<span class="section-badge badge-quiz">Quiz — 10 questions</span>
+<h2>11.11 Check Your Understanding</h2>
+
+<p>These questions check concepts, not syntax recall. Think through each one &mdash; and commit to an answer &mdash; before opening the answer key at the bottom.</p>
+
+<div class="quiz-q">
+  <div class="qnum">Question 1</div>
+  <div class="qtext">In Bash, what does <code>echo "x{a,b}"</code> print?</div>
+  <div class="options">
+    <label><input type="radio" name="q1"> <code>xa xb</code></label>
+    <label><input type="radio" name="q1"> <code>x{a,b}</code></label>
+    <label><input type="radio" name="q1"> <code>x a b</code></label>
+    <label><input type="radio" name="q1"> An error about an unmatched brace</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 2</div>
+  <div class="qtext">A script contains <code>cat &lt;&lt;'EOF'</code>, followed by the line <code>user=$USER</code> and then <code>EOF</code>. What does <code>cat</code> output for that line?</div>
+  <div class="options">
+    <label><input type="radio" name="q2"> The current user's login name, such as <code>user=alice</code></label>
+    <label><input type="radio" name="q2"> Nothing, because <code>$USER</code> is not defined inside here-documents</label>
+    <label><input type="radio" name="q2"> An error, because the delimiter must not be quoted</label>
+    <label><input type="radio" name="q2"> The text <code>user=$USER</code>, unchanged</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 3</div>
+  <div class="qtext">With <code>src="lib/util.c"</code>, what does <code>echo "${src%.c}.o"</code> print?</div>
+  <div class="options">
+    <label><input type="radio" name="q3"> <code>lib/util.o</code></label>
+    <label><input type="radio" name="q3"> <code>lib/util.c.o</code></label>
+    <label><input type="radio" name="q3"> <code>util.o</code></label>
+    <label><input type="radio" name="q3"> <code>lib/util.c</code></label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 4</div>
+  <div class="qtext">A Makefile for a C project has the rule <code>%.o: %.c</code> with the recipe <code>gcc -c $&lt; -o $@</code>. Make needs <code>util.o</code>. What command does it effectively run?</div>
+  <div class="options">
+    <label><input type="radio" name="q4"> <code>gcc -c %.c -o %.o</code></label>
+    <label><input type="radio" name="q4"> <code>gcc -c util.o -o util.c</code></label>
+    <label><input type="radio" name="q4"> <code>gcc -c util.c -o util.o</code></label>
+    <label><input type="radio" name="q4"> <code>gcc -c main.c util.c -o util.o</code></label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 5</div>
+  <div class="qtext">A C project's Makefile contains <code>app: main.o util.o</code> (linking with <code>gcc -o $@ $^</code>) and the pattern rule <code>%.o: %.c</code>. <code>main.c</code> includes <code>util.h</code>. After a successful build, only <code>util.h</code> is edited and <code>make</code> is run. What happens?</div>
+  <div class="options">
+    <label><input type="radio" name="q5"> Both object files are rebuilt, then <code>app</code> is relinked</label>
+    <label><input type="radio" name="q5"> Make reports that <code>app</code> is up to date and rebuilds nothing</label>
+    <label><input type="radio" name="q5"> Only <code>main.o</code> is rebuilt, because it includes the header</label>
+    <label><input type="radio" name="q5"> Make stops with an error about a missing prerequisite</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 6</div>
+  <div class="qtext">Which of these setup steps is <strong>not</strong> safe to run repeatedly on the same machine?</div>
+  <div class="options">
+    <label><input type="radio" name="q6"> <code>mkdir -p build</code></label>
+    <label><input type="radio" name="q6"> <code>python3 -m venv .venv</code></label>
+    <label><input type="radio" name="q6"> Running <code>make</code> twice in a row with no edits in between</label>
+    <label><input type="radio" name="q6"> <code>echo 'export PATH=$PATH:$HOME/bin' &gt;&gt; ~/.profile</code></label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 7</div>
+  <div class="qtext">A Makefile target contains the recipe line <code>echo "Built on $(date +%F)"</code>. Running <code>make</code> prints <code>Built on</code> with no date. Why?</div>
+  <div class="options">
+    <label><input type="radio" name="q7"> <code>date</code> is not available inside Make recipes</label>
+    <label><input type="radio" name="q7"> Make expands <code>$(date +%F)</code> as one of its own variables before the shell sees it</label>
+    <label><input type="radio" name="q7"> The recipe line is indented with a tab instead of spaces</label>
+    <label><input type="radio" name="q7"> <code>%F</code> is not a valid format for <code>date</code></label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 8</div>
+  <div class="qtext">A <code>test</code> target has two recipe lines: first <code>. .venv/bin/activate</code>, then <code>python -m unittest</code> on the next line. The tests run, but using the system Python rather than the virtual environment. Why?</div>
+  <div class="options">
+    <label><input type="radio" name="q8"> <code>unittest</code> ignores virtual environments</label>
+    <label><input type="radio" name="q8"> The <code>.</code> command cannot be used to activate an environment</label>
+    <label><input type="radio" name="q8"> Each recipe line runs in its own shell, so the activation is lost before the second line</label>
+    <label><input type="radio" name="q8"> Make only runs the last line of a recipe</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 9</div>
+  <div class="qtext">In a standard Maven project, what does <code>mvn package</code> do?</div>
+  <div class="options">
+    <label><input type="radio" name="q9"> Only builds the JAR, assuming code was already compiled and tested</label>
+    <label><input type="radio" name="q9"> Runs the lifecycle phases in order up to and including <code>package</code>, including <code>compile</code> and <code>test</code></label>
+    <label><input type="radio" name="q9"> Downloads the dependencies and then stops</label>
+    <label><input type="radio" name="q9"> Runs <code>package</code> and then runs <code>install</code> and <code>deploy</code> as well</label>
+  </div>
+</div>
+
+<div class="quiz-q">
+  <div class="qnum">Question 10</div>
+  <div class="qtext">A <code>.gitlab-ci.yml</code> (using the Docker executor) has a <code>build</code> job that runs <code>make app</code>, and a later <code>test</code> job whose script is <code>./app</code>. The <code>build</code> job succeeds, but the <code>test</code> job fails with <code>./app: No such file or directory</code>. What is the most likely explanation?</div>
+  <div class="options">
+    <label><input type="radio" name="q10"> Each job runs in a separate container, so the executable built in one job is not present in the other unless it is passed on</label>
+    <label><input type="radio" name="q10"> <code>./app</code> cannot be run from a CI script</label>
+    <label><input type="radio" name="q10"> YAML scripts run in reverse order</label>
+    <label><input type="radio" name="q10"> The <code>build</code> job must have failed, even though it was reported as passed</label>
+  </div>
+</div>
+
+<details style="margin-top:32px;background:#fff;border:1px solid #e0e0f0;border-radius:8px;padding:16px 20px;">
+  <summary style="cursor:pointer;font-weight:700;color:#4361ee;">Answer key — open only after committing to your answers</summary>
+
+  <ol style="margin:14px 0 4px 24px;">
+    <li style="margin-bottom:14px;"><strong><code>x{a,b}</code></strong><br>
+    Brace expansion happens only in <em>unquoted</em> text. Inside double quotes the braces are ordinary characters, so the word is passed through unchanged. Without the quotes, <code>x{a,b}</code> would become <code>xa xb</code> before <code>echo</code> ran (<a href="week11.02-meta.html">11.2</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong>The text <code>user=$USER</code>, unchanged</strong><br>
+    Quoting the here-document delimiter (<code>&lt;&lt;'EOF'</code>) turns off expansion inside the body, so the text is written literally. With an unquoted <code>&lt;&lt;EOF</code> the shell would substitute the login name. The quoted form is what you want when generating a script or Makefile that has its own <code>$</code> signs (<a href="week11.03-templates.html">11.3</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>lib/util.o</code></strong><br>
+    <code>${src%.c}</code> removes the shortest matching <em>suffix</em> <code>.c</code>, leaving <code>lib/util</code>; the literal <code>.o</code> is then appended. The directory part is untouched, which is why the result is not just <code>util.o</code> (<a href="week11.03-templates.html">11.3</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>gcc -c util.c -o util.o</code></strong><br>
+    <code>%</code> matches the stem <code>util</code>, so the prerequisite is <code>util.c</code>. <code>$&lt;</code> is the first prerequisite and <code>$@</code> is the target, so the recipe becomes <code>gcc -c util.c -o util.o</code>. One rule generates the concrete command for every object file (<a href="week11.04-patterns.html">11.4</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong>Make reports that <code>app</code> is up to date and rebuilds nothing</strong><br>
+    The pattern rule only says an object depends on its <code>.c</code> file. Nothing tells Make that the objects depend on <code>util.h</code>, so editing the header changes no prerequisite it knows about and the stale objects stay. Add a line such as <code>main.o util.o: util.h</code> so a header edit rebuilds both objects and relinks <code>app</code> (<a href="week11.04-patterns.html">11.4</a>, <a href="week11.05-depgraph.html">11.5</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong><code>echo 'export PATH=$PATH:$HOME/bin' &gt;&gt; ~/.profile</code></strong><br>
+    The <code>&gt;&gt;</code> operator <em>appends</em>, so each run adds another copy of the line and the file keeps changing. <code>mkdir -p</code> and <code>venv</code> converge on the same state however often they run, and a second <code>make</code> with nothing edited does nothing because every target is up to date (<a href="week11.05-depgraph.html">11.5</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong>Make expands <code>$(date +%F)</code> as one of its own variables before the shell sees it</strong><br>
+    In a recipe, <code>$(...)</code> is Make's variable syntax, and a variable named <code>date +%F</code> does not exist, so it expands to nothing. To hand a literal <code>$(date +%F)</code> to the shell, escape the dollar: <code>$$(date +%F)</code>. The tab/space issue would produce a <code>missing separator</code> error rather than a quiet blank (<a href="week11.04-patterns.html">11.4</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong>Each recipe line runs in its own shell, so the activation is lost before the second line</strong><br>
+    Make starts a separate shell for every recipe line, so environment changes such as <code>activate</code> do not carry over. The simplest fix is not to activate at all and call the environment's Python by its path: <code>.venv/bin/python -m unittest</code>. Alternatively, keep both commands in one shell by chaining them on one logical line: <code>. .venv/bin/activate &amp;&amp; python -m unittest</code>. Make does run every line, and <code>.</code> is the portable way to load the script (<a href="week11.07-python.html">11.7</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong>Runs the lifecycle phases in order up to and including <code>package</code>, including <code>compile</code> and <code>test</code></strong><br>
+    In Maven's default lifecycle, asking for a phase runs every earlier phase first: <code>validate</code>, <code>compile</code>, <code>test</code>, then <code>package</code>. A failing test therefore stops the build before a JAR is made (unless tests are deliberately skipped with <code>-DskipTests</code>). The later phases, <code>install</code> and <code>deploy</code>, are not run (<a href="week11.08-maven.html">11.8</a>).</li>
+
+    <li style="margin-bottom:14px;"><strong>Each job runs in a separate container, so the executable built in one job is not present in the other unless it is passed on</strong><br>
+    With the Docker executor, each job starts in its own fresh container with a checkout of the repository. Files produced by <code>build</code> are not there when <code>test</code> starts, unless the build job declares them as <code>artifacts</code> (later-stage jobs download those by default) or the test job rebuilds them (for example with <code>make test</code>, which depends on <code>app</code>). Nothing is wrong with running <code>./app</code> in CI itself, and stages run in the order listed (<a href="week11.09-ci.html">11.9</a>).</li>
+  </ol>
+</details>
+<hr class="divider">
+<p style="color:#aaa;font-size:0.82rem;text-align:center;">FIT2109 · Week 11 · Monash University · by <a href="https://research.monash.edu/en/persons/zahra-mirzamomen/" target="_blank" style="color:#4361ee;font-weight:600;">Dr. Zahra Mirzamomen</a></p>
+</div>
+</body>
+</html>
